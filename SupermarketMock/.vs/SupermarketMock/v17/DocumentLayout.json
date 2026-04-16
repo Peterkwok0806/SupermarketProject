@@ -3,44 +3,8 @@
   "WorkspaceRootPath": "C:\\SupermarketProject\\SupermarketMock\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{A246A955-F3DA-43D4-B938-9585936DCD21}|SupermarketMock\\SupermarketMock.csproj|c:\\supermarketproject\\supermarketmock\\supermarketmock\\controllers\\productcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{A246A955-F3DA-43D4-B938-9585936DCD21}|SupermarketMock\\SupermarketMock.csproj|solutionrelative:supermarketmock\\controllers\\productcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{A246A955-F3DA-43D4-B938-9585936DCD21}|SupermarketMock\\SupermarketMock.csproj|c:\\supermarketproject\\supermarketmock\\supermarketmock\\supermarketcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{A246A955-F3DA-43D4-B938-9585936DCD21}|SupermarketMock\\SupermarketMock.csproj|solutionrelative:supermarketmock\\supermarketcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{A246A955-F3DA-43D4-B938-9585936DCD21}|SupermarketMock\\SupermarketMock.csproj|c:\\supermarketproject\\supermarketmock\\supermarketmock\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{A246A955-F3DA-43D4-B938-9585936DCD21}|SupermarketMock\\SupermarketMock.csproj|solutionrelative:supermarketmock\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{A246A955-F3DA-43D4-B938-9585936DCD21}|SupermarketMock\\SupermarketMock.csproj|c:\\supermarketproject\\supermarketmock\\supermarketmock\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
-      "RelativeMoniker": "D:0:0:{A246A955-F3DA-43D4-B938-9585936DCD21}|SupermarketMock\\SupermarketMock.csproj|solutionrelative:supermarketmock\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{A246A955-F3DA-43D4-B938-9585936DCD21}|SupermarketMock\\SupermarketMock.csproj|c:\\supermarketproject\\supermarketmock\\supermarketmock\\services\\productservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{A246A955-F3DA-43D4-B938-9585936DCD21}|SupermarketMock\\SupermarketMock.csproj|solutionrelative:supermarketmock\\services\\productservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{A246A955-F3DA-43D4-B938-9585936DCD21}|SupermarketMock\\SupermarketMock.csproj|c:\\supermarketproject\\supermarketmock\\supermarketmock\\supermarketmock.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
-      "RelativeMoniker": "D:0:0:{A246A955-F3DA-43D4-B938-9585936DCD21}|SupermarketMock\\SupermarketMock.csproj|solutionrelative:supermarketmock\\supermarketmock.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{A246A955-F3DA-43D4-B938-9585936DCD21}|SupermarketMock\\SupermarketMock.csproj|c:\\supermarketproject\\supermarketmock\\supermarketmock\\services\\iproductservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{A246A955-F3DA-43D4-B938-9585936DCD21}|SupermarketMock\\SupermarketMock.csproj|solutionrelative:supermarketmock\\services\\iproductservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{A246A955-F3DA-43D4-B938-9585936DCD21}|SupermarketMock\\SupermarketMock.csproj|c:\\supermarketproject\\supermarketmock\\supermarketmock\\models\\product.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{A246A955-F3DA-43D4-B938-9585936DCD21}|SupermarketMock\\SupermarketMock.csproj|solutionrelative:supermarketmock\\models\\product.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{A246A955-F3DA-43D4-B938-9585936DCD21}|SupermarketMock\\SupermarketMock.csproj|c:\\supermarketproject\\supermarketmock\\supermarketmock\\migrations\\20260414091540_seedproductdata.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{A246A955-F3DA-43D4-B938-9585936DCD21}|SupermarketMock\\SupermarketMock.csproj|solutionrelative:supermarketmock\\migrations\\20260414091540_seedproductdata.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{A246A955-F3DA-43D4-B938-9585936DCD21}|SupermarketMock\\SupermarketMock.csproj|c:\\supermarketproject\\supermarketmock\\supermarketmock\\migrations\\20260414091141_initialcreate.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{A246A955-F3DA-43D4-B938-9585936DCD21}|SupermarketMock\\SupermarketMock.csproj|solutionrelative:supermarketmock\\migrations\\20260414091141_initialcreate.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -50,7 +14,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 4,
+          "SelectedChildIndex": 2,
           "Children": [
             {
               "$type": "Bookmark",
@@ -62,116 +26,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 8,
-              "Title": "20260414091540_SeedProductData.cs",
-              "DocumentMoniker": "C:\\SupermarketProject\\SupermarketMock\\SupermarketMock\\Migrations\\20260414091540_SeedProductData.cs",
-              "RelativeDocumentMoniker": "SupermarketMock\\Migrations\\20260414091540_SeedProductData.cs",
-              "ToolTip": "C:\\SupermarketProject\\SupermarketMock\\SupermarketMock\\Migrations\\20260414091540_SeedProductData.cs",
-              "RelativeToolTip": "SupermarketMock\\Migrations\\20260414091540_SeedProductData.cs",
-              "ViewState": "AgIAAAsAAAAAAAAAAAAQwAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-14T09:15:40.682Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "SupermarketContext.cs",
-              "DocumentMoniker": "C:\\SupermarketProject\\SupermarketMock\\SupermarketMock\\SupermarketContext.cs",
-              "RelativeDocumentMoniker": "SupermarketMock\\SupermarketContext.cs",
-              "ToolTip": "C:\\SupermarketProject\\SupermarketMock\\SupermarketMock\\SupermarketContext.cs",
-              "RelativeToolTip": "SupermarketMock\\SupermarketContext.cs",
-              "ViewState": "AgIAAAUAAAAAAAAAAAA4wB4AAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-14T08:47:23.702Z"
-            },
-            {
-              "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "ProductController.cs",
-              "DocumentMoniker": "C:\\SupermarketProject\\SupermarketMock\\SupermarketMock\\Controllers\\ProductController.cs",
-              "RelativeDocumentMoniker": "SupermarketMock\\Controllers\\ProductController.cs",
-              "ToolTip": "C:\\SupermarketProject\\SupermarketMock\\SupermarketMock\\Controllers\\ProductController.cs",
-              "RelativeToolTip": "SupermarketMock\\Controllers\\ProductController.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABkAAAABAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-09T07:14:03.881Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 9,
-              "Title": "20260414091141_InitialCreate.cs",
-              "DocumentMoniker": "C:\\SupermarketProject\\SupermarketMock\\SupermarketMock\\Migrations\\20260414091141_InitialCreate.cs",
-              "RelativeDocumentMoniker": "SupermarketMock\\Migrations\\20260414091141_InitialCreate.cs",
-              "ToolTip": "C:\\SupermarketProject\\SupermarketMock\\SupermarketMock\\Migrations\\20260414091141_InitialCreate.cs",
-              "RelativeToolTip": "SupermarketMock\\Migrations\\20260414091141_InitialCreate.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-14T09:11:41.438Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "appsettings.json",
-              "DocumentMoniker": "C:\\SupermarketProject\\SupermarketMock\\SupermarketMock\\appsettings.json",
-              "RelativeDocumentMoniker": "SupermarketMock\\appsettings.json",
-              "ToolTip": "C:\\SupermarketProject\\SupermarketMock\\SupermarketMock\\appsettings.json",
-              "RelativeToolTip": "SupermarketMock\\appsettings.json",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2026-04-14T08:57:55.267Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "ProductService.cs",
-              "DocumentMoniker": "C:\\SupermarketProject\\SupermarketMock\\SupermarketMock\\Services\\ProductService.cs",
-              "RelativeDocumentMoniker": "SupermarketMock\\Services\\ProductService.cs",
-              "ToolTip": "C:\\SupermarketProject\\SupermarketMock\\SupermarketMock\\Services\\ProductService.cs",
-              "RelativeToolTip": "SupermarketMock\\Services\\ProductService.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABUAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-14T07:00:37.336Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 5,
-              "Title": "SupermarketMock.csproj",
-              "DocumentMoniker": "C:\\SupermarketProject\\SupermarketMock\\SupermarketMock\\SupermarketMock.csproj",
-              "RelativeDocumentMoniker": "SupermarketMock\\SupermarketMock.csproj",
-              "ToolTip": "C:\\SupermarketProject\\SupermarketMock\\SupermarketMock\\SupermarketMock.csproj",
-              "RelativeToolTip": "SupermarketMock\\SupermarketMock.csproj",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABIAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
-              "WhenOpened": "2026-04-14T06:46:22.947Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "Program.cs",
-              "DocumentMoniker": "C:\\SupermarketProject\\SupermarketMock\\SupermarketMock\\Program.cs",
-              "RelativeDocumentMoniker": "SupermarketMock\\Program.cs",
-              "ToolTip": "C:\\SupermarketProject\\SupermarketMock\\SupermarketMock\\Program.cs",
-              "RelativeToolTip": "SupermarketMock\\Program.cs",
-              "ViewState": "AgIAABcAAAAAAAAAAAAAABkAAAAOAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-09T07:02:30.278Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 6,
-              "Title": "IProductService.cs",
-              "DocumentMoniker": "C:\\SupermarketProject\\SupermarketMock\\SupermarketMock\\Services\\IProductService.cs",
-              "RelativeDocumentMoniker": "SupermarketMock\\Services\\IProductService.cs",
-              "ToolTip": "C:\\SupermarketProject\\SupermarketMock\\SupermarketMock\\Services\\IProductService.cs",
-              "RelativeToolTip": "SupermarketMock\\Services\\IProductService.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-14T06:55:07.468Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 7,
               "Title": "Product.cs",
               "DocumentMoniker": "C:\\SupermarketProject\\SupermarketMock\\SupermarketMock\\Models\\Product.cs",
               "RelativeDocumentMoniker": "SupermarketMock\\Models\\Product.cs",
@@ -179,7 +34,8 @@
               "RelativeToolTip": "SupermarketMock\\Models\\Product.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-09T07:10:08.098Z"
+              "WhenOpened": "2026-04-16T07:41:47.511Z",
+              "EditorCaption": ""
             }
           ]
         },
