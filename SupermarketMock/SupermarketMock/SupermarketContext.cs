@@ -11,6 +11,8 @@ namespace SupermarketMock
 
         public DbSet<Product> Products { get; set; }
 
+        public DbSet<User> Users => Set<User>();
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Product>()
