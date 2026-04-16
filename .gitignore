@@ -1,93 +1,9 @@
-### C#
-# Build results
+# ==============================================================================
+# .NET / Visual Studio (Backend)
+# ==============================================================================
+# 編譯產物與暫存 (不分大小寫)
 [Bb]in/
 [Oo]bj/
-
-# Visual Studio cache/options directory
-.vs/
-
-# User-specific files
-*.suo
-*.user
-
-# Debug symbols
-*.pdb
-
-# NuGet Packages
-*.nupkg
-**/[Pp]ackages/*
-!**/[Pp]ackages/build/
-
-# .NET build artifacts
-artifacts/
-
-# Publish output
-publish/
-
-### Node
-# Dependencies
-node_modules/
-
-# Logs
-*.log
-
-# Runtime data
-*.pid
-*.pid.lock
-
-# Coverage
-coverage/
-*.lcov
-.nyc_output
-
-# Build output
-dist/
-build/Release
-
-# TypeScript cache
-*.tsbuildinfo
-
-# Framework build output and caches
-.cache
-.parcel-cache
-.next
-out/
-.nuxt
-
-# dotenv environment variable files
-.env
-.env.local
-.env.*.local
-
-# npm cache directory
-.npm
-*.tgz
-
-# yarn v2
-.yarn/cache
-.yarn/unplugged
-.yarn/install-state.gz
-.pnp.*
-
-### Windows
-# Windows thumbnail cache files
-Thumbs.db
-
-# Folder config file
-[Dd]esktop.ini
-
-# Recycle Bin used on file shares
-$RECYCLE.BIN/
-
-# Windows shortcuts
-*.lnk
-
-### VisualStudio
-# User-specific files
-*.suo
-*.user
-
-# Build results
 [Dd]ebug/
 [Rr]elease/
 x64/
@@ -95,36 +11,95 @@ x86/
 [Ww][Ii][Nn]32/
 [Aa][Rr][Mm]/
 [Aa][Rr][Mm]64/
-[Bb]in/
-[Oo]bj/
+artifacts/
+publish/
+*.pdb
 
-# Visual Studio cache/options directory
+# Visual Studio 設定與快取
 .vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.patch
+*.diff
 
-# MSTest test Results
-[Tt]est[Rr]esult*/
-[Bb]uild[Ll]og.*
-
-# NuGet
+# NuGet 套件
 *.nupkg
 **/[Pp]ackages/*
 !**/[Pp]ackages/build/
 *.nuget.props
 *.nuget.targets
 
-# Publish Web Output
-*.[Pp]ublish.xml
+# 測試結果
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
 
-### VS Code
-# VSCode settings (keep shared configuration)
+# Web 發佈設定 (內含可能的機密資訊)
+*.[Pp]ublish.xml
+appsettings.Development.json
+appsettings.Local.json
+UserSecrets/
+
+# ==============================================================================
+# Node / Angular (Frontend)
+# ==============================================================================
+# 相依套件
+node_modules/
+.npm/
+
+# 編譯與快取
+dist/
+/tmp/
+/out-tsc/
+/bazel-out/
+.cache/
+.parcel-cache
+.angular/
+*.tsbuildinfo
+
+# 測試與覆蓋率
+coverage/
+*.lcov
+.nyc_output
+/test-results/
+
+# 記錄檔
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 環境變數 (重要：保護 API Key 或密鑰)
+.env
+.env.local
+.env.*.local
+
+# Yarn v2
+.yarn/cache
+.yarn/unplugged
+.yarn/install-state.gz
+.pnp.*
+
+# ==============================================================================
+# IDE (VS Code) & OS
+# ==============================================================================
+# VS Code 設定 (保留共用的 launch/settings)
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
-
-# Local History for Visual Studio Code
 .history/
-
-# Built Visual Studio Code Extensions
 *.vsix
+
+# 其他編輯器
+.idea/
+.editorconfig
+
+# 作業系統暫存
+.DS_Store
+[Dd]esktop.ini
+Thumbs.db
+$RECYCLE.BIN/
+*.lnk
