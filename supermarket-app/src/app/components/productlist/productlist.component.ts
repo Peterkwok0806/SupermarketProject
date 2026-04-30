@@ -8,15 +8,7 @@ import { Observable } from 'rxjs';
 @Component({
   selector: 'app-productlist',
   imports: [CommonModule],
-  template:`
-  <h2>🛒 超市商品清單 (Inline Template)</h2>
-  @for (item of (products$ | async); track item.id){
-   <h3>{{ item.name }}</h3>
-   <p>價格：{{ item.price | currency:'HKD':'symbol' }}</p>
-  }@empty {
-          <p>⚠️ 正在載入資料或目前沒有商品...</p>
-    }
-  `,
+  templateUrl: './productlist.component.html',
   styleUrl: './productlist.component.css'
 })
 export class ProductlistComponent implements OnInit{
