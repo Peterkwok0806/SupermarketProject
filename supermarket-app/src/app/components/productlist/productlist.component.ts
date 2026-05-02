@@ -3,11 +3,12 @@ import { Product } from '../../models/product';
 import { ProductService } from '../../services/product.service';
 import { CommonModule } from '@angular/common';
 import { Observable } from 'rxjs';
+import { CategoryNamePipe } from '../../pipes/category-name.pipe';
 
 
 @Component({
   selector: 'app-productlist',
-  imports: [CommonModule],
+  imports: [CommonModule, CategoryNamePipe],
   templateUrl: './productlist.component.html',
   styleUrl: './productlist.component.css'
 })
@@ -17,9 +18,9 @@ export class ProductlistComponent implements OnInit{
 
   products$!: Observable<Product[]>;
 
+  ngOnInit(): void {
+      this.products$ = this.productService.getProducts();
+    }
 
-
-ngOnInit(): void {
-    this.products$ = this.productService.getProducts();
-  }
+  
 }
