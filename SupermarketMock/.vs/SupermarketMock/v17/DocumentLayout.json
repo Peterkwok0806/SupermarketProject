@@ -53,17 +53,12 @@
           "SelectedChildIndex": 8,
           "Children": [
             {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "20260416085047_AddUserTable.cs",
-              "DocumentMoniker": "C:\\SupermarketProject\\SupermarketMock\\SupermarketMock\\Migrations\\20260416085047_AddUserTable.cs",
-              "RelativeDocumentMoniker": "SupermarketMock\\Migrations\\20260416085047_AddUserTable.cs",
-              "ToolTip": "C:\\SupermarketProject\\SupermarketMock\\SupermarketMock\\Migrations\\20260416085047_AddUserTable.cs",
-              "RelativeToolTip": "SupermarketMock\\Migrations\\20260416085047_AddUserTable.cs",
-              "ViewState": "AgIAAAMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-16T08:50:48.017Z",
-              "EditorCaption": ""
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{e5c86464-96be-4d7c-9a8b-abcb3bbf5f92}"
             },
             {
               "$type": "Document",
@@ -111,8 +106,7 @@
               "RelativeToolTip": "SupermarketMock\\SupermarketContext.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABMAAAAnAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-16T08:07:02.054Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-16T08:07:02.054Z"
             },
             {
               "$type": "Document",
@@ -140,18 +134,6 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 9,
-              "Title": "User.cs",
-              "DocumentMoniker": "C:\\SupermarketProject\\SupermarketMock\\SupermarketMock\\Models\\User.cs",
-              "RelativeDocumentMoniker": "SupermarketMock\\Models\\User.cs",
-              "ToolTip": "C:\\SupermarketProject\\SupermarketMock\\SupermarketMock\\Models\\User.cs",
-              "RelativeToolTip": "SupermarketMock\\Models\\User.cs",
-              "ViewState": "AgIAAAMAAAAAAAAAAAAAAAoAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-16T07:58:17.56Z"
-            },
-            {
-              "$type": "Document",
               "DocumentIndex": 0,
               "Title": "Product.cs",
               "DocumentMoniker": "C:\\SupermarketProject\\SupermarketMock\\SupermarketMock\\Models\\Product.cs",
@@ -165,6 +147,30 @@
             },
             {
               "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "20260416085047_AddUserTable.cs",
+              "DocumentMoniker": "C:\\SupermarketProject\\SupermarketMock\\SupermarketMock\\Migrations\\20260416085047_AddUserTable.cs",
+              "RelativeDocumentMoniker": "SupermarketMock\\Migrations\\20260416085047_AddUserTable.cs",
+              "ToolTip": "C:\\SupermarketProject\\SupermarketMock\\SupermarketMock\\Migrations\\20260416085047_AddUserTable.cs",
+              "RelativeToolTip": "SupermarketMock\\Migrations\\20260416085047_AddUserTable.cs",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-16T08:50:48.017Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "User.cs",
+              "DocumentMoniker": "C:\\SupermarketProject\\SupermarketMock\\SupermarketMock\\Models\\User.cs",
+              "RelativeDocumentMoniker": "SupermarketMock\\Models\\User.cs",
+              "ToolTip": "C:\\SupermarketProject\\SupermarketMock\\SupermarketMock\\Models\\User.cs",
+              "RelativeToolTip": "SupermarketMock\\Models\\User.cs",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAAAAoAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-16T07:58:17.56Z"
+            },
+            {
+              "$type": "Document",
               "DocumentIndex": 6,
               "Title": "Program.cs",
               "DocumentMoniker": "C:\\SupermarketProject\\SupermarketMock\\SupermarketMock\\Program.cs",
@@ -174,6 +180,16 @@
               "ViewState": "AgIAAAwAAAAAAAAAAAAAACAAAAA4AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-04-16T08:32:43.568Z"
+            }
+          ]
+        },
+        {
+          "DockedWidth": 1498,
+          "SelectedChildIndex": -1,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{34e76e81-ee4a-11d0-ae2e-00a0c90fffc3}"
             }
           ]
         }

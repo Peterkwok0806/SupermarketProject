@@ -32,7 +32,10 @@
             </div>
           </div>
 
-          <button class="mt-5 w-full bg-purple-700 hover:bg-purple-800 text-white py-3 rounded-2xl font-medium transition">
+          <button 
+            (click)="addToCart(item)"
+            class="mt-5 w-full bg-purple-700 hover:bg-purple-800 text-white py-3 rounded-2xl font-medium transition flex items-center justify-center gap-2">
+            <span>🛒</span>
             Add to Cart
           </button>
         </div>

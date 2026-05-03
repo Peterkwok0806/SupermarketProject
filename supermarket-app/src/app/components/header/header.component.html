@@ -21,10 +21,13 @@
       <a href="#" class="hover:text-purple-200 transition font-medium">Products</a>
       <a href="#" class="hover:text-purple-200 transition font-medium">Deals</a>
       
-      <!-- Cart -->
-      <button class="flex items-center gap-2 bg-white text-purple-700 hover:bg-purple-100 px-7 py-3 rounded-2xl font-semibold transition">
-        🛍️ Cart 
-        <span class="ml-1 bg-purple-700 text-white text-sm font-bold px-3 py-1 rounded-full">0</span>
+      <!-- Cart Button with RouterLink -->
+      <button routerLink="/cart"
+              class="flex items-center gap-2 bg-white text-purple-700 hover:bg-purple-100 px-7 py-3 rounded-2xl font-semibold transition">
+        🛍️ Cart
+        <span class="ml-1 bg-purple-700 text-white text-sm font-bold px-3 py-1 rounded-full">
+          {{ totalItems() }}
+        </span>
       </button>
 
       <!-- Login & Register -->
