@@ -31,6 +31,7 @@ builder.Services.AddDbContext<SupermarketContext>(options =>
 //Services註冊
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<ICartService, CartService>();
 
 
 var app = builder.Build();

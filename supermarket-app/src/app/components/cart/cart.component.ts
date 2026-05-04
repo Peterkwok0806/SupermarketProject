@@ -12,9 +12,10 @@ import { CartService } from '../../services/cart.service';
 export class CartComponent {
   private cartService = inject(CartService);
 
-  cartItems = this.cartService.cartItems;
+  cart = this.cartService.cart;
   totalItems = this.cartService.totalItems;
   totalPrice = this.cartService.totalPrice;
+  isLoading = this.cartService.isLoading;
 
   updateQuantity(productId: number, quantity: number) {
     this.cartService.updateQuantity(productId, quantity);

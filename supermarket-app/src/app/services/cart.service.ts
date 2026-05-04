@@ -1,80 +1,106 @@
-import { Injectable, signal, computed, effect } from '@angular/core';
-import { CartItem } from '../models/cart-item';
+import { Injectable, inject, signal, computed } from '@angular/core';
+import { CartApiService } from './cart-api.service';
+import { Cart} from '../models/cart';
 import { Product } from '../models/product';
+import { firstValueFrom } from 'rxjs';
 
 
 @Injectable({
   providedIn: 'root'
 })
 export class CartService {
-  private _cartItems = signal<CartItem[]>([]);
-  readonly cartItems = this._cartItems.asReadonly();
+  private cartApi = inject(CartApiService);
 
-  private saveToLocalStorage(items: CartItem[]) {
-    localStorage.setItem('cart', JSON.stringify(items));
-  }
+  // Signal 儲存前端使用的購物車
+  private _cart = signal<Cart>({
+    id: 0,
+    userId: 0,
+    cartItems: []
+  });
+  readonly cart = this._cart.asReadonly();
 
-  private loadFromLocalStorage() {
-    const saved = localStorage.getItem('cart');
-    if (saved) {
-      try {
-        this._cartItems.set(JSON.parse(saved));
-      } catch (e) {
-        console.error('Failed to load cart from localStorage', e);
-      }
-    }
-  }
+  isLoading = signal<boolean>(false);
 
-  totalItems = computed(() => 
-    this._cartItems().reduce((sum, item) => sum + item.quantity, 0)
-  );
 
-  totalPrice = computed(() => 
-    this._cartItems().reduce((sum, item) => 
-      sum + (item.product.price * item.quantity), 0)
-  );
+  // 計算屬性
+  totalItems = computed(() => {
+    const items = this._cart().cartItems;
+    return items.reduce((sum, item) => sum + item.quantity, 0);
+  });
 
+  totalPrice = computed(() => {
+    const items = this._cart().cartItems;
+    // 優先使用 unitPrice (Dto 內通常已包含當時價格)，若無則用 product.price
+    return items.reduce((sum, item) => 
+      sum + ((item.unitPrice || item.product.price) * item.quantity), 0);
+  });
 
   constructor() { 
-    this.loadFromLocalStorage();
-
-    effect(() => {
-      this.saveToLocalStorage(this._cartItems());
-    });
+    this.loadCart();
   }
 
-  addToCart(product: Product) {
-    this._cartItems.update(current => {
-      const index = current.findIndex(item => item.product.id === product.id);
-      const updated = [...current];
-      if (index > -1) {
-        updated[index] = { ...updated[index], quantity: updated[index].quantity + 1 };
-      } else {
-        updated.push({ product, quantity: 1 });
-      }
-      return updated;
-    });
+  async loadCart() {
+  try {
+    const data = await firstValueFrom(this.cartApi.getCart());
+    this._cart.set(data);
     
+  } catch (err) {
+    // 處理 API 錯誤（例如：404 或網路斷線）
+    console.error('無法取得購物車', err);
   }
+}
 
-  removeFromCart(productId: number) {
-    this._cartItems.update(current => current.filter(item => item.product.id !== productId));
-  }
-
-  updateQuantity(productId: number, quantity: number) {
-    if (quantity <= 0) {
-      this.removeFromCart(productId);
-      return;
+ async addToCart(product: Product) {
+  this.isLoading.set(true);
+  try {
+      await firstValueFrom(this.cartApi.addToCart(product.id));
+      await this.loadCart(); // 這裡會等待 loadCart 完成
+      console.log('加入成功並刷新');
+    } catch (err) {
+      console.error('Add failed', err);
+    }finally {
+      this.isLoading.set(false); // 結束讀取
     }
+}
 
-    this._cartItems.update(current => 
-      current.map(item => item.product.id === productId ? { ...item, quantity } : item)
-    );
+  async updateQuantity(productId: number, quantity: number) {
+  if (quantity < 1) return;
+
+  this.isLoading.set(true);
+  try {
+    await firstValueFrom(this.cartApi.updateQuantity(productId, quantity));
+    await this.loadCart(); // 這裡會等待 loadCart 完成
+  } catch (error) {
+    console.error('更新數量失敗', error);
+  }finally {
+      this.isLoading.set(false);
+    }
+}
+
+ async removeFromCart(productId: number) {
+   this.isLoading.set(true);
+  try {
+    await firstValueFrom(this.cartApi.removeFromCart(productId));
+    await this.loadCart();
+  } catch (error) {
+    console.error('移除商品失敗', error);
+  }finally {
+      this.isLoading.set(false);
   }
+}
 
-
-  clearCart() {
-      this._cartItems.set([]);
+  async clearCart() {
+   this.isLoading.set(true);
+    try {
+      await firstValueFrom(this.cartApi.clearCart());
+      // 直接呼叫 loadCart 確保與後端同步，不需要手動 update Signal
+      await this.loadCart();
+      console.log('購物車已清空並刷新');
+    } catch (error) {
+      console.error('Clear cart failed', error);
+    } finally {
+      this.isLoading.set(false);
+    }
   }
 
 }

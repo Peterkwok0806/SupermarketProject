@@ -25,6 +25,7 @@ namespace SupermarketMock.Models
 
         public DateTime? LastLoginAt { get; set; }
 
+        public Cart? Cart { get; set; }
 
     }
 }

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SupermarketMock;
 
@@ -11,9 +12,11 @@ using SupermarketMock;
 namespace SupermarketMock.Migrations
 {
     [DbContext(typeof(SupermarketContext))]
-    partial class SupermarketContextModelSnapshot : ModelSnapshot
+    [Migration("20260504072259_AddCartTable")]
+    partial class AddCartTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -45,33 +48,6 @@ namespace SupermarketMock.Migrations
                         .IsUnique();
 
                     b.ToTable("Carts");
-                });
-
-            modelBuilder.Entity("SupermarketMock.Models.CartItem", b =>
-                {
-                    b.Property<int>("CartId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ProductId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("AddedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("Quantity")
-                        .HasColumnType("int");
-
-                    b.Property<decimal>("UnitPrice")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("CartId", "ProductId");
-
-                    b.HasIndex("ProductId");
-
-                    b.ToTable("CartItems");
                 });
 
             modelBuilder.Entity("SupermarketMock.Models.Product", b =>
@@ -383,9 +359,9 @@ namespace SupermarketMock.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2026, 5, 4, 7, 37, 10, 261, DateTimeKind.Utc).AddTicks(6689),
+                            CreatedAt = new DateTime(2026, 5, 4, 7, 22, 58, 468, DateTimeKind.Utc).AddTicks(9222),
                             Email = "admin@supermart.com",
-                            PasswordHash = "$2a$11$MR6aK1XSp7eEpCGW6j/.AOAZyGDvCgOUc1HyjZLKoNRg.ifcUZPfG",
+                            PasswordHash = "$2a$11$IlAZD7T0KzTh2p8T2RkXAewAs.muJduZb6huFwPuKzqy/U7wup9.2",
                             Role = "Admin",
                             Username = "admin"
                         });
@@ -400,30 +376,6 @@ namespace SupermarketMock.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("SupermarketMock.Models.CartItem", b =>
-                {
-                    b.HasOne("SupermarketMock.Models.Cart", "Cart")
-                        .WithMany("CartItems")
-                        .HasForeignKey("CartId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("SupermarketMock.Models.Product", "Product")
-                        .WithMany()
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Cart");
-
-                    b.Navigation("Product");
-                });
-
-            modelBuilder.Entity("SupermarketMock.Models.Cart", b =>
-                {
-                    b.Navigation("CartItems");
                 });
 
             modelBuilder.Entity("SupermarketMock.Models.User", b =>

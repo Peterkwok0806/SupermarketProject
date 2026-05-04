@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SupermarketMock")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a9d8e73849e608ffd392dcdd99b21336984bb179")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c2603d35c9130d109f08004e3bc9efc1cf2b378a")]
 [assembly: System.Reflection.AssemblyProductAttribute("SupermarketMock")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SupermarketMock")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

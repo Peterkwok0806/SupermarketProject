@@ -14,12 +14,17 @@ namespace SupermarketMock
 
         public DbSet<User> Users => Set<User>();
 
+        public DbSet<Cart> Carts => Set<Cart>();
+
+        public DbSet<CartItem> CartItems => Set<CartItem>();
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Product>()
                 .Property(p => p.Price)
                 .HasColumnType("decimal(18,2)");
 
+            // 唯一索引
             modelBuilder.Entity<User>()
             .HasIndex(u => u.Email)
             .IsUnique();
@@ -27,6 +32,29 @@ namespace SupermarketMock
             modelBuilder.Entity<User>()
                 .HasIndex(u => u.Username)
                 .IsUnique();
+
+            // ==================== User 與 Cart 一對一 ====================
+            modelBuilder.Entity<User>()
+                .HasOne(u => u.Cart)
+                .WithOne(c => c.User)
+                .HasForeignKey<Cart>(c => c.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // ==================== CartItem 複合主鍵 ====================
+            modelBuilder.Entity<CartItem>()
+            .HasKey(ci => new { ci.CartId, ci.ProductId });
+
+            modelBuilder.Entity<CartItem>()
+                .HasOne(ci => ci.Cart)
+                .WithMany(c => c.CartItems)
+                .HasForeignKey(ci => ci.CartId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<CartItem>()
+                .HasOne(ci => ci.Product)
+                .WithMany()
+                .HasForeignKey(ci => ci.ProductId)
+                .OnDelete(DeleteBehavior.Restrict);
 
 
 

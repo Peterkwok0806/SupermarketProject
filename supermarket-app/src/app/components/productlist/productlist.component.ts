@@ -7,6 +7,7 @@ import { Observable } from 'rxjs';
 import { CategoryNamePipe } from '../../pipes/category-name.pipe';
 
 
+
 @Component({
   selector: 'app-productlist',
   imports: [CommonModule, CategoryNamePipe],
@@ -24,9 +25,16 @@ export class ProductlistComponent implements OnInit{
       this.products$ = this.productService.getProducts();
     }
 
-  addToCart(product: Product) {
-    this.cartService.addToCart(product);
-    alert(`${product.name} 已加入購物車！`);
+  async addToCart(product: Product) {
+    try {
+      await this.cartService.addToCart(product);
+
+      alert(`${product.name} 已成功加入購物車！ 🛒`);
+      
+    } catch (error) {
+      console.error(error);
+      alert('加入購物車失敗，請稍後再試');
+    }
   }
 
   
