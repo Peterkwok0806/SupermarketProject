@@ -17,18 +17,26 @@ namespace SupermarketMock.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<ActionResult<string>> Register(UserRegisterDto request)
+        public async Task<ActionResult<string>> Register([FromBody] UserRegisterDto dto)
         {
+            var result = await _authService.RegisterAsync(dto);
 
-            try
+            if (!result.Success)
             {
-                var result = await _authService.RegisterAsync(request);
-                return Ok(result);
+                return BadRequest(new { message = result.Message });
             }
-            catch (Exception ex)
+
+            return Ok(new
             {
-                return BadRequest(ex.Message);
-            }
+                message = result.Message,
+                user = new
+                {
+                    result.User?.Id,
+                    result.User?.Username,
+                    result.User?.Email,
+                    result.User?.Role
+                }
+            });
         }
 
 

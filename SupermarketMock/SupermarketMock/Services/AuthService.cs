@@ -11,24 +11,49 @@ namespace SupermarketMock.Services
 
         public AuthService(SupermarketContext context) { _context = context; }
 
-        public async Task<string> RegisterAsync(UserRegisterDto request)
+        public async Task<AuthResult> RegisterAsync(UserRegisterDto dto)
         {
-            if (await _context.Users.AnyAsync(u => u.Email == request.Email))
-                throw new Exception("該 Email 已被註冊");
+            if (await _context.Users.AnyAsync(u => u.Email == dto.Email))
+            {
+                return new AuthResult
+                {
+                    Success = false,
+                    Message = "此 Email 已被註冊"
+                };
+            }
 
-            string passwordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
+            if (await _context.Users.AnyAsync(u => u.Username == dto.Username))
+            {
+                return new AuthResult
+                {
+                    Success = false,
+                    Message = "此 Username 已被使用"
+                };
+            }
 
             var user = new User
             {
-                Username = request.Username,
-                Email = request.Email,
-                PasswordHash = passwordHash
-                // Role 和 CreatedAt 在 Model 裡已有預設值，這裡可省
+                Username = dto.Username,
+                Email = dto.Email,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
             };
+
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
 
-            return "註冊成功！";
+            return new AuthResult
+            {
+                Success = true,
+                Message = "註冊成功！",
+                User = user
+            };
+
         }
+
+
+
+
+
+
     }
 }

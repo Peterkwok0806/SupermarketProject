@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SupermarketMock;
 
@@ -11,9 +12,11 @@ using SupermarketMock;
 namespace SupermarketMock.Migrations
 {
     [DbContext(typeof(SupermarketContext))]
-    partial class SupermarketContextModelSnapshot : ModelSnapshot
+    [Migration("20260504041026_UpdateUser")]
+    partial class UpdateUser
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -331,9 +334,9 @@ namespace SupermarketMock.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2026, 5, 4, 4, 18, 55, 175, DateTimeKind.Utc).AddTicks(9981),
+                            CreatedAt = new DateTime(2026, 5, 4, 4, 10, 25, 581, DateTimeKind.Utc).AddTicks(5019),
                             Email = "admin@supermart.com",
-                            PasswordHash = "$2a$11$/HJMsSjjoqe34QpxxlmhF..joqCqRytissLJQKqbdGE.zHijnp.Me",
+                            PasswordHash = "$2a$11$BTqrrKJQVwKL2XYH12lyMuo6op7LYdj4Vur/./35fiaIMeqMHWUBu",
                             Role = "Admin",
                             Username = "admin"
                         });

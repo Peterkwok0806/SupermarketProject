@@ -20,6 +20,16 @@ namespace SupermarketMock
                 .Property(p => p.Price)
                 .HasColumnType("decimal(18,2)");
 
+            modelBuilder.Entity<User>()
+            .HasIndex(u => u.Email)
+            .IsUnique();
+
+            modelBuilder.Entity<User>()
+                .HasIndex(u => u.Username)
+                .IsUnique();
+
+
+
             modelBuilder.Entity<Product>().HasData(
             new Product { Id = 1, Name = "Fresh Milk", Price = 22.90m, Description = "Whole milk 1L", StockQuantity = 120, Category = ProductCategory.Dairy, Photo = "milk.jpg" },
             new Product { Id = 2, Name = "Whole Wheat Bread", Price = 18.50m, Description = "Fresh baked bread", StockQuantity = 80, Category = ProductCategory.Bakery, Photo = "bread.jpg" },
@@ -37,6 +47,22 @@ namespace SupermarketMock
             new Product { Id = 14, Name = "Ice Cream Vanilla", Price = 35.00m, Description = "500ml tub", StockQuantity = 55, Category = ProductCategory.Frozen, Photo = "icecream.jpg" },
             new Product { Id = 15, Name = "Toothpaste", Price = 16.90m, Description = "Colgate 100g", StockQuantity = 140, Category = ProductCategory.PersonalCare, Photo = "toothpaste.jpg" }
             );
+
+            modelBuilder.Entity<User>().HasData(
+            new User
+            {
+                Id = 1,
+                Username = "admin",
+                Email = "admin@supermart.com",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin123!"),
+                Role = "Admin"
+            }
+        );
+
+
+
+
+
         }
 
 
