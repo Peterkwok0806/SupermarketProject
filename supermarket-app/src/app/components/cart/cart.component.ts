@@ -10,24 +10,24 @@ import { CartService } from '../../services/cart.service';
   styleUrl: './cart.component.css'
 })
 export class CartComponent {
-  private cartService = inject(CartService);
+  public cartService = inject(CartService);
 
   cart = this.cartService.cart;
   totalItems = this.cartService.totalItems;
   totalPrice = this.cartService.totalPrice;
   isLoading = this.cartService.isLoading;
 
-  updateQuantity(productId: number, quantity: number) {
-    this.cartService.updateQuantity(productId, quantity);
+  async updateQuantity(productId: number, quantity: number) {
+    await this.cartService.updateQuantity(productId, quantity);
   }
 
-  removeItem(productId: number) {
-    this.cartService.removeFromCart(productId);
+  async removeItem(productId: number) {
+    await this.cartService.removeFromCart(productId);
   }
 
-  clearCart() {
+  async clearCart() {
     if (confirm('Clear all items in cart?')) {
-      this.cartService.clearCart();
+      await this.cartService.clearCart();
     }
   }
 

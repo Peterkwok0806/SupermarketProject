@@ -41,7 +41,7 @@ namespace SupermarketMock.Controllers
                     return BadRequest(new { message = "無效的請求資料" });
                 }
 
-                int userId = 1; // 之後會改成從 JWT 取得目前使用者
+                int userId = 1; 
 
                 var result = await _cartService.AddToCartAsync(userId, dto.ProductId, dto.Quantity);
 
@@ -50,13 +50,7 @@ namespace SupermarketMock.Controllers
                     return BadRequest(new { message = result.Message });
                 }
 
-                // 只回傳必要資訊，避免循環參考
-                return Ok(new
-                {
-                    success = true,
-                    message = result.Message,
-                    cartItemCount = result.Cart?.CartItems?.Count ?? 0
-                });
+                return Ok(result);
             }
             catch (Exception ex)
             {

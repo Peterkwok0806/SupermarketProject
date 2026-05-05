@@ -11,7 +11,6 @@ import { firstValueFrom } from 'rxjs';
 export class CartService {
   private cartApi = inject(CartApiService);
 
-  // Signal 儲存前端使用的購物車
   private _cart = signal<Cart>({
     id: 0,
     userId: 0,
@@ -40,36 +39,47 @@ export class CartService {
   }
 
   async loadCart() {
-  try {
-    const data = await firstValueFrom(this.cartApi.getCart());
-    this._cart.set(data);
-    
-  } catch (err) {
-    // 處理 API 錯誤（例如：404 或網路斷線）
-    console.error('無法取得購物車', err);
+    try {
+      const data = await firstValueFrom(this.cartApi.getCart());
+      this._cart.set(data);
+      
+    } catch (err) {
+      // 處理 API 錯誤（例如：404 或網路斷線）
+      console.error('無法取得購物車', err);
+    }
   }
-}
 
  async addToCart(product: Product) {
+  console.log('1. 開始執行 addToCart, ID:', product.id);
   this.isLoading.set(true);
-  try {
-      await firstValueFrom(this.cartApi.addToCart(product.id));
-      await this.loadCart(); // 這裡會等待 loadCart 完成
-      console.log('加入成功並刷新');
-    } catch (err) {
-      console.error('Add failed', err);
-    }finally {
-      this.isLoading.set(false); // 結束讀取
+    try {
+        console.log('2. 準備發送 API...');
+        const result = await firstValueFrom(this.cartApi.addToCart(product.id));
+        console.log('3. API 回傳結果:', result);
+
+        console.log(Boolean(result.success && result.cart))
+
+        if (result.success && result.cart){
+          this._cart.set({ ...result.cart });
+          console.log('4. Signal 已更新');
+        }
+      } catch (err) {
+        console.error('Add failed', err);
+      }finally {
+        this.isLoading.set(false); // 結束讀取
+      }
     }
-}
 
   async updateQuantity(productId: number, quantity: number) {
   if (quantity < 1) return;
 
   this.isLoading.set(true);
   try {
-    await firstValueFrom(this.cartApi.updateQuantity(productId, quantity));
-    await this.loadCart(); // 這裡會等待 loadCart 完成
+    const result = await firstValueFrom(this.cartApi.updateQuantity(productId, quantity));
+    console.log('3. API 回傳結果:', result);
+    if (result.success && result.cart) {
+      this._cart.set({ ...result.cart });
+    }
   } catch (error) {
     console.error('更新數量失敗', error);
   }finally {
@@ -80,8 +90,10 @@ export class CartService {
  async removeFromCart(productId: number) {
    this.isLoading.set(true);
   try {
-    await firstValueFrom(this.cartApi.removeFromCart(productId));
-    await this.loadCart();
+    const result = await firstValueFrom(this.cartApi.removeFromCart(productId));
+    if (result.success && result.cart) {
+      this._cart.set({ ...result.cart });
+    }
   } catch (error) {
     console.error('移除商品失敗', error);
   }finally {
@@ -92,9 +104,10 @@ export class CartService {
   async clearCart() {
    this.isLoading.set(true);
     try {
-      await firstValueFrom(this.cartApi.clearCart());
-      // 直接呼叫 loadCart 確保與後端同步，不需要手動 update Signal
-      await this.loadCart();
+      const result= await firstValueFrom(this.cartApi.clearCart());
+      if (result.success && result.cart) {
+      this._cart.set({ ...result.cart });
+    }
       console.log('購物車已清空並刷新');
     } catch (error) {
       console.error('Clear cart failed', error);
