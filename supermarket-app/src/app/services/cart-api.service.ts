@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Cart } from '../models/cart';
+import { Cart, CartOperationResult } from '../models/cart';
 
 @Injectable({
   providedIn: 'root'
@@ -16,20 +16,20 @@ export class CartApiService {
     return this.http.get<Cart>(this.apiUrl);
   }
 
-  addToCart(productId: number, quantity: number = 1): Observable<any> {
-    return this.http.post(`${this.apiUrl}/add`, { productId, quantity });
+  addToCart(productId: number, quantity: number = 1): Observable<CartOperationResult> {
+    return  this.http.post<CartOperationResult>(`${this.apiUrl}/add`, { productId, quantity });
   }
 
-  updateQuantity(productId: number, quantity: number): Observable<any>{
-    return this.http.post(`${this.apiUrl}/update`, { productId, quantity });
+  updateQuantity(productId: number, quantity: number): Observable<CartOperationResult>{
+    return this.http.post<CartOperationResult>(`${this.apiUrl}/update`, { productId, quantity });
   }
 
-  removeFromCart(productId: number): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/remove/${productId}`);
+  removeFromCart(productId: number): Observable<CartOperationResult> {
+    return this.http.delete<CartOperationResult>(`${this.apiUrl}/remove/${productId}`);
   }
 
-  clearCart(): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/clear`);
+  clearCart(): Observable<CartOperationResult> {
+    return this.http.delete<CartOperationResult>(`${this.apiUrl}/clear`);
   }
 
   constructor() { }

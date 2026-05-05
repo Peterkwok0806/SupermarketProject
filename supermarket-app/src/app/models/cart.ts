@@ -14,3 +14,9 @@ export interface CartItemDto {
   unitPrice: number;
   addedAt?: string;
 }
+
+export interface CartOperationResult{
+  success: Boolean;
+  message: String;
+  cart: Cart;
+}
