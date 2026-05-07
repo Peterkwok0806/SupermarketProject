@@ -21,22 +21,13 @@ namespace SupermarketMock.Controllers
         {
             var result = await _authService.RegisterAsync(dto);
 
-            if (!result.Success)
+            if (!result.success)
             {
-                return BadRequest(new { message = result.Message });
+                return BadRequest(new { message = result.message });
             }
 
-            return Ok(new
-            {
-                message = result.Message,
-                user = new
-                {
-                    result.User?.Id,
-                    result.User?.Username,
-                    result.User?.Email,
-                    result.User?.Role
-                }
-            });
+            return Ok(result);
+
         }
 
 

@@ -1,0 +1,53 @@
+<div class="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4">
+  <div class="max-w-md w-full bg-white rounded-3xl shadow-xl p-8">
+    
+    <div class="text-center mb-8">
+      <span class="text-5xl">🛒</span>
+      <h1 class="text-3xl font-bold text-gray-900 mt-4">Create Account</h1>
+      <p class="text-gray-600 mt-2">Join SuperMart today</p>
+    </div>
+
+    <form (ngSubmit)="registerUser()" class="space-y-6">
+      
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Username</label>
+        <input type="text" 
+               [(ngModel)]="registerData.username"
+               name="username"
+               required
+               class="w-full px-4 py-3 border border-gray-300 rounded-2xl focus:outline-none focus:border-purple-500">
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+        <input type="email" 
+               [(ngModel)]="registerData.email"
+               name="email"
+               required
+               class="w-full px-4 py-3 border border-gray-300 rounded-2xl focus:outline-none focus:border-purple-500">
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+        <input type="password" 
+               [(ngModel)]="registerData.password"
+               name="password"
+               required
+               class="w-full px-4 py-3 border border-gray-300 rounded-2xl focus:outline-none focus:border-purple-500">
+      </div>
+
+      <button type="submit"
+              [disabled]="isLoading()"
+              class="w-full bg-purple-700 hover:bg-purple-800 text-white py-4 rounded-2xl font-semibold text-lg transition">
+        {{ isLoading()? 'Creating Account...' : 'Register' }}
+      </button>
+    </form>
+
+    <div class="text-center mt-6">
+      <p class="text-gray-600">
+        Already have an account? 
+        <a routerLink="/login" class="text-purple-700 hover:underline font-medium">Login here</a>
+      </p>
+    </div>
+  </div>
+</div>

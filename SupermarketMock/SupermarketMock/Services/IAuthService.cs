@@ -10,10 +10,10 @@ namespace SupermarketMock.Services
 
     public class AuthResult
     {
-        public bool Success { get; set; }
-        public string Message { get; set; } = string.Empty;
-        public string? Token { get; set; }
-        public User? User { get; set; }
+        public bool success { get; set; }
+        public string message { get; set; } = string.Empty;
+        public string? token { get; set; }
+        public UserDto? userdto { get; set; }
     }
 
 

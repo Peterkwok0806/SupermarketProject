@@ -13,29 +13,29 @@ namespace SupermarketMock.Services
 
         public async Task<AuthResult> RegisterAsync(UserRegisterDto dto)
         {
-            if (await _context.Users.AnyAsync(u => u.Email == dto.Email))
+            if (await _context.Users.AnyAsync(u => u.Email == dto.email))
             {
                 return new AuthResult
                 {
-                    Success = false,
-                    Message = "此 Email 已被註冊"
+                    success = false,
+                    message = "此 Email 已被註冊"
                 };
             }
 
-            if (await _context.Users.AnyAsync(u => u.Username == dto.Username))
+            if (await _context.Users.AnyAsync(u => u.Username == dto.username))
             {
                 return new AuthResult
                 {
-                    Success = false,
-                    Message = "此 Username 已被使用"
+                    success = false,
+                    message = "此 Username 已被使用"
                 };
             }
 
             var user = new User
             {
-                Username = dto.Username,
-                Email = dto.Email,
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
+                Username = dto.username,
+                Email = dto.email,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.password),
             };
 
             _context.Users.Add(user);
@@ -49,11 +49,18 @@ namespace SupermarketMock.Services
             _context.Carts.Add(cart);
             await _context.SaveChangesAsync();
 
+            var userdto = new UserDto
+            {
+                userId = user.Id,
+                username = user.Username,
+                email = user.Email
+            };
+
             return new AuthResult
             {
-                Success = true,
-                Message = "註冊成功！",
-                User = user
+                success = true,
+                message = "註冊成功！",
+                userdto = userdto
             };
 
         }
