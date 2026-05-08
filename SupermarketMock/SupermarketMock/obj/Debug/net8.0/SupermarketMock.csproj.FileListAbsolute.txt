@@ -272,3 +272,4 @@ C:\SupermarketProject\SupermarketMock\SupermarketMock\obj\Debug\net8.0\refint\Su
 C:\SupermarketProject\SupermarketMock\SupermarketMock\obj\Debug\net8.0\SupermarketMock.pdb
 C:\SupermarketProject\SupermarketMock\SupermarketMock\obj\Debug\net8.0\SupermarketMock.genruntimeconfig.cache
 C:\SupermarketProject\SupermarketMock\SupermarketMock\obj\Debug\net8.0\ref\SupermarketMock.dll
+C:\SupermarketProject\SupermarketMock\SupermarketMock\bin\Debug\net8.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll

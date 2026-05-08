@@ -17,7 +17,7 @@ namespace SupermarketMock.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<ActionResult<string>> Register([FromBody] UserRegisterDto dto)
+        public async Task<IActionResult> Register([FromBody] UserRegisterDto dto)
         {
             var result = await _authService.RegisterAsync(dto);
 
@@ -30,8 +30,27 @@ namespace SupermarketMock.Controllers
 
         }
 
+        [HttpPost("login")]
+        public async Task<IActionResult> LoginAsync([FromBody] LoginDto dto)
+        {
+            try
+            {
+                var result = await _authService.LoginAsync(dto);
+
+                if (!result.success)
+                {
+                    return BadRequest(new { message = result.message });
+                }
+
+                return Ok(result);
+            }
+            catch (Exception ex) 
+            {
+                return StatusCode(500, new { message = "登入失敗", error = ex.Message });
+            }
+            
 
 
-
+        }
     }
 }
