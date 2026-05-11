@@ -3,6 +3,7 @@ import { firstValueFrom, lastValueFrom } from 'rxjs';
 import { RegisterRequest, AuthResponse, LoginRequest } from '../models/auth';
 import { AuthApiService } from './auth-api.service';
 import { Router } from '@angular/router';
+import { CartService } from './cart.service';
 
 @Injectable({
   providedIn: 'root'
@@ -11,6 +12,7 @@ export class AuthService {
 
   private authApi = inject(AuthApiService);
   private router = inject(Router);
+  private cartService = inject(CartService);
   currentUser = signal<any>(null);
   isLoggedIn = signal<boolean>(false);
   isLoading = signal<Boolean>(false);
@@ -46,9 +48,17 @@ export class AuthService {
     const token = localStorage.getItem('token');
     const user = localStorage.getItem('currentUser');
     
-    if (token && user) {
-      this.currentUser.set(JSON.parse(user));
-      this.isLoggedIn.set(true);
+    if (token && user && user !== 'undefined' && user !== 'null') {
+      try {
+        this.currentUser.set(JSON.parse(user));
+        this.isLoggedIn.set(true);
+      } catch (e) {
+        console.error("解析存儲的使用者資料失敗", e);
+        this.logout(); // 如果解析失敗，清空資料以防萬一
+      }
+    } else {
+      // 如果資料不完整，確保狀態是登出
+      this.isLoggedIn.set(false);
     }
   }
 
@@ -67,6 +77,7 @@ export class AuthService {
         this.currentUser.set(response.user);
         this.isLoggedIn.set(true);
 
+        await this.cartService.loadCart(); 
         return true;
       }return false;
     }catch (error: any){
@@ -82,6 +93,7 @@ export class AuthService {
     localStorage.removeItem('currentUser');
     this.currentUser.set(null);
     this.isLoggedIn.set(false);
+    this.cartService.resetCart();
     this.router.navigate(['/login']);
   }
 

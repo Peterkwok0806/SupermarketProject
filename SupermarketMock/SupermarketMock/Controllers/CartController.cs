@@ -2,11 +2,14 @@
 using Microsoft.AspNetCore.Mvc;
 using SupermarketMock.Services;
 using SupermarketMock.DTOs;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace SupermarketMock.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class CartController : ControllerBase
     {
         private readonly ICartService _cartService;
@@ -16,17 +19,21 @@ namespace SupermarketMock.Controllers
             _cartService = cartService;
         }
 
+        private int GetCurrentUserId()
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            return int.Parse(userIdClaim ?? "0");
+        }
+
         [HttpGet]
         public async Task<IActionResult> GetCart()
         {
-            int userId = 1;
+            int userId = GetCurrentUserId();
 
             var cart = await _cartService.GetCartByUserIdAsync(userId);
 
             if (cart == null)
                 return NotFound(new { message = "購物車不存在" });
-
-
 
             return Ok(cart);
         }
@@ -41,7 +48,7 @@ namespace SupermarketMock.Controllers
                     return BadRequest(new { message = "無效的請求資料" });
                 }
 
-                int userId = 1; 
+                int userId = GetCurrentUserId();
 
                 var result = await _cartService.AddToCartAsync(userId, dto.ProductId, dto.Quantity);
 
@@ -65,7 +72,7 @@ namespace SupermarketMock.Controllers
         [HttpPost("update")]
         public async Task<IActionResult> UpdateQuantity([FromBody] UpdateCartItemDto dto)
         {
-            int userId = 1;
+            int userId = GetCurrentUserId();
 
             var result = await _cartService.UpdateQuantityAsync(userId, dto.ProductId, dto.Quantity);
 
@@ -79,7 +86,7 @@ namespace SupermarketMock.Controllers
         [HttpDelete("remove/{productId}")]
         public async Task<IActionResult> RemoveFromCart(int productId)
         {
-            int userId = 1;
+            int userId = GetCurrentUserId();
 
             var result = await _cartService.RemoveFromCartAsync(userId, productId);
 
@@ -93,7 +100,7 @@ namespace SupermarketMock.Controllers
         [HttpDelete("clear")]
         public async Task<IActionResult> ClearCart()
         {
-            int userId = 1;
+            int userId = GetCurrentUserId();
             await _cartService.ClearCartAsync(userId);
             return Ok(new { message = "購物車已清空" });
         }

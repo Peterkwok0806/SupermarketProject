@@ -18,6 +18,12 @@ export class CartService {
   });
   readonly cart = this._cart.asReadonly();
 
+  private initialCart: Cart = {
+  id: 0,
+  userId: 0,
+  cartItems: []
+  };
+
   isLoading = signal<boolean>(false);
 
 
@@ -35,6 +41,8 @@ export class CartService {
   });
 
   constructor() { 
+    
+
     this.loadCart();
   }
 
@@ -114,6 +122,10 @@ export class CartService {
     } finally {
       this.isLoading.set(false);
     }
+  }
+
+  resetCart() {
+    this._cart.set(this.initialCart);
   }
 
 }
