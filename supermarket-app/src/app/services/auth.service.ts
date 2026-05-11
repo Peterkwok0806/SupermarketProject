@@ -46,11 +46,12 @@ export class AuthService {
 
   private loadTokenFromStorage() {
     const token = localStorage.getItem('token');
-    const user = localStorage.getItem('currentUser');
+    const userStr = localStorage.getItem('currentUser');
     
-    if (token && user && user !== 'undefined' && user !== 'null') {
+    if (token && userStr && userStr !== 'undefined' && userStr !== 'null') {
       try {
-        this.currentUser.set(JSON.parse(user));
+        const user = JSON.parse(userStr);
+        this.currentUser.set(user);
         this.isLoggedIn.set(true);
       } catch (e) {
         console.error("解析存儲的使用者資料失敗", e);
@@ -72,9 +73,9 @@ export class AuthService {
       console.log('3. API 回傳結果:', response);
       if (response?.success && response.token) {
         localStorage.setItem('token', response.token);
-        localStorage.setItem('currentUser', JSON.stringify(response.user));
+        localStorage.setItem('currentUser', JSON.stringify(response.userdto));
 
-        this.currentUser.set(response.user);
+        this.currentUser.set(response.userdto);
         this.isLoggedIn.set(true);
 
         await this.cartService.loadCart(); 
