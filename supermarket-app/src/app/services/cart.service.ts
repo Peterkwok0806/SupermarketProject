@@ -1,8 +1,9 @@
-import { Injectable, inject, signal, computed } from '@angular/core';
+import { Injectable, inject, signal, computed, effect } from '@angular/core';
 import { CartApiService } from './cart-api.service';
 import { Cart} from '../models/cart';
 import { Product } from '../models/product';
 import { firstValueFrom } from 'rxjs';
+import { AuthService } from './auth.service';
 
 
 @Injectable({
@@ -10,6 +11,7 @@ import { firstValueFrom } from 'rxjs';
 })
 export class CartService {
   private cartApi = inject(CartApiService);
+  private authService = inject(AuthService);
 
   private _cart = signal<Cart>({
     id: 0,
@@ -41,9 +43,14 @@ export class CartService {
   });
 
   constructor() { 
-    
-
-    this.loadCart();
+      effect(() => {
+      if (this.authService.isLoggedIn()) {
+        console.log('偵測到已登入，開始載入購物車');
+        this.loadCart();
+      } else {
+        this.resetCart();
+      }
+    }, { allowSignalWrites: true });
   }
 
   async loadCart() {

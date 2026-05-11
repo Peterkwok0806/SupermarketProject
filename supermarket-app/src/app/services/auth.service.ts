@@ -3,7 +3,7 @@ import { firstValueFrom, lastValueFrom } from 'rxjs';
 import { RegisterRequest, AuthResponse, LoginRequest } from '../models/auth';
 import { AuthApiService } from './auth-api.service';
 import { Router } from '@angular/router';
-import { CartService } from './cart.service';
+
 
 @Injectable({
   providedIn: 'root'
@@ -12,7 +12,7 @@ export class AuthService {
 
   private authApi = inject(AuthApiService);
   private router = inject(Router);
-  private cartService = inject(CartService);
+ 
   currentUser = signal<any>(null);
   isLoggedIn = signal<boolean>(false);
   isLoading = signal<Boolean>(false);
@@ -78,7 +78,7 @@ export class AuthService {
         this.currentUser.set(response.userdto);
         this.isLoggedIn.set(true);
 
-        await this.cartService.loadCart(); 
+       
         return true;
       }return false;
     }catch (error: any){
@@ -94,7 +94,7 @@ export class AuthService {
     localStorage.removeItem('currentUser');
     this.currentUser.set(null);
     this.isLoggedIn.set(false);
-    this.cartService.resetCart();
+  
     this.router.navigate(['/login']);
   }
 
