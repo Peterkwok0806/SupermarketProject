@@ -15,12 +15,12 @@
       "RelativeMoniker": "D:0:0:{A246A955-F3DA-43D4-B938-9585936DCD21}|SupermarketMock\\SupermarketMock.csproj|solutionrelative:supermarketmock\\services\\iauthservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{A246A955-F3DA-43D4-B938-9585936DCD21}|SupermarketMock\\SupermarketMock.csproj|c:\\supermarketproject\\supermarketmock\\supermarketmock\\models\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{A246A955-F3DA-43D4-B938-9585936DCD21}|SupermarketMock\\SupermarketMock.csproj|solutionrelative:supermarketmock\\models\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{A246A955-F3DA-43D4-B938-9585936DCD21}|SupermarketMock\\SupermarketMock.csproj|c:\\supermarketproject\\supermarketmock\\supermarketmock\\dtos\\authdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{A246A955-F3DA-43D4-B938-9585936DCD21}|SupermarketMock\\SupermarketMock.csproj|solutionrelative:supermarketmock\\dtos\\authdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A246A955-F3DA-43D4-B938-9585936DCD21}|SupermarketMock\\SupermarketMock.csproj|c:\\supermarketproject\\supermarketmock\\supermarketmock\\models\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A246A955-F3DA-43D4-B938-9585936DCD21}|SupermarketMock\\SupermarketMock.csproj|solutionrelative:supermarketmock\\models\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{A246A955-F3DA-43D4-B938-9585936DCD21}|SupermarketMock\\SupermarketMock.csproj|c:\\supermarketproject\\supermarketmock\\supermarketmock\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
@@ -89,7 +89,7 @@
               "RelativeDocumentMoniker": "SupermarketMock\\Controllers\\AuthController.cs",
               "ToolTip": "C:\\SupermarketProject\\SupermarketMock\\SupermarketMock\\Controllers\\AuthController.cs",
               "RelativeToolTip": "SupermarketMock\\Controllers\\AuthController.cs",
-              "ViewState": "AgIAABgAAAAAAAAAAAAowDgAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAACMAAAAAAAAAAAAwwDgAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-05-07T07:14:35.332Z",
               "EditorCaption": ""
@@ -109,13 +109,13 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 3,
               "Title": "AuthDto.cs",
               "DocumentMoniker": "C:\\SupermarketProject\\SupermarketMock\\SupermarketMock\\DTOs\\AuthDto.cs",
               "RelativeDocumentMoniker": "SupermarketMock\\DTOs\\AuthDto.cs",
               "ToolTip": "C:\\SupermarketProject\\SupermarketMock\\SupermarketMock\\DTOs\\AuthDto.cs",
               "RelativeToolTip": "SupermarketMock\\DTOs\\AuthDto.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAADgAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAAABQAAAA4AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-05-07T05:50:58.219Z",
               "EditorCaption": ""
@@ -152,7 +152,7 @@
               "RelativeDocumentMoniker": "SupermarketMock\\Services\\AuthService.cs",
               "ToolTip": "C:\\SupermarketProject\\SupermarketMock\\SupermarketMock\\Services\\AuthService.cs",
               "RelativeToolTip": "SupermarketMock\\Services\\AuthService.cs",
-              "ViewState": "AgIAAHQAAAAAAAAAAAAIwI0AAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAHoAAAAAAAAAAAAIwEUAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-05-04T04:47:41.007Z",
               "EditorCaption": ""
@@ -171,7 +171,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 4,
               "Title": "User.cs",
               "DocumentMoniker": "C:\\SupermarketProject\\SupermarketMock\\SupermarketMock\\Models\\User.cs",
               "RelativeDocumentMoniker": "SupermarketMock\\Models\\User.cs",

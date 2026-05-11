@@ -3,6 +3,9 @@
   "WorkspaceRootPath": "C:\\SupermarketProject\\SupermarketMock\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\ITU\\AppData\\Local\\Temp\\4egx1pvv..sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}|"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{A246A955-F3DA-43D4-B938-9585936DCD21}|SupermarketMock\\SupermarketMock.csproj|c:\\supermarketproject\\supermarketmock\\supermarketmock\\controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{A246A955-F3DA-43D4-B938-9585936DCD21}|SupermarketMock\\SupermarketMock.csproj|solutionrelative:supermarketmock\\controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
@@ -15,12 +18,12 @@
       "RelativeMoniker": "D:0:0:{A246A955-F3DA-43D4-B938-9585936DCD21}|SupermarketMock\\SupermarketMock.csproj|solutionrelative:supermarketmock\\services\\iauthservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{A246A955-F3DA-43D4-B938-9585936DCD21}|SupermarketMock\\SupermarketMock.csproj|c:\\supermarketproject\\supermarketmock\\supermarketmock\\models\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{A246A955-F3DA-43D4-B938-9585936DCD21}|SupermarketMock\\SupermarketMock.csproj|solutionrelative:supermarketmock\\models\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{A246A955-F3DA-43D4-B938-9585936DCD21}|SupermarketMock\\SupermarketMock.csproj|c:\\supermarketproject\\supermarketmock\\supermarketmock\\dtos\\authdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{A246A955-F3DA-43D4-B938-9585936DCD21}|SupermarketMock\\SupermarketMock.csproj|solutionrelative:supermarketmock\\dtos\\authdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A246A955-F3DA-43D4-B938-9585936DCD21}|SupermarketMock\\SupermarketMock.csproj|c:\\supermarketproject\\supermarketmock\\supermarketmock\\models\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A246A955-F3DA-43D4-B938-9585936DCD21}|SupermarketMock\\SupermarketMock.csproj|solutionrelative:supermarketmock\\models\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{A246A955-F3DA-43D4-B938-9585936DCD21}|SupermarketMock\\SupermarketMock.csproj|c:\\supermarketproject\\supermarketmock\\supermarketmock\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
@@ -49,6 +52,12 @@
     {
       "AbsoluteMoniker": "D:0:0:{A246A955-F3DA-43D4-B938-9585936DCD21}|SupermarketMock\\SupermarketMock.csproj|c:\\supermarketproject\\supermarketmock\\supermarketmock\\migrations\\20260504072259_addcarttable.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{A246A955-F3DA-43D4-B938-9585936DCD21}|SupermarketMock\\SupermarketMock.csproj|solutionrelative:supermarketmock\\migrations\\20260504072259_addcarttable.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\ITU\\AppData\\Local\\Temp\\4egx1pvv..sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}|CodeFrame"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\ITU\\AppData\\Local\\Temp\\4egx1pvv..sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}|ResultFrame"
     }
   ],
   "DocumentGroupContainers": [
@@ -58,11 +67,30 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 1,
+          "SelectedChildIndex": 2,
           "Children": [
             {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{e5c86464-96be-4d7c-9a8b-abcb3bbf5f92}"
+            },
+            {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 0,
+              "Title": "SQLQuery1.sql ",
+              "DocumentMoniker": "C:\\Users\\ITU\\AppData\\Local\\Temp\\4egx1pvv..sql",
+              "RelativeDocumentMoniker": "..\\..\\Users\\ITU\\AppData\\Local\\Temp\\4egx1pvv..sql",
+              "ToolTip": "SQLQuery1.sql *",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000826|",
+              "WhenOpened": "2026-05-11T04:47:15.861Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
               "Title": "appsettings.json",
               "DocumentMoniker": "C:\\SupermarketProject\\SupermarketMock\\SupermarketMock\\appsettings.json",
               "RelativeDocumentMoniker": "SupermarketMock\\appsettings.json",
@@ -75,20 +103,20 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 1,
               "Title": "AuthController.cs",
               "DocumentMoniker": "C:\\SupermarketProject\\SupermarketMock\\SupermarketMock\\Controllers\\AuthController.cs",
               "RelativeDocumentMoniker": "SupermarketMock\\Controllers\\AuthController.cs",
               "ToolTip": "C:\\SupermarketProject\\SupermarketMock\\SupermarketMock\\Controllers\\AuthController.cs",
               "RelativeToolTip": "SupermarketMock\\Controllers\\AuthController.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAADUAAAAJAAAAAAAAAA==",
+              "ViewState": "AgIAADgAAAAAAAAAAAAAADgAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-05-07T07:14:35.332Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 3,
               "Title": "IAuthService.cs",
               "DocumentMoniker": "C:\\SupermarketProject\\SupermarketMock\\SupermarketMock\\Services\\IAuthService.cs",
               "RelativeDocumentMoniker": "SupermarketMock\\Services\\IAuthService.cs",
@@ -107,14 +135,14 @@
               "RelativeDocumentMoniker": "SupermarketMock\\DTOs\\AuthDto.cs",
               "ToolTip": "C:\\SupermarketProject\\SupermarketMock\\SupermarketMock\\DTOs\\AuthDto.cs",
               "RelativeToolTip": "SupermarketMock\\DTOs\\AuthDto.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAADgAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAAABQAAAA4AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-05-07T05:50:58.219Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 9,
+              "DocumentIndex": 10,
               "Title": "SupermarketContext.cs",
               "DocumentMoniker": "C:\\SupermarketProject\\SupermarketMock\\SupermarketMock\\SupermarketContext.cs",
               "RelativeDocumentMoniker": "SupermarketMock\\SupermarketContext.cs",
@@ -126,7 +154,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 10,
+              "DocumentIndex": 11,
               "Title": "Cart.cs",
               "DocumentMoniker": "C:\\SupermarketProject\\SupermarketMock\\SupermarketMock\\Models\\Cart.cs",
               "RelativeDocumentMoniker": "SupermarketMock\\Models\\Cart.cs",
@@ -138,20 +166,20 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 2,
               "Title": "AuthService.cs",
               "DocumentMoniker": "C:\\SupermarketProject\\SupermarketMock\\SupermarketMock\\Services\\AuthService.cs",
               "RelativeDocumentMoniker": "SupermarketMock\\Services\\AuthService.cs",
               "ToolTip": "C:\\SupermarketProject\\SupermarketMock\\SupermarketMock\\Services\\AuthService.cs",
               "RelativeToolTip": "SupermarketMock\\Services\\AuthService.cs",
-              "ViewState": "AgIAAHQAAAAAAAAAAAAIwI0AAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAHoAAAAAAAAAAAAIwEUAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-05-04T04:47:41.007Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 8,
               "Title": "CartController.cs",
               "DocumentMoniker": "C:\\SupermarketProject\\SupermarketMock\\SupermarketMock\\Controllers\\CartController.cs",
               "RelativeDocumentMoniker": "SupermarketMock\\Controllers\\CartController.cs",
@@ -163,7 +191,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 5,
               "Title": "User.cs",
               "DocumentMoniker": "C:\\SupermarketProject\\SupermarketMock\\SupermarketMock\\Models\\User.cs",
               "RelativeDocumentMoniker": "SupermarketMock\\Models\\User.cs",
@@ -176,7 +204,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 7,
               "Title": "Program.cs",
               "DocumentMoniker": "C:\\SupermarketProject\\SupermarketMock\\SupermarketMock\\Program.cs",
               "RelativeDocumentMoniker": "SupermarketMock\\Program.cs",
@@ -189,7 +217,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 11,
+              "DocumentIndex": 12,
               "Title": "20260504072259_AddCartTable.cs",
               "DocumentMoniker": "C:\\SupermarketProject\\SupermarketMock\\SupermarketMock\\Migrations\\20260504072259_AddCartTable.cs",
               "RelativeDocumentMoniker": "SupermarketMock\\Migrations\\20260504072259_AddCartTable.cs",
@@ -201,7 +229,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 8,
+              "DocumentIndex": 9,
               "Title": "CartDto.cs",
               "DocumentMoniker": "C:\\SupermarketProject\\SupermarketMock\\SupermarketMock\\DTOs\\CartDto.cs",
               "RelativeDocumentMoniker": "SupermarketMock\\DTOs\\CartDto.cs",
@@ -210,6 +238,16 @@
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAATAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-05-07T05:21:09.711Z"
+            }
+          ]
+        },
+        {
+          "DockedWidth": 1498,
+          "SelectedChildIndex": -1,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{34e76e81-ee4a-11d0-ae2e-00a0c90fffc3}"
             }
           ]
         }

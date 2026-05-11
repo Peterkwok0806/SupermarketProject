@@ -64,7 +64,8 @@ namespace SupermarketMock.Services
             {
                 userId = user.Id,
                 username = user.Username,
-                email = user.Email
+                email = user.Email,
+                role= user.Role
             };
 
             return new AuthResult
@@ -97,7 +98,8 @@ namespace SupermarketMock.Services
             {
                 userId = user.Id,
                 username = user.Username,
-                email = user.Email
+                email = user.Email,
+                role = user.Role
             };
 
             return new AuthResult

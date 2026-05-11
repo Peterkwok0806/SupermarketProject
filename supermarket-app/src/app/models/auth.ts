@@ -5,6 +5,11 @@ export interface RegisterRequest
     password?: string; 
 }
 
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
 export interface AuthResponse {
   success: boolean;
   message: string;
@@ -16,4 +21,5 @@ export interface User{
     userid: string;
     username: string;
     email: string;
+    role: string;
 }
