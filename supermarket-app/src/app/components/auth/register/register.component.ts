@@ -18,11 +18,25 @@ export class RegisterComponent {
 
   registerData: RegisterRequest = { username: '', email: '', password: '' };
 
+  confirmPassword: string = ''; // 新增確認密碼欄位
+
   async registerUser(){
     if (!this.registerData.username || !this.registerData.email || !this.registerData.password) {
       alert("Please fill in all fields");
       return;
     }
+
+    if (this.registerData.password !== this.confirmPassword) {
+      alert("Passwords do not match!");
+      return;
+    }
+
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*])(?=.{6,})/;
+    if (!passwordRegex.test(this.registerData.password)) {
+      alert("Password must be at least 6 characters long and include at least one uppercase letter, one lowercase letter, and one special character (!@#$%^&*)");
+      return;
+    }
+
     if (this.registerData.password.length < 6) {
     alert("Password must be at least 6 characters");
     return;
