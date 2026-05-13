@@ -20,10 +20,29 @@ export class ProductlistComponent implements OnInit{
   private cartService = inject(CartService);
 
   products$!: Observable<Product[]>;
+  categories: number[] = [];
+
+  selectedCategory: number | null = null;
 
   ngOnInit(): void {
-      this.products$ = this.productService.getProducts();
+      this.loadCategories();
+       this.filterByCategory(null);
     }
+
+  loadCategories() {
+    this.productService.getCategories().subscribe({
+      next: (data) => this.categories = data,
+      error: (err) => console.error('載入分類失敗', err)
+    });
+  }
+
+  filterByCategory(categoryId: number | null) {
+    this.selectedCategory = categoryId;
+    
+    const searchId = categoryId ?? undefined;
+    this.products$ = this.productService.getProducts(searchId);
+  }
+
 
   async addToCart(product: Product) {
     try {

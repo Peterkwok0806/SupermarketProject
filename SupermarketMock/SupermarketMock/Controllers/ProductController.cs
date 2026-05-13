@@ -17,10 +17,25 @@ namespace SupermarketMock.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Get()
+        public async Task<IActionResult> Get([FromQuery] int? category = null)
         {
-            var prodcuts = await _productService.GetAllProductsAsync();
-            return Ok(prodcuts);
+            if (category.HasValue)
+            {
+                var filteredProducts = await _productService.GetProductsAsync(category.Value);
+                return Ok(filteredProducts);
+            }
+
+            // 沒傳參數就走原來的 GetAllProductsAsync
+            var allProducts = await _productService.GetAllProductsAsync();
+            return Ok(allProducts);
         }
+
+        [HttpGet("categories")]
+        public async Task<IActionResult> GetCategories()
+        {
+            var categories = await _productService.GetCategoriesAsync();
+            return Ok(categories);
+        }
+
     }
 }

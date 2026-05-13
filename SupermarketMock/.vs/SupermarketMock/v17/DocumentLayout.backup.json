@@ -3,6 +3,18 @@
   "WorkspaceRootPath": "C:\\SupermarketProject\\SupermarketMock\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{A246A955-F3DA-43D4-B938-9585936DCD21}|SupermarketMock\\SupermarketMock.csproj|c:\\supermarketproject\\supermarketmock\\supermarketmock\\controllers\\productcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A246A955-F3DA-43D4-B938-9585936DCD21}|SupermarketMock\\SupermarketMock.csproj|solutionrelative:supermarketmock\\controllers\\productcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A246A955-F3DA-43D4-B938-9585936DCD21}|SupermarketMock\\SupermarketMock.csproj|c:\\supermarketproject\\supermarketmock\\supermarketmock\\services\\productservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A246A955-F3DA-43D4-B938-9585936DCD21}|SupermarketMock\\SupermarketMock.csproj|solutionrelative:supermarketmock\\services\\productservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A246A955-F3DA-43D4-B938-9585936DCD21}|SupermarketMock\\SupermarketMock.csproj|c:\\supermarketproject\\supermarketmock\\supermarketmock\\services\\iproductservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A246A955-F3DA-43D4-B938-9585936DCD21}|SupermarketMock\\SupermarketMock.csproj|solutionrelative:supermarketmock\\services\\iproductservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{A246A955-F3DA-43D4-B938-9585936DCD21}|SupermarketMock\\SupermarketMock.csproj|c:\\supermarketproject\\supermarketmock\\supermarketmock\\controllers\\cartcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{A246A955-F3DA-43D4-B938-9585936DCD21}|SupermarketMock\\SupermarketMock.csproj|solutionrelative:supermarketmock\\controllers\\cartcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
@@ -27,12 +39,51 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
+              "Title": "ProductController.cs",
+              "DocumentMoniker": "C:\\SupermarketProject\\SupermarketMock\\SupermarketMock\\Controllers\\ProductController.cs",
+              "RelativeDocumentMoniker": "SupermarketMock\\Controllers\\ProductController.cs",
+              "ToolTip": "C:\\SupermarketProject\\SupermarketMock\\SupermarketMock\\Controllers\\ProductController.cs",
+              "RelativeToolTip": "SupermarketMock\\Controllers\\ProductController.cs",
+              "ViewState": "AgIAAAkAAAAAAAAAAAAswCkAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-13T06:57:23.654Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "ProductService.cs",
+              "DocumentMoniker": "C:\\SupermarketProject\\SupermarketMock\\SupermarketMock\\Services\\ProductService.cs",
+              "RelativeDocumentMoniker": "SupermarketMock\\Services\\ProductService.cs",
+              "ToolTip": "C:\\SupermarketProject\\SupermarketMock\\SupermarketMock\\Services\\ProductService.cs",
+              "RelativeToolTip": "SupermarketMock\\Services\\ProductService.cs",
+              "ViewState": "AgIAAAoAAAAAAAAAAAA1wCkAAABBAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-13T06:31:49.235Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "IProductService.cs",
+              "DocumentMoniker": "C:\\SupermarketProject\\SupermarketMock\\SupermarketMock\\Services\\IProductService.cs",
+              "RelativeDocumentMoniker": "SupermarketMock\\Services\\IProductService.cs",
+              "ToolTip": "C:\\SupermarketProject\\SupermarketMock\\SupermarketMock\\Services\\IProductService.cs",
+              "RelativeToolTip": "SupermarketMock\\Services\\IProductService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-13T06:30:08.938Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
               "Title": "CartController.cs",
               "DocumentMoniker": "C:\\SupermarketProject\\SupermarketMock\\SupermarketMock\\Controllers\\CartController.cs",
               "RelativeDocumentMoniker": "SupermarketMock\\Controllers\\CartController.cs",
               "ToolTip": "C:\\SupermarketProject\\SupermarketMock\\SupermarketMock\\Controllers\\CartController.cs",
               "RelativeToolTip": "SupermarketMock\\Controllers\\CartController.cs",
-              "ViewState": "AgIAAFIAAAAAAAAAAAAcwG0AAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABIAAAAnAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-05-11T05:52:10.083Z",
               "EditorCaption": ""

@@ -2,7 +2,7 @@ import { Injectable, inject, signal, computed } from '@angular/core';
 import { firstValueFrom, lastValueFrom } from 'rxjs';
 import { RegisterRequest, AuthResponse, LoginRequest } from '../models/auth';
 import { AuthApiService } from './auth-api.service';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 
 
 @Injectable({
@@ -12,6 +12,7 @@ export class AuthService {
 
   private authApi = inject(AuthApiService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
  
   currentUser = signal<any>(null);
   isLoggedIn = signal<boolean>(false);
@@ -78,8 +79,12 @@ export class AuthService {
         this.currentUser.set(response.userdto);
         this.isLoggedIn.set(true);
 
-       
+        // 自動跳轉（如果有 returnUrl 就跳回去，否則跳首頁）
+        const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
+         this.router.navigate([returnUrl]);
+
         return true;
+        
       }return false;
     }catch (error: any){
       console.error('Login error', error);
