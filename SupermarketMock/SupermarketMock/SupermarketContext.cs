@@ -18,10 +18,34 @@ namespace SupermarketMock
 
         public DbSet<CartItem> CartItems => Set<CartItem>();
 
+        public DbSet<Order> Orders => Set<Order>();
+        public DbSet<OrderItem> OrderItems => Set<OrderItem>();
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            // === 解決 Decimal Precision Warning ===
             modelBuilder.Entity<Product>()
                 .Property(p => p.Price)
+                .HasColumnType("decimal(18,2)");
+
+            modelBuilder.Entity<Product>()
+                .Property(p => p.OriginalPrice)
+                .HasColumnType("decimal(18,2)");
+
+            modelBuilder.Entity<Product>()
+                .Property(p => p.Weight)
+                .HasColumnType("decimal(10,3)");
+
+            modelBuilder.Entity<CartItem>()
+                .Property(ci => ci.UnitPrice)
+                .HasColumnType("decimal(18,2)");
+
+            modelBuilder.Entity<Order>()
+                .Property(o => o.TotalAmount)
+                .HasColumnType("decimal(18,2)");
+
+            modelBuilder.Entity<OrderItem>()
+                .Property(oi => oi.UnitPrice)
                 .HasColumnType("decimal(18,2)");
 
             // 唯一索引
@@ -32,6 +56,15 @@ namespace SupermarketMock
             modelBuilder.Entity<User>()
                 .HasIndex(u => u.Username)
                 .IsUnique();
+
+            modelBuilder.Entity<Order>(entity =>
+            {
+                // 1. 為外鍵 UserId 建立索引（加速使用者訂單查詢與 JOIN）
+                entity.HasIndex(o => o.UserId);
+
+                // 2. 複合索引（適用於後台管理：依狀態排序最新訂單）
+                entity.HasIndex(o => new { o.Status, o.CreatedAt });
+            });
 
             // ==================== User 與 Cart 一對一 ====================
             modelBuilder.Entity<User>()
@@ -54,6 +87,22 @@ namespace SupermarketMock
                 .HasOne(ci => ci.Product)
                 .WithMany()
                 .HasForeignKey(ci => ci.ProductId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // OrderItem 使用 OrderId + ProductId 作為複合主鍵
+            modelBuilder.Entity<OrderItem>()
+                .HasKey(oi => new { oi.OrderId, oi.ProductId });
+
+            modelBuilder.Entity<OrderItem>()
+                .HasOne(oi => oi.Order)
+                .WithMany(o => o.OrderItems)
+                .HasForeignKey(oi => oi.OrderId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<OrderItem>()
+                .HasOne(oi => oi.Product)
+                .WithMany()
+                .HasForeignKey(oi => oi.ProductId)
                 .OnDelete(DeleteBehavior.Restrict);
 
 

@@ -36,6 +36,7 @@ builder.Services.AddDbContext<SupermarketContext>(options =>
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ICartService, CartService>();
+builder.Services.AddScoped<IOrderService, OrderService>();
 
 // === JWT Configuration ===
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));

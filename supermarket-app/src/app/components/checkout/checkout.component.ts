@@ -2,6 +2,7 @@ import { Component, inject, computed,  OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CartService } from '../../services/cart.service';
+import { OrderService } from '../../services/order.service';
 import { Router } from '@angular/router';
 
 @Component({
@@ -12,11 +13,13 @@ import { Router } from '@angular/router';
 })
 export class CheckoutComponent {
   private cartService = inject(CartService);
+  private orderService = inject(OrderService);
   private router = inject(Router);
 
   cart = this.cartService.cart;
   totalPrice = this.cartService.totalPrice;
   cartItems = computed(() => this.cart().cartItems);
+  isSubmitting = this.orderService.isSubmitting;
 
   orderData = {
     fullName: '',
@@ -42,10 +45,13 @@ export class CheckoutComponent {
       return;
     }
 
-    // TODO: 之後串接後端建立訂單 API
-    alert("🎉 訂單已成功建立！\n\n感謝您的購買！");
-    this.cartService.clearCart();
-    this.router.navigate(['/']);
+    try{
+      await this.orderService.SubmitOrder(this.orderData)
+    }catch (err) {
+    console.error(err);
+    }
   }
+
+   
   
 }
