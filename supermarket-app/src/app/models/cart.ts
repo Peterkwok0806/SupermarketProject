@@ -18,5 +18,10 @@ export interface CartItemDto {
 export interface CartOperationResult{
   success: Boolean;
   message: String;
+  totalAmount: number;
   cart: Cart;
+}
+
+export interface CartSummary{
+  totalAmount: number;
 }

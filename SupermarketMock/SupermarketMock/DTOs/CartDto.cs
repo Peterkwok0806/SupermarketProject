@@ -1,4 +1,6 @@
-﻿namespace SupermarketMock.DTOs
+﻿using SupermarketMock.Models;
+
+namespace SupermarketMock.DTOs
 {
     public class CartDto
     {
@@ -28,5 +30,9 @@
         public int Quantity { get; set; }
     }
 
+    public class CartSummaryDto
+    {
+        public decimal totalAmount { get; set; }
+    }
 
 }

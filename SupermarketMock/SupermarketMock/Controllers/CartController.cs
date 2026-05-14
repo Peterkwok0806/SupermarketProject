@@ -30,13 +30,17 @@ namespace SupermarketMock.Controllers
         {
             int userId = GetCurrentUserId();
 
-            var cart = await _cartService.GetCartByUserIdAsync(userId);
+            var result = await _cartService.GetCartByUserIdAsync(userId);
 
-            if (cart == null)
+            if (!result.Success)
+            {
                 return NotFound(new { message = "購物車不存在" });
+            }
 
-            return Ok(cart);
+            return Ok(result);
         }
+
+        
 
         [HttpPost("add")]
         public async Task<IActionResult> AddToCart([FromBody] AddToCartDto dto)
@@ -102,7 +106,9 @@ namespace SupermarketMock.Controllers
         {
             int userId = GetCurrentUserId();
             await _cartService.ClearCartAsync(userId);
-            return Ok(new { message = "購物車已清空" });
+            return Ok(new { 
+                success = true,
+                message = "購物車已清空" });
         }
 
     }

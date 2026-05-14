@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Cart, CartOperationResult } from '../models/cart';
+import { Cart, CartOperationResult, CartSummary } from '../models/cart';
 
 @Injectable({
   providedIn: 'root'
@@ -14,8 +14,8 @@ export class CartApiService {
 
   
 
-  getCart(): Observable<Cart> {
-    return this.http.get<Cart>(this.apiUrl);
+  getCart(): Observable<CartOperationResult> {
+    return this.http.get<CartOperationResult>(this.apiUrl);
   }
 
   addToCart(productId: number, quantity: number = 1): Observable<CartOperationResult> {
@@ -33,6 +33,7 @@ export class CartApiService {
   clearCart(): Observable<CartOperationResult> {
     return this.http.delete<CartOperationResult>(`${this.apiUrl}/clear`);
   }
+
 
   constructor() { }
 }

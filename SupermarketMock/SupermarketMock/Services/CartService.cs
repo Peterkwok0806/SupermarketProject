@@ -36,7 +36,12 @@ namespace SupermarketMock.Services
             };
         }
 
-        public async Task<CartDto> GetCartByUserIdAsync(int userId)
+        private decimal TotalPrice(Cart cart) 
+        {
+            return cart.CartItems.Sum(item => item.UnitPrice * item.Quantity);
+        }
+
+        public async Task<CartOperationResult> GetCartByUserIdAsync(int userId)
         {
             var cart = await _context.Carts
             .Include(c => c.CartItems)
@@ -45,7 +50,13 @@ namespace SupermarketMock.Services
 
             if (cart == null) return null;
 
-            return MapToDto(cart);
+            return new CartOperationResult
+            {
+                Success = true,
+                Message = "已找到購物車",
+                totalAmount = TotalPrice(cart),
+                Cart = MapToDto(cart)
+            };
 
         }
 
@@ -97,6 +108,7 @@ namespace SupermarketMock.Services
             {
                 Success = true,
                 Message = "已加入購物車",
+                totalAmount = TotalPrice(cart),
                 Cart = MapToDto(cart)
             };
         }
@@ -130,6 +142,7 @@ namespace SupermarketMock.Services
             return new CartOperationResult
             {
                 Success = true,
+                totalAmount = TotalPrice(cart),
                 Cart = MapToDto(cart)
             };
         }
@@ -150,18 +163,27 @@ namespace SupermarketMock.Services
                 await _context.SaveChangesAsync();
             }
 
-            return new CartOperationResult { Success = true, Cart = MapToDto(cart) };
-        }
+            return new CartOperationResult 
+            { Success = true, 
+              totalAmount = TotalPrice(cart), 
+              Cart = MapToDto(cart) 
+            };
+         }
 
         public async Task ClearCartAsync(int userId)
         {
-            var cart = await GetCartByUserIdAsync(userId);
+            var cart = await _context.Carts
+            .Include(c => c.CartItems)
+            .ThenInclude(ci => ci.Product)
+            .FirstOrDefaultAsync(c => c.UserId == userId);
             if (cart != null)
             {
                 cart.CartItems.Clear();
                 await _context.SaveChangesAsync();
             }
         }
+
+        
 
 
     }

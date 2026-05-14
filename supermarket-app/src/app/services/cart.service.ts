@@ -27,7 +27,7 @@ export class CartService {
   };
 
   isLoading = signal<boolean>(false);
-
+  totalPrice = signal<number>(0);
 
   // 計算屬性
   totalItems = computed(() => {
@@ -35,12 +35,6 @@ export class CartService {
     return items.reduce((sum, item) => sum + item.quantity, 0);
   });
 
-  totalPrice = computed(() => {
-    const items = this._cart().cartItems;
-    // 優先使用 unitPrice (Dto 內通常已包含當時價格)，若無則用 product.price
-    return items.reduce((sum, item) => 
-      sum + ((item.unitPrice || item.product.price) * item.quantity), 0);
-  });
 
   constructor() { 
       effect(() => {
@@ -55,14 +49,18 @@ export class CartService {
 
   async loadCart() {
     try {
-      const data = await firstValueFrom(this.cartApi.getCart());
-      this._cart.set(data);
+      const respones = await firstValueFrom(this.cartApi.getCart());
+      this._cart.set(respones.cart);
+      this.totalPrice.set(respones.totalAmount);
       
     } catch (err) {
       // 處理 API 錯誤（例如：404 或網路斷線）
       console.error('無法取得購物車', err);
     }
   }
+
+  
+
 
  async addToCart(product: Product) {
   console.log('1. 開始執行 addToCart, ID:', product.id);
@@ -74,8 +72,9 @@ export class CartService {
 
         console.log(Boolean(result.success && result.cart))
 
-        if (result.success && result.cart){
+        if (result.success && result.cart && result.totalAmount){
           this._cart.set({ ...result.cart });
+          this.totalPrice.set(result.totalAmount);
           console.log('4. Signal 已更新');
         }
       } catch (err) {
@@ -92,9 +91,10 @@ export class CartService {
   try {
     const result = await firstValueFrom(this.cartApi.updateQuantity(productId, quantity));
     console.log('3. API 回傳結果:', result);
-    if (result.success && result.cart) {
-      this._cart.set({ ...result.cart });
-    }
+    if (result.success && result.cart && result.totalAmount){
+          this._cart.set({ ...result.cart });
+          this.totalPrice.set(result.totalAmount);
+        }
   } catch (error) {
     console.error('更新數量失敗', error);
   }finally {
@@ -106,9 +106,10 @@ export class CartService {
    this.isLoading.set(true);
   try {
     const result = await firstValueFrom(this.cartApi.removeFromCart(productId));
-    if (result.success && result.cart) {
-      this._cart.set({ ...result.cart });
-    }
+    if (result.success && result.cart && result.totalAmount){
+          this._cart.set({ ...result.cart });
+          this.totalPrice.set(result.totalAmount);
+        }
   } catch (error) {
     console.error('移除商品失敗', error);
   }finally {
@@ -119,12 +120,13 @@ export class CartService {
   async clearCart() {
    this.isLoading.set(true);
     try {
-      const result= await firstValueFrom(this.cartApi.clearCart());
-      if (result.success && result.cart) {
-      this._cart.set({ ...result.cart });
-    }
+      const result = await firstValueFrom(this.cartApi.clearCart());
+      if(result.success){
+        this._cart.set(this.initialCart);
+        this.totalPrice.set(0);
       console.log('購物車已清空並刷新');
-    } catch (error) {
+      }
+    }catch (error) {
       console.error('Clear cart failed', error);
     } finally {
       this.isLoading.set(false);
