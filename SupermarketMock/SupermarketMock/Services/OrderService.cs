@@ -16,20 +16,21 @@ namespace SupermarketMock.Services
         {
             return new OrderDto
             {
-                Id = order.Id,
-                TotalAmount = order.TotalAmount,
-                Status = order.Status,
-                FullName = order.FullName,
-                Phone = order.Phone,
-                Address = order.Address,
-                Remark = order.Remark,
-                CreatedAt = order.CreatedAt,
-                OrderItems = order.OrderItems.Select(oi=> new OrderItemDto
+                id = order.Id,
+                totalAmount = order.TotalAmount,
+                status = order.Status,
+                fullName = order.FullName,
+                phone = order.Phone,
+                address = order.Address,
+                remark = order.Remark,
+                createdAt = order.CreatedAt,
+                orderItems = order.OrderItems.Select(oi=> new OrderItemDto
                 {
-                    ProductId = oi.ProductId,
-                    ProductName = oi.Product.Name,
-                    Quantity = oi.Quantity,
-                    UnitPrice = oi.UnitPrice
+                    productId = oi.ProductId,
+                    productName = oi.Product.Name,
+                    productPhoto = oi.Product.Photo,
+                    quantity = oi.Quantity,
+                    unitPrice = oi.UnitPrice
                 }).ToList()
             };
         }

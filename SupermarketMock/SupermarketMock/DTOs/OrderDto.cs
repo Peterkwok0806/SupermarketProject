@@ -12,23 +12,23 @@ namespace SupermarketMock.DTOs
 
     public class OrderDto
     {
-        public int Id { get; set; }
-        public decimal TotalAmount { get; set; }
-        public OrderStatus Status { get; set; }
-        public string FullName { get; set; } = string.Empty;
-        public string Phone { get; set; } = string.Empty;
-        public string Address { get; set; } = string.Empty;
-        public string? Remark { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public List<OrderItemDto> OrderItems { get; set; } = new();
+        public int id { get; set; }
+        public decimal totalAmount { get; set; }
+        public OrderStatus status { get; set; }
+        public string fullName { get; set; } = string.Empty;
+        public string phone { get; set; } = string.Empty;
+        public string address { get; set; } = string.Empty;
+        public string? remark { get; set; }
+        public DateTime createdAt { get; set; }
+        public List<OrderItemDto> orderItems { get; set; } = new();
     }
 
     public class OrderItemDto
     {
-        public int ProductId { get; set; }
-        public string ProductName { get; set; } = string.Empty;
-        public string? ProductImageUrl { get; set; } // 如果有商品圖片
-        public int Quantity { get; set; }
-        public decimal UnitPrice { get; set; }
+        public int productId { get; set; }
+        public string productName { get; set; } = string.Empty;
+        public string? productPhoto { get; set; } // 如果有商品圖片
+        public int quantity { get; set; }
+        public decimal unitPrice { get; set; }
     }
 }
