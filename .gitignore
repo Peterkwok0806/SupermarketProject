@@ -1,9 +1,9 @@
 # ==============================================================================
 # .NET / Visual Studio (Backend)
 # ==============================================================================
-# 編譯產物與暫存 (不分大小寫)
-[Bb]in/
-[Oo]bj/
+# 編譯產物與暫存
+bin/
+obj/
 [Dd]ebug/
 [Rr]elease/
 x64/
@@ -75,7 +75,7 @@ yarn-error.log*
 .env.local
 .env.*.local
 
-# Yarn v2
+# Yarn v2+
 .yarn/cache
 .yarn/unplugged
 .yarn/install-state.gz
@@ -84,8 +84,8 @@ yarn-error.log*
 # ==============================================================================
 # IDE (VS Code) & OS
 # ==============================================================================
-# VS Code 設定 (保留共用的 launch/settings)
-.vscode/*
+# VS Code 設定 (保留團隊共用的開發設定)
+.vscode/
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
@@ -93,9 +93,8 @@ yarn-error.log*
 .history/
 *.vsix
 
-# 其他編輯器
+# 其他編輯器 (已移除 .editorconfig，確保其能被 Git 追蹤)
 .idea/
-.editorconfig
 
 # 作業系統暫存
 .DS_Store
