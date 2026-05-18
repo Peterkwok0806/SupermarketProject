@@ -70,8 +70,7 @@
               "RelativeToolTip": "SupermarketMock\\Controllers\\OrderController.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAC8AAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-14T10:05:59.507Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-14T10:05:59.507Z"
             },
             {
               "$type": "Document",
@@ -81,7 +80,7 @@
               "RelativeDocumentMoniker": "SupermarketMock\\Services\\OrderService.cs",
               "ToolTip": "C:\\SupermarketProject\\SupermarketMock\\SupermarketMock\\Services\\OrderService.cs",
               "RelativeToolTip": "SupermarketMock\\Services\\OrderService.cs",
-              "ViewState": "AgIAAFYAAAAAAAAAAAAwwHUAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAABIAAAAAAAAAAAAowKwAAAAJAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-05-14T09:50:27.897Z",
               "EditorCaption": ""
@@ -96,8 +95,7 @@
               "RelativeToolTip": "SupermarketMock\\Services\\IOrderService.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABMAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-14T09:49:40.82Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-14T09:49:40.82Z"
             },
             {
               "$type": "Document",
@@ -109,8 +107,7 @@
               "RelativeToolTip": "SupermarketMock\\Models\\Order.cs",
               "ViewState": "AgIAABsAAAAAAAAAAAAkwC4AAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-14T09:47:37.749Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-14T09:47:37.749Z"
             },
             {
               "$type": "Document",
@@ -122,8 +119,7 @@
               "RelativeToolTip": "SupermarketMock\\DTOs\\OrderDto.cs",
               "ViewState": "AgIAABMAAAAAAAAAAAAIwBYAAAAsAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-14T09:42:00.731Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-14T09:42:00.731Z"
             },
             {
               "$type": "Document",
