@@ -18,6 +18,7 @@ export class OrderService {
  isSubmitting = signal<Boolean>(false);
  currentOrder = signal<OrderEntity | null>(null);
  isProcessing = signal<boolean>(false);
+ orders = signal<OrderEntity[]>([]);
 
   async SubmitOrder(data:OrderRequest){
     this.isSubmitting.set(true);
@@ -50,7 +51,15 @@ export class OrderService {
     }
   }
 
+  async loadOrders(){
+    try{
+      const response = await lastValueFrom(this.orderApi.getMyOrders());
+      this.orders.set(response);
+    }catch(error){
+       console.error('獲取訂單失敗', error);
+    }
 
+  }
 
   constructor() { }
 }

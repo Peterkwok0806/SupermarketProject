@@ -19,7 +19,7 @@ export class CategoryNamePipe implements PipeTransform {
   [ProductCategory.Household]: 'Household',
   [ProductCategory.PersonalCare]: 'PersonalCare',
   [ProductCategory.Others]: 'Others',
-};
+  };
 
   transform(value: ProductCategory | number): string {
     return this.CATEGORY_LABEL_MAP[value as ProductCategory] ?? 'Others';
