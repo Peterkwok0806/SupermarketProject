@@ -7,6 +7,7 @@ import { authGuard } from './guards/auth.guard';
 import { CheckoutComponent } from './components/checkout/checkout.component';
 import { OrderSuccessComponent } from './components/order-success/order-success.component';
 import { OrdersComponent } from './components/orders/orders.component';
+import { ProfileComponent } from './components/profile/profile.component';
 
 export const routes: Routes = [
     { path: '', component: HomeComponent },
@@ -16,6 +17,7 @@ export const routes: Routes = [
     { path: 'checkout', component: CheckoutComponent, canActivate: [authGuard]  },
     { path: 'order-success', component: OrderSuccessComponent },
     { path: 'orders', component: OrdersComponent, canActivate: [authGuard] },
+    { path: 'profile', component: ProfileComponent, canActivate: [authGuard] },
 
     { path: '**', redirectTo: '' }
 

@@ -1,6 +1,6 @@
 import { Injectable, inject, signal, computed } from '@angular/core';
 import { firstValueFrom, lastValueFrom } from 'rxjs';
-import { RegisterRequest, AuthResponse, LoginRequest } from '../models/auth';
+import { RegisterRequest, AuthResponse, LoginRequest, updateProfileRequest } from '../models/auth';
 import { AuthApiService } from './auth-api.service';
 import { Router, ActivatedRoute } from '@angular/router';
 
@@ -23,22 +23,15 @@ export class AuthService {
   }
 
   async registerUser(data: RegisterRequest){
-    console.log('1. 開始執行');
     this.isLoading.set(true);
-    console.log('2. 準備發送 API...');
     try{
       const response = await lastValueFrom(this.authApi.register(data));
-      console.log('3. API 回傳結果:', response);
-      if (response.success){
-        alert("🎉 Registration successful!");
-        this.router.navigate(['/login']);
-        return response;
-      }else{
-        throw new Error(response.message || 'Registration failed');
+      if (!response.success) {
+      throw new Error(response.message || '註冊失敗');
       }
-    }catch (error) {
-    console.error('registrated failed', error);
-    throw error;
+    }catch (error: any) {
+    console.error('Registration API error', error);
+    throw new Error(error.error?.message || error.message || '網路連線異常');
     }finally{
       this.isLoading.set(false);
     }
@@ -94,6 +87,18 @@ export class AuthService {
     }
   }
 
+  async updateProfile(data:updateProfileRequest){
+    try{
+      const response = await lastValueFrom( this.authApi.updateProfile(data));
+      if(response.success && response.token)
+        localStorage.setItem('token', response.token);
+        localStorage.setItem('currentUser', JSON.stringify(response.userdto));
+        this.currentUser.set(response.userdto);
+    }catch (error: any){
+      console.error('Login error', error);
+    }
+  } 
+  
   logout() {
     localStorage.removeItem('token');
     localStorage.removeItem('currentUser');

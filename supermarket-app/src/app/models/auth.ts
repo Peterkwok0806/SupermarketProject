@@ -17,9 +17,15 @@ export interface AuthResponse {
   userdto: User;
 }
 
+export interface updateProfileRequest {
+  username: string;
+  email: string;
+}
+
 export interface User{
     userid: string;
     username: string;
     email: string;
     role: string;
 }
+

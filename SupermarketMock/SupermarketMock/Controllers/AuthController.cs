@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using SupermarketMock.DTOs;
 using SupermarketMock.Services;
+using System.Security.Claims;
 
 namespace SupermarketMock.Controllers
 {
@@ -14,6 +15,12 @@ namespace SupermarketMock.Controllers
         public AuthController(IAuthService authService)
         {
             _authService = authService;
+        }
+
+        private int GetCurrentUserId()
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            return int.Parse(userIdClaim ?? "0");
         }
 
         [HttpPost("register")]
@@ -52,5 +59,23 @@ namespace SupermarketMock.Controllers
 
 
         }
+
+        [HttpPut("profile")]
+        public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileDto dto)
+        {
+            int userId = GetCurrentUserId(); 
+            var result = await _authService.UpdateProfileAsync(userId, dto);
+            return result.success ? Ok(result) : BadRequest(result);
+        }
+
+        [HttpPut("change-password")]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto dto)
+        {
+            int userId = GetCurrentUserId();
+            var result = await _authService.ChangePasswordAsync(userId, dto);
+            return result.success ? Ok(result) : BadRequest(result);
+        }
+
+
     }
 }

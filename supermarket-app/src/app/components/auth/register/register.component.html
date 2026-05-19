@@ -7,8 +7,9 @@
       <p class="text-gray-600 mt-2">Join SuperMart today</p>
     </div>
 
-    <form (ngSubmit)="registerUser()" class="space-y-6">
+    <form (ngSubmit)="onSubmit()" class="space-y-6">
       
+       <!-- Username 欄位 -->
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-2">Username</label>
         <input type="text" 
@@ -18,6 +19,7 @@
                class="w-full px-4 py-3 border border-gray-300 rounded-2xl focus:outline-none focus:border-purple-500">
       </div>
 
+      <!-- Email 欄位 -->
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
         <input type="email" 
@@ -27,6 +29,7 @@
                class="w-full px-4 py-3 border border-gray-300 rounded-2xl focus:outline-none focus:border-purple-500">
       </div>
 
+      <!-- Password 欄位 -->
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
         <input type="password" 
@@ -36,7 +39,7 @@
                class="w-full px-4 py-3 border border-gray-300 rounded-2xl focus:outline-none focus:border-purple-500">
       </div>
 
-      <!-- 新增的 Confirm Password 欄位 -->
+      <!-- Confirm Password 欄位 -->
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-2">Confirm Password</label>
         <input type="password" 
@@ -45,6 +48,14 @@
               required
               class="w-full px-4 py-3 border border-gray-300 rounded-2xl focus:outline-none focus:border-purple-500">
       </div>
+
+       <!-- ✨ 新增：動態錯誤訊息顯示區塊 ✨ -->
+      @if (errorMessage) {
+        <div class="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-2xl text-sm flex items-center gap-2">
+          <span>⚠️</span>
+          <span>{{ errorMessage }}</span>
+        </div>
+      }
 
       <button type="submit"
               [disabled]="isLoading()"
