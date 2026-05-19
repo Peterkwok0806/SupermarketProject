@@ -32,7 +32,7 @@ namespace SupermarketMock.Controllers
 
             var result = await _cartService.GetCartByUserIdAsync(userId);
 
-            if (!result.Success)
+            if (result == null || !result.Success)
             {
                 return NotFound(new { message = "購物車不存在" });
             }

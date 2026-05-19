@@ -1,16 +1,16 @@
 import { Component, OnInit, inject } from '@angular/core';
-import { Product } from '../../models/product';
+import { Product, ProductCategory } from '../../models/product';
 import { ProductService } from '../../services/product.service';
 import { CartService } from '../../services/cart.service';
 import { CommonModule } from '@angular/common';
 import { Observable } from 'rxjs';
-import { CategoryNamePipe } from '../../pipes/category-name.pipe';
+
 
 
 
 @Component({
   selector: 'app-productlist',
-  imports: [CommonModule, CategoryNamePipe],
+  imports: [CommonModule],
   templateUrl: './productlist.component.html',
   styleUrl: './productlist.component.css'
 })
@@ -20,7 +20,7 @@ export class ProductlistComponent implements OnInit{
   private cartService = inject(CartService);
 
   products$!: Observable<Product[]>;
-  categories: number[] = [];
+  categories: ProductCategory[] = [];
 
   selectedCategory: number | null = null;
 

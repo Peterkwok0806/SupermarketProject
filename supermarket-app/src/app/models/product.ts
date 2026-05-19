@@ -1,16 +1,9 @@
-export enum ProductCategory {
-  Vegetables = 0,
-  Fruits = 1,
-  Meat = 2,
-  Seafood = 3,
-  Dairy = 4,
-  Bakery = 5,
-  Beverages = 6,
-  Snacks = 7,
-  Frozen = 8,
-  Household = 9,
-  PersonalCare = 10,
-  Others = 11
+export interface ProductCategory {
+  id: number;
+  name: string;        
+  description: string; 
+  icon: string;        
+  displayOrder: number;
 }
 
 export interface Product {
@@ -19,6 +12,7 @@ export interface Product {
   price: number;
   description?: string;
   stockQuantity: number;
+  categoryId: number;
   category: ProductCategory;
   photo: string;
   originalPrice?: number;

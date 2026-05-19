@@ -12,15 +12,15 @@
         All Products
       </button>
 
-      <!-- 💡 根據你後端傳回的純數字陣列進行循環 -->
-      @for (catId of categories; track catId) {
+      <!-- 💡 修正：改為循環 categories 物件陣列 -->
+      @for (cat of categories; track cat.id) {
         <button 
-          (click)="filterByCategory(catId)"
-          [class.bg-purple-700]="selectedCategory === catId"
-          [class.text-white]="selectedCategory === catId"
+          (click)="filterByCategory(cat.id)"
+          [class.bg-purple-700]="selectedCategory === cat.id"
+          [class.text-white]="selectedCategory === cat.id"
           class="px-6 py-3 whitespace-nowrap rounded-2xl font-medium transition-all hover:bg-purple-100 hover:text-purple-700">
-          <!-- 💡 使用 Pipe 轉換按鈕文字 -->
-          {{ catId | categoryName }}
+          <!-- 💡 修正：直接顯示圖示與中文名稱，不再需要 Pipe -->
+          {{ cat.icon }} {{ cat.description }}
         </button>
       }
     </div>
@@ -32,8 +32,12 @@
       @if (selectedCategory === null) {
         All Products
       } @else {
-        <!-- 💡 修正：直接將當前選中的分類 ID 丟進 Pipe 轉換成標題文字，不寫 => 語法 -->
-        {{ selectedCategory | categoryName }}
+        <!-- 💡 修正：從現有分類清單中比對，直接抓出對應的圖示與中文當作標題 -->
+        @for (cat of categories; track cat.id) {
+          @if (cat.id === selectedCategory) {
+            {{ cat.icon }} {{ cat.description }}
+          }
+        }
       }
     </h2>
     
@@ -56,12 +60,15 @@
               [src]="'/images/products/' + item.photo"
               [alt]="item.name"
               class="w-full h-full object-cover group-hover:scale-105 transition duration-300"
-              onerror="this.src='picsum.photos'; this.onerror=null;">
+              onerror="this.src='https://picsum.photos'; this.onerror=null;">
           </div>
 
           <!-- Info -->
           <div class="p-5">
-            <p class="text-xs text-purple-600 font-medium">{{ item.category | categoryName }}</p>
+            <!-- 💡 修正：直接點出商品內附帶的分類圖示與名稱 -->
+            <p class="text-xs text-purple-600 font-medium">
+              {{ item.category?.icon }} {{ item.category?.description }}
+            </p>
             <h3 class="font-semibold text-lg line-clamp-2 h-12 mt-1 text-gray-800">{{ item.name }}</h3>
           </div>
         </div>

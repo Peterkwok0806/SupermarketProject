@@ -26,12 +26,12 @@ namespace SupermarketMock.Controllers
             }
 
             // 沒傳參數就走原來的 GetAllProductsAsync
-            var allProducts = await _productService.GetAllProductsAsync();
+            var allProducts = await _productService.GetProductsAsync();
             return Ok(allProducts);
         }
 
         [HttpGet("categories")]
-        public async Task<IActionResult> GetCategories()
+        public async Task<ActionResult<IEnumerable<ProductCategory>>> GetCategories()
         {
             var categories = await _productService.GetCategoriesAsync();
             return Ok(categories);
