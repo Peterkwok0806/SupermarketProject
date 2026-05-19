@@ -98,6 +98,15 @@ export class AuthService {
       console.error('Login error', error);
     }
   } 
+
+  async changePassword(data:any){
+    try{
+      await lastValueFrom( this.authApi.changePassword(data));
+    }catch (error: any){
+      console.error('Login error', error);
+    }
+  }
+
   
   logout() {
     localStorage.removeItem('token');

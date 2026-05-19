@@ -15,6 +15,8 @@ export class RegisterComponent {
   public authService = inject(AuthService);
   private router = inject(Router);
 
+  showModal = false;
+
   isLoading = this.authService.isLoading;
 
   registerData: RegisterRequest = { username: '', email: '', password: '' };
@@ -48,10 +50,17 @@ export class RegisterComponent {
     }
     try{
         await this.authService.registerUser(this.registerData);
-        alert("🎉 Registration successful!");
-      this.router.navigate(['/login']);
+         this.showModal = true;
     }catch (error:any) {
     this.errorMessage = error.message; 
     }
   }
+
+  closeModalAndNavigate() {
+    this.showModal = false;
+    this.router.navigate(['/login']);
+  }
+
+
+
 }   

@@ -23,4 +23,8 @@ export class AuthApiService {
   updateProfile(data:updateProfileRequest):Observable<AuthResponse>{
     return this.http.put<AuthResponse>(`${this.apiUrl}/profile`, data);
   }
+
+  changePassword(data: any): Observable<AuthResponse> {
+  return this.http.put<any>(`${this.apiUrl}/change-password`, data);
+}
 }
