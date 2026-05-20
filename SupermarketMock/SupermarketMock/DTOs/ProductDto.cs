@@ -2,9 +2,9 @@
 {
     public class ProductDto
     {
-        public int Id { get; set; }
-        public string Name { get; set; } = string.Empty;
-        public decimal Price { get; set; }
-        public string Photo { get; set; } = string.Empty;
+        public int id { get; set; }
+        public string name { get; set; } = string.Empty;
+        public decimal price { get; set; }
+        public string photo { get; set; } = string.Empty;
     }
 }

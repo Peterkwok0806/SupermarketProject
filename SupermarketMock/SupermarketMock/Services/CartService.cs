@@ -27,10 +27,10 @@ namespace SupermarketMock.Services
                     Quantity = ci.Quantity,
                     Product = new ProductDto
                     {
-                        Id = ci.Product.Id,
-                        Name = ci.Product.Name,
-                        Price = ci.Product.Price,
-                        Photo = ci.Product.Photo
+                        id = ci.Product.Id,
+                        name = ci.Product.Name,
+                        price = ci.Product.Price,
+                        photo = ci.Product.Photo
                     }
                 }).ToList()
             };

@@ -62,15 +62,10 @@ export class CartService {
   
 
 
- async addToCart(product: Product) {
-  console.log('1. 開始執行 addToCart, ID:', product.id);
+ async addToCart(productId: number) {
   this.isLoading.set(true);
     try {
-        console.log('2. 準備發送 API...');
-        const result = await firstValueFrom(this.cartApi.addToCart(product.id));
-        console.log('3. API 回傳結果:', result);
-
-        console.log(Boolean(result.success && result.cart))
+        const result = await firstValueFrom(this.cartApi.addToCart(productId));
 
         if (result.success && result.cart && result.totalAmount){
           this._cart.set({ ...result.cart });
@@ -79,8 +74,9 @@ export class CartService {
         }
       } catch (err) {
         console.error('Add failed', err);
+        throw err;
       }finally {
-        this.isLoading.set(false); // 結束讀取
+        this.isLoading.set(false); 
       }
     }
 

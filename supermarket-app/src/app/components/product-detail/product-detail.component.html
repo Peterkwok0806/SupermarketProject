@@ -1,0 +1,45 @@
+<div class="max-w-7xl mx-auto px-6 py-10" *ngIf="product">
+  <a routerLink="/products" class="text-purple-600 hover:underline mb-6 inline-block">
+    ← Back to Products
+  </a>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+    
+    <!-- Image -->
+    <div class="bg-gray-100 rounded-3xl overflow-hidden">
+      <img [src]="'/images/products/' + product.photo" 
+           [alt]="product.name"
+           class="w-full h-full object-cover">
+    </div>
+
+    <!-- Details -->
+    <div>
+      <p class="text-purple-600 font-medium">{{ product.category.name || 'Uncategorized' }}</p>
+      <h1 class="text-4xl font-bold mt-2">{{ product.name }}</h1>
+      
+      <p class="text-3xl font-bold text-purple-700 mt-6">
+        {{ product.price | currency:'HKD':'symbol-narrow' }}
+      </p>
+
+      @if (product.originalPrice) {
+        <p class="text-gray-500 line-through">
+          {{ product.originalPrice | currency:'HKD':'symbol-narrow' }}
+        </p>
+      }
+
+      <p class="mt-8 text-gray-700 leading-relaxed">{{ product.description }}</p>
+
+      <div class="mt-10">
+        <button (click)="addToCart()"
+                class="w-full bg-purple-700 hover:bg-purple-800 text-white py-5 rounded-2xl text-xl font-semibold transition">
+          🛒 Add to Cart
+        </button>
+      </div>
+
+      <div class="mt-8 grid grid-cols-2 gap-6 text-sm">
+        <div>Stock: <span class="font-medium">{{ product.stockQuantity }}</span></div>
+        <div>Brand: <span class="font-medium">{{ product.brand || 'N/A' }}</span></div>
+      </div>
+    </div>
+  </div>
+</div>

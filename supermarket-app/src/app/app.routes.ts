@@ -8,9 +8,11 @@ import { CheckoutComponent } from './components/checkout/checkout.component';
 import { OrderSuccessComponent } from './components/order-success/order-success.component';
 import { OrdersComponent } from './components/orders/orders.component';
 import { ProfileComponent } from './components/profile/profile.component';
+import { ProductDetailComponent } from './components/product-detail/product-detail.component';
 
 export const routes: Routes = [
     { path: '', component: HomeComponent },
+    { path: 'product/:id', component: ProductDetailComponent },
     { path: 'cart', component: CartComponent, canActivate: [authGuard] },
     { path: 'register', component: RegisterComponent },
     { path: 'login', component: LoginComponent },

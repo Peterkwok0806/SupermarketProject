@@ -1,12 +1,15 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using SupermarketMock.DTOs;
 using SupermarketMock.Models;
 namespace SupermarketMock.Services
 {
     public interface IProductService
     {
 
-        Task<IEnumerable<Product>> GetProductsAsync(int? category = null);
+        Task<IEnumerable<ProductDto>> GetProductsAsync(int? category = null);
 
         Task<IEnumerable<ProductCategory>> GetCategoriesAsync();
+
+        Task<Product?> GetProductByIdAsync(int id);
     }
 }

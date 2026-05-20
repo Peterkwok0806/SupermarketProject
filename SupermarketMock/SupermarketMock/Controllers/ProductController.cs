@@ -37,5 +37,14 @@ namespace SupermarketMock.Controllers
             return Ok(categories);
         }
 
+        [HttpGet("{productId}")]
+
+        public async Task<IActionResult> GetProductById(int productId)
+        {
+            var product = await _productService.GetProductByIdAsync(productId);
+            return product != null ? Ok(product) : NotFound();
+            
+        }
+
     }
 }

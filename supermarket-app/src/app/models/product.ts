@@ -22,3 +22,10 @@ export interface Product {
   isOnSale?: boolean;
   discountPercentage?: number;
 }
+
+export interface ProductDto{
+  id: number;
+  name: string;
+  price: number;
+  photo: string;
+}

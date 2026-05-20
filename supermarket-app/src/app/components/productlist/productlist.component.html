@@ -54,23 +54,22 @@
       <div class="bg-white rounded-2xl shadow-sm hover:shadow-lg transition overflow-hidden group flex flex-col justify-between">
         
         <div>
+          <div [routerLink]="['/product', item.id]" class="cursor-pointer">
           <!-- Image -->
-          <div class="aspect-square bg-gray-100 relative overflow-hidden">
-            <img 
-              [src]="'/images/products/' + item.photo"
-              [alt]="item.name"
-              class="w-full h-full object-cover group-hover:scale-105 transition duration-300"
-              onerror="this.src='https://picsum.photos'; this.onerror=null;">
-          </div>
+            <div class="aspect-square bg-gray-100 relative overflow-hidden">
+              <img 
+                [src]="'/images/products/' + item.photo"
+                [alt]="item.name"
+                class="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+                onerror="this.src='https://picsum.photos'; this.onerror=null;">
+            </div>
 
-          <!-- Info -->
-          <div class="p-5">
-            <!-- 💡 修正：直接點出商品內附帶的分類圖示與名稱 -->
-            <p class="text-xs text-purple-600 font-medium">
-              {{ item.category?.icon }} {{ item.category?.description }}
-            </p>
-            <h3 class="font-semibold text-lg line-clamp-2 h-12 mt-1 text-gray-800">{{ item.name }}</h3>
-          </div>
+            <!-- Info -->
+            <div class="p-5">
+              <!-- 💡 修正：直接點出商品內附帶的分類圖示與名稱 -->
+              <h3 class="font-semibold text-lg line-clamp-2 h-12 mt-1 text-gray-800">{{ item.name }}</h3>
+            </div>
+          </div>  
         </div>
 
         <!-- Price & Action -->
@@ -79,7 +78,7 @@
             {{ item.price | currency:'HKD':'symbol-narrow' }}
           </p>
 
-          <button (click)="addToCart(item)" 
+          <button (click)="addToCart(item.id)" 
                   class="mt-5 w-full bg-purple-700 hover:bg-purple-800 text-white py-3 rounded-2xl font-medium transition shadow-sm hover:shadow">
             Add to Cart
           </button>
