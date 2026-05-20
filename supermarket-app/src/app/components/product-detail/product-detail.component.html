@@ -29,6 +29,18 @@
 
       <p class="mt-8 text-gray-700 leading-relaxed">{{ product.description }}</p>
 
+      <!-- Quantity -->
+      <div class="mt-10">
+        <label class="block text-sm font-medium mb-3">Quantity</label>
+        <div class="flex items-center gap-4">
+          <button (click)="changeQuantity(-1)" 
+                  class="w-12 h-12 border rounded-2xl hover:bg-gray-100 text-2xl">-</button>
+          <span class="w-12 text-center text-2xl font-semibold">{{ quantity }}</span>
+          <button (click)="changeQuantity(1)" 
+                  class="w-12 h-12 border rounded-2xl hover:bg-gray-100 text-2xl">+</button>
+        </div>
+      </div>
+
       <div class="mt-10">
         <button (click)="addToCart()"
                 class="w-full bg-purple-700 hover:bg-purple-800 text-white py-5 rounded-2xl text-xl font-semibold transition">
@@ -42,4 +54,36 @@
       </div>
     </div>
   </div>
+
+  <!-- Related Products -->
+    <div class="mt-16">
+    <h2 class="text-3xl font-bold mb-8">You May Also Like</h2>
+    
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        @for (related of relatedProducts; track related.id) {
+        <div class="bg-white rounded-2xl shadow-sm hover:shadow-md transition overflow-hidden">
+            <div [routerLink]="['/product', related.id]" class="cursor-pointer">
+                <div class="aspect-square bg-gray-100">
+                <img [src]="'/images/products/' + related.photo" 
+                    [alt]="related.name"
+                    class="w-full h-full object-cover hover:scale-105 transition">
+                </div>
+                
+                <div class="p-5">
+                <h4 class="font-semibold line-clamp-2 h-12 mt-1">{{ related.name }}</h4>
+                <p class="text-xl font-bold text-purple-700 mt-3">
+                    {{ related.price | currency:'HKD':'symbol-narrow' }}
+                </p>
+                </div>
+            </div>
+        </div>
+        }
+    </div>
+</div>
+
+
+
+
+
+
 </div>

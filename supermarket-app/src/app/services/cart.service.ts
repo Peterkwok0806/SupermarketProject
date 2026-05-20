@@ -62,10 +62,10 @@ export class CartService {
   
 
 
- async addToCart(productId: number) {
+ async addToCart(productId: number,  quantity: number) {
   this.isLoading.set(true);
     try {
-        const result = await firstValueFrom(this.cartApi.addToCart(productId));
+        const result = await firstValueFrom(this.cartApi.addToCart(productId,quantity));
 
         if (result.success && result.cart && result.totalAmount){
           this._cart.set({ ...result.cart });

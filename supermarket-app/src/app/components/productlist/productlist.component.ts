@@ -47,9 +47,9 @@ export class ProductlistComponent implements OnInit{
   }
 
 
-  async addToCart(prodcutid: number) {
+  async addToCart(prodcutid: number, quantity: number ) {
     try {
-      await this.cartService.addToCart(prodcutid);
+      await this.cartService.addToCart(prodcutid, quantity);
 
       alert(`已成功加入購物車！ 🛒`);
       

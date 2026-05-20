@@ -1,10 +1,10 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit,OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ProductService } from '../../services/product.service';
 import { CartService } from '../../services/cart.service';
-import { Product } from '../../models/product';
-import { lastValueFrom } from 'rxjs';
+import { Product, ProductDto } from '../../models/product';
+import { Subscription,lastValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-product-detail',
@@ -12,28 +12,40 @@ import { lastValueFrom } from 'rxjs';
   templateUrl: './product-detail.component.html',
   styleUrl: './product-detail.component.css'
 })
-export class ProductDetailComponent implements OnInit{
+export class ProductDetailComponent implements OnInit,OnDestroy{
   private route = inject(ActivatedRoute);
   private productService = inject(ProductService);
   private cartService = inject(CartService);
+  private routeSub!: Subscription;
 
   product: Product | null = null;
   isLoading = true;
+  quantity: number = 1;
+  relatedProducts: ProductDto[] = [];
+  
 
   async ngOnInit(): Promise<void> {
-    // 1. 從網址抓取 id (例如: /products/5)
-    const productId = Number(this.route.snapshot.paramMap.get('id'));
-    
-    if (productId) {
-      await this.loadProductDetail(productId);
-    }
+    this.routeSub = this.route.paramMap.subscribe(async (params) => {
+      const productId = Number(params.get('id'));
+      
+      if (productId) {
+        this.quantity = 1; 
+
+        await this.loadProductAllData(productId);
+      }
+    });
   }
 
-  async loadProductDetail(id: number) {
+  async loadProductAllData(id: number) {
+    this.isLoading = true;
     try {
-      this.isLoading = true;
-      // 如果回傳 Observable，記得像之前一樣用 lastValueFrom(this.productService.getProductById(id))
       this.product = await lastValueFrom(this.productService.getProductById(id)) 
+      if (this.product) {
+        const products = await lastValueFrom(this.productService.getProducts(this.product.categoryId));
+        this.relatedProducts = products
+          .filter(p => p.id !== id)
+          .slice(0, 4);
+      }
     } catch (err) {
       console.error('載入商品詳情失敗', err);
     } finally {
@@ -41,10 +53,14 @@ export class ProductDetailComponent implements OnInit{
     }
   }
 
+  ngOnDestroy(): void {
+    this.routeSub?.unsubscribe();
+  }
+
   async addToCart() {
     if (!this.product) return;
     try {
-      await this.cartService.addToCart(this.product.id);
+      await this.cartService.addToCart(this.product.id, this.quantity);
 
       alert(`已成功加入購物車！ 🛒`);
       
@@ -53,6 +69,11 @@ export class ProductDetailComponent implements OnInit{
       alert('加入購物車失敗，請稍後再試');
     }
   }
+
+  changeQuantity(amount: number) {
+    this.quantity = Math.max(1, this.quantity + amount);
+  }
+
 }
 
 

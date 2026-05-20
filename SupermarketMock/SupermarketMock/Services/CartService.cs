@@ -62,7 +62,7 @@ namespace SupermarketMock.Services
 
         
 
-        public async Task<CartOperationResult> AddToCartAsync(int userId, int productId, int quantity = 1)
+        public async Task<CartOperationResult> AddToCartAsync(int userId, int productId, int quantity)
         {
             var cart = await _context.Carts
             .Include(c => c.CartItems)
