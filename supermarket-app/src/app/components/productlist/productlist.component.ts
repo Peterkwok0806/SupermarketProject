@@ -5,7 +5,8 @@ import { CartService } from '../../services/cart.service';
 import { CommonModule } from '@angular/common';
 import { Observable } from 'rxjs';
 import { lastValueFrom } from 'rxjs';
-import { RouterLink } from '@angular/router'; 
+import { RouterLink, ActivatedRoute  } from '@angular/router'; 
+import { switchMap } from 'rxjs/operators';
 
 
 
@@ -20,15 +21,31 @@ export class ProductlistComponent implements OnInit{
 
   private productService = inject(ProductService);
   private cartService = inject(CartService);
+  private route = inject(ActivatedRoute);
 
   products$!: Observable<ProductDto[]>;
   categories: ProductCategory[] = [];
 
   selectedCategory: number | null = null;
+  searchTerm :string = '';
 
   async ngOnInit(): Promise<void> {
       await this.loadCategories();
-       this.filterByCategory(null);
+
+      this.products$ = this.route.queryParams.pipe(
+      switchMap(params => {
+        this.searchTerm = params['search'] || ''; // 同步搜尋字串到畫面
+        
+        if (this.searchTerm.trim()) {
+          this.selectedCategory = null; // 有搜尋字，取消分類篩選
+          return this.productService.searchProducts(this.searchTerm.trim());
+        } else {
+          // 沒有搜尋字，走原本的分類邏輯 (此處傳入目前的選中分類或預設 null)
+          const searchId = this.selectedCategory ?? undefined;
+          return this.productService.getProducts(searchId);
+        }
+      })
+    );
     }
 
   async loadCategories() {
@@ -41,9 +58,18 @@ export class ProductlistComponent implements OnInit{
 
   filterByCategory(categoryId: number | null) {
     this.selectedCategory = categoryId;
-    
+    this.searchTerm = '';
     const searchId = categoryId ?? undefined;
     this.products$ = this.productService.getProducts(searchId);
+  }
+
+  onSearch() {
+    if (this.searchTerm.trim()) {
+      this.selectedCategory = null; // 取消分類篩選
+      this.products$ = this.productService.searchProducts(this.searchTerm.trim());
+    } else {
+      this.filterByCategory(null);
+    }
   }
 
 
