@@ -95,9 +95,10 @@ namespace SupermarketMock.Services
 
             var token = GenerateJwtToken(user);
             var refreshToken = GenerateRefreshToken();
+            var expiryTime = DateTime.UtcNow.AddDays(_jwtSettings.RefreshTokenExpiresInDays);
 
             user.RefreshToken = refreshToken;
-            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+            user.RefreshTokenExpiryTime = expiryTime;
             user.LastLoginAt = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
@@ -116,6 +117,7 @@ namespace SupermarketMock.Services
                 message = "登入成功",
                 token=token,
                 RefreshToken = refreshToken,
+                RefreshTokenExpiryTime = expiryTime,
                 userdto = userdto
             };
 
@@ -133,9 +135,11 @@ namespace SupermarketMock.Services
 
             var newAccessToken = GenerateJwtToken(user);
             var newRefreshToken = GenerateRefreshToken();
+            var expiryTime = DateTime.UtcNow.AddDays(_jwtSettings.RefreshTokenExpiresInDays);
 
             user.RefreshToken = newRefreshToken;
-            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+            user.RefreshTokenExpiryTime = expiryTime;
+
             await _context.SaveChangesAsync();
 
             var userdto = new UserDto
@@ -151,7 +155,8 @@ namespace SupermarketMock.Services
                 success = true,
                 message = "憑證刷新成功",
                 token = newAccessToken,
-                RefreshToken = newRefreshToken, 
+                RefreshToken = newRefreshToken,
+                RefreshTokenExpiryTime = expiryTime,
                 userdto = userdto
             };
         }

@@ -46,13 +46,7 @@ namespace SupermarketMock.DTOs
         public string Password { get; set; } = string.Empty;
     }
 
-    public class JwtSettings
-    {
-        public string SecretKey { get; set; } = string.Empty;
-        public string Issuer { get; set; } = "Supermarket";
-        public string Audience { get; set; } = "SupermarketClient";
-        public int ExpiresInMinutes { get; set; } = 60 * 24; // 24小時
-    }
+    
 
 
 }

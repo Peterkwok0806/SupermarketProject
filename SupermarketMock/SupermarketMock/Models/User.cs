@@ -31,4 +31,6 @@ namespace SupermarketMock.Models
 
         public DateTime? RefreshTokenExpiryTime { get; set; }
     }
+
+    
 }

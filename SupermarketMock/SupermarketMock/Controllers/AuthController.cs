@@ -50,9 +50,10 @@ namespace SupermarketMock.Controllers
                     return BadRequest(new { message = result.message });
                 }
 
-                if (!string.IsNullOrEmpty(result.RefreshToken))
+                if (!string.IsNullOrEmpty(result.RefreshToken) && result.RefreshTokenExpiryTime.HasValue)
                 {
-                    SetRefreshTokenCookie(result.RefreshToken);
+                    // 傳入 Token 與時間
+                    SetRefreshTokenCookie(result.RefreshToken, result.RefreshTokenExpiryTime.Value);
                 }
 
                 return Ok(new
@@ -85,10 +86,9 @@ namespace SupermarketMock.Controllers
                 return Unauthorized(new { message = result.message });
             }
 
-            // 滾動式更新：將全新的 Refresh Token 重新寫入 Cookie
-            if (!string.IsNullOrEmpty(result.RefreshToken))
+            if (!string.IsNullOrEmpty(result.RefreshToken) && result.RefreshTokenExpiryTime.HasValue)
             {
-                SetRefreshTokenCookie(result.RefreshToken);
+                SetRefreshTokenCookie(result.RefreshToken, result.RefreshTokenExpiryTime.Value);
             }
 
             // 只回傳全新的 Access Token 給前端 LocalStorage
@@ -132,14 +132,14 @@ namespace SupermarketMock.Controllers
             return result.success ? Ok(result) : BadRequest(result);
         }
 
-        private void SetRefreshTokenCookie(string refreshToken)
+        private void SetRefreshTokenCookie(string refreshToken, DateTime expiryTime)
         {
             var cookieOptions = new CookieOptions
             {
                 HttpOnly = true,     
                 Secure = true,          
                 SameSite = SameSiteMode.Lax, 
-                Expires = DateTime.UtcNow.AddDays(7) 
+                Expires = expiryTime
             };
 
             Response.Cookies.Append("refreshToken", refreshToken, cookieOptions);

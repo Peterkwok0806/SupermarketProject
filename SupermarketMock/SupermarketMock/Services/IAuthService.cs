@@ -17,10 +17,18 @@ namespace SupermarketMock.Services
         public bool success { get; set; }
         public string message { get; set; } = string.Empty;
         public string? token { get; set; } 
-
         public string? RefreshToken { get; set; }
+        public DateTime? RefreshTokenExpiryTime { get; set; }
         public UserDto? userdto { get; set; }
     }
 
+    public class JwtSettings
+    {
+        public string SecretKey { get; set; } = string.Empty;
+        public string Issuer { get; set; } = "Supermarket";
+        public string Audience { get; set; } = "SupermarketClient";
+        public int ExpiresInMinutes { get; set; }
+        public int RefreshTokenExpiresInDays { get; set; }
+    }
 
 }
