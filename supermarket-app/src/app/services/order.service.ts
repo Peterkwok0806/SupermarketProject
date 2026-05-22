@@ -41,7 +41,6 @@ export class OrderService {
     this.isProcessing.set(false);
     try{
       const response = await lastValueFrom(this.orderApi.getOrderById(orderId));
-      console.log(response);
       this.currentOrder.set(response);
     }catch(error){
       console.error('邏輯層：獲取訂單詳細失敗', error);

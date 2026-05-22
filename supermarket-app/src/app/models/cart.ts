@@ -21,7 +21,3 @@ export interface CartOperationResult{
   totalAmount: number;
   cart: Cart;
 }
-
-export interface CartSummary{
-  totalAmount: number;
-}

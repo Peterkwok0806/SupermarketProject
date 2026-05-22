@@ -1,32 +1,42 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MatTableModule } from '@angular/material/table';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { RouterModule } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { OrderService } from '../../services/order.service';
+import { OrderEntity } from '../../models/order';
+import { lastValueFrom } from 'rxjs';
 import { OrderstatusNamePipe } from '../../pipes/orderstatus-name.pipe';
 import { OrderStatus } from '../../models/order';
 
 @Component({
-  selector: 'app-orders',
-  imports: [CommonModule, OrderstatusNamePipe,MatTableModule, MatButtonModule, MatIconModule ,RouterModule],
-  templateUrl: './orders.component.html',
-  styleUrl: './orders.component.css'
+  selector: 'app-order-detail',
+  imports: [CommonModule, RouterLink, OrderstatusNamePipe ],
+  templateUrl: './order-detail.component.html',
+  styleUrl: './order-detail.component.css'
 })
-export class OrdersComponent implements OnInit {
-protected orderService = inject(OrderService);
+export class OrderDetailComponent implements OnInit{
+private route = inject(ActivatedRoute);
+private orderServices = inject(OrderService);
 
-displayedColumns: string[] = ['id', 'date', 'status', 'totalAmount', 'action'];
+order =this.orderServices.currentOrder;
+isLoading = true;
 
 ngOnInit() {
-    this.orderService.loadOrders();
+    const orderId = Number(this.route.snapshot.paramMap.get('id'));
+    this.loadOrder(orderId);
   }
 
-get orders() {
-    return this.orderService.orders();
+async loadOrder(orderId: number) {
+    this.isLoading = true;
+    try{
+    await this.orderServices.loadOrderDetail(orderId);
+    }catch(err){
+      console.error(err);
+    }finally{
+       this.isLoading = false;
+    }
   }
-  getStatusClass(status: OrderStatus): string {
+
+getStatusClass(status: OrderStatus): string {
     switch (status) {
       case OrderStatus.Completed:
         return 'bg-green-100 text-green-800'; // 綠色
@@ -46,5 +56,7 @@ get orders() {
         return 'bg-gray-100 text-gray-800'; // 灰色
     }
   }
+
+
 
 }

@@ -1,52 +1,60 @@
 <div class="max-w-7xl mx-auto px-6 py-10">
-  <h1 class="text-4xl font-bold mb-8">我的訂單</h1>
+  <h1 class="text-4xl font-bold mb-8 text-gray-900">My Orders</h1>
+
+  <!-- 1. 強制表格背景為白色，並移除可能干擾的背景 -->
+  <mat-table [dataSource]="orders" class="mat-elevation-z2 rounded-2xl overflow-hidden !bg-white">
+
+    <!-- Order ID -->
+    <ng-container matColumnDef="id">
+      <!-- 2. 使用 !bg-purple-700 和 !text-white 強制覆蓋標頭 -->
+      <mat-header-cell *matHeaderCellDef class="!bg-purple-700 !text-white font-semibold"> Order ID </mat-header-cell>
+      <mat-cell *matCellDef="let order" class="!text-gray-700">#{{ order.id }}</mat-cell>
+    </ng-container>
+
+    <!-- Date -->
+    <ng-container matColumnDef="date">
+      <mat-header-cell *matHeaderCellDef class="!bg-purple-700 !text-white font-semibold"> Date </mat-header-cell>
+      <mat-cell *matCellDef="let order" class="!text-gray-700">{{ order.createdAt | date:'yyyy-MM-dd HH:mm' }}</mat-cell>
+    </ng-container>
+
+    <!-- Status -->
+    <ng-container matColumnDef="status">
+      <mat-header-cell *matHeaderCellDef class="!bg-purple-700 !text-white font-semibold"> Status </mat-header-cell>
+      <mat-cell *matCellDef="let order">
+        <span [class]="getStatusClass(order.status)" class="px-4 py-1 rounded-full text-sm font-medium">
+          {{ order.status | orderstatusName }}
+        </span>
+      </mat-cell>
+    </ng-container>
+
+    <!-- Total Price -->
+    <ng-container matColumnDef="totalAmount">
+      <mat-header-cell *matHeaderCellDef class="!bg-purple-700 !text-white font-semibold"> Total </mat-header-cell>
+      <!-- 3. 確保金額文字顏色為深灰色（避免變黑看不見） -->
+      <mat-cell *matCellDef="let order" class="font-semibold !text-gray-900">
+        {{ order.totalAmount | currency:'HKD':'symbol-narrow' }}
+      </mat-cell>
+    </ng-container>
+
+    <!-- Action -->
+    <ng-container matColumnDef="action">
+      <mat-header-cell *matHeaderCellDef class="!bg-purple-700 !text-white font-semibold"> Action </mat-header-cell>
+      <mat-cell *matCellDef="let order">
+        <!-- 移除 color="primary"，改用 Tailwind 強制設定藍底白字與正方形 -->
+        <button mat-raised-button 
+                [routerLink]="['/order', order.id]"
+                class="!bg-blue-600 !text-white !rounded-none font-medium px-4 py-2 transition-colors hover:!bg-blue-700">
+          Detail
+        </button>
+      </mat-cell>
+    </ng-container>
+
+    <!-- 4. 標頭列與資料列同樣加上 ! 確保背景不衝突 -->
+    <mat-header-row *matHeaderRowDef="displayedColumns" class="!bg-purple-700 !text-white"></mat-header-row>
+    <mat-row *matRowDef="let row; columns: displayedColumns;" class="!bg-white hover:!bg-gray-50"></mat-row>
+  </mat-table>
 
   @if (orders.length === 0) {
-    <div class="text-center py-20">
-      <p class="text-2xl text-gray-500">目前沒有訂單</p>
-      <a routerLink="/products" class="mt-6 inline-block bg-purple-700 text-white px-8 py-4 rounded-2xl">
-        去逛逛商品
-      </a>
-    </div>
-  } @else {
-    <div class="space-y-6">
-      @for (order of orders; track order.id) {
-        <div class="bg-white rounded-3xl shadow-sm p-8">
-          <div class="flex justify-between items-start mb-6">
-            <div>
-              <p class="text-sm text-gray-500">訂單編號 #{{ order.id }}</p>
-              <p class="text-sm text-gray-500">{{ order.createdAt | date:'yyyy-MM-dd HH:mm' }}</p>
-            </div>
-            <span [class]="getStatusClass(order.status)" class="px-4 py-1 rounded-full text-sm font-medium">
-              {{ order.status | orderstatusName }}
-            </span>
-          </div>
-
-          <!-- 訂單商品 -->
-          <div class="space-y-4">
-            @for (item of order.orderItems; track item.productId) {
-              <div class="flex gap-4">
-                <img [src]="'/images/products/' + item.productPhoto" 
-                     class="w-16 h-16 object-cover rounded-xl">
-                <div class="flex-1">
-                  <h4 class="font-medium">{{ item.productName }}</h4>
-                  <p class="text-sm text-gray-500">{{ item.quantity }} × {{ item.unitPrice | currency:'HKD' }}</p>
-                </div>
-                <div class="text-right font-semibold">
-                  {{ (item.unitPrice * item.quantity) | currency:'HKD' }}
-                </div>
-              </div>
-            }
-          </div>
-
-          <div class="border-t mt-6 pt-6 flex justify-between items-center">
-            <span class="text-lg">總金額</span>
-            <span class="text-2xl font-bold text-purple-700">
-              {{ order.totalAmount | currency:'HKD' }}
-            </span>
-          </div>
-        </div>
-      }
-    </div>
+    <p class="text-center text-gray-500 py-20">目前沒有訂單紀錄</p>
   }
 </div>
