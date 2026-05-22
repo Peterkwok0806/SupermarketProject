@@ -58,8 +58,8 @@
 
       <!-- Auth Section with Dropdown -->
       @if (isLoggedIn()) {
-        <div class="relative group">
-          <button class="flex items-center gap-3 hover:bg-white/10 px-4 py-2 rounded-2xl transition">
+        <div class="relative inline-block">
+          <button (click)="toggleDropdown($event)" class="flex items-center gap-3 hover:bg-white/10 px-4 py-2 rounded-2xl transition">
             <div class="w-9 h-9 bg-white/30 rounded-full flex items-center justify-center text-2xl">
               👤
             </div>
@@ -70,21 +70,26 @@
           </button>
 
           <!-- Dropdown Menu -->
-          <div class="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl py-2 z-50 hidden group-hover:block">
-            <a routerLink="/profile" 
-               class="flex items-center gap-3 px-5 py-3 hover:bg-gray-100 text-gray-700">
-              👤 Profile
-            </a>
-            <a routerLink="/orders" 
-               class="flex items-center gap-3 px-5 py-3 hover:bg-gray-100 text-gray-700">
-              📋 My Orders
-            </a>
-            <div class="border-t my-2"></div>
-            <button (click)="logout()" 
-                    class="flex items-center gap-3 px-5 py-3 hover:bg-red-50 text-red-600 w-full text-left">
-              🚪 Logout
-            </button>
-          </div>
+            <!-- 💡 修正亮點：移除 group-hover:block，改用 Angular 的 @if 進行結構控制 -->
+            @if (isDropdownOpen()) {
+              <div class="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl py-2 z-50">
+                <a routerLink="/profile" 
+                  (click)="isDropdownOpen.set(false)"
+                  class="flex items-center gap-3 px-5 py-3 hover:bg-gray-100 text-gray-700">
+                  👤 Profile
+                </a>
+                <a routerLink="/orders" 
+                  (click)="isDropdownOpen.set(false)"
+                  class="flex items-center gap-3 px-5 py-3 hover:bg-gray-100 text-gray-700">
+                  📋 My Orders
+                </a>
+                <div class="border-t my-2"></div>
+                <button (click)="logout(); isDropdownOpen.set(false)" 
+                        class="flex items-center gap-3 px-5 py-3 hover:bg-red-50 text-red-600 w-full text-left">
+                  🚪 Logout
+                </button>
+              </div>
+            }
         </div>
       } @else {
         <!-- 未登入 -->

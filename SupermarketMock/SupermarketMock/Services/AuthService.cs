@@ -6,6 +6,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 
 
@@ -62,10 +63,10 @@ namespace SupermarketMock.Services
 
             var userdto = new UserDto
             {
-                userId = user.Id,
-                username = user.Username,
-                email = user.Email,
-                role= user.Role
+                UserId = user.Id,
+                Username = user.Username,
+                Email = user.Email,
+                Role= user.Role
             };
 
             return new AuthResult
@@ -79,12 +80,12 @@ namespace SupermarketMock.Services
 
         public async Task<AuthResult> LoginAsync(LoginDto dto)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.email);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
 
             if (user == null)
                 return new AuthResult { success = false, message = "Email 或密碼錯誤" };
 
-            bool isPasswordValid = BCrypt.Net.BCrypt.Verify(dto.password, user.PasswordHash);
+            bool isPasswordValid = BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash);
 
             if (!isPasswordValid)
                 return new AuthResult { success = false, message = "Email 或密碼錯誤" };
@@ -93,13 +94,20 @@ namespace SupermarketMock.Services
             await _context.SaveChangesAsync();
 
             var token = GenerateJwtToken(user);
+            var refreshToken = GenerateRefreshToken();
+
+            user.RefreshToken = refreshToken;
+            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+            user.LastLoginAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
 
             var userdto = new UserDto
             {
-                userId = user.Id,
-                username = user.Username,
-                email = user.Email,
-                role = user.Role
+                UserId = user.Id,
+                Username = user.Username,
+                Email = user.Email,
+                Role = user.Role
             };
 
             return new AuthResult
@@ -107,10 +115,50 @@ namespace SupermarketMock.Services
                 success = true,
                 message = "登入成功",
                 token=token,
+                RefreshToken = refreshToken,
                 userdto = userdto
             };
 
         }
+
+        public async Task<AuthResult> RefreshTokenAsync(string oldRefreshToken)
+        {
+            if (string.IsNullOrEmpty(oldRefreshToken))
+                return new AuthResult { success = false, message = "無效的刷新憑證" };
+
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.RefreshToken == oldRefreshToken);
+
+            if (user == null || user.RefreshTokenExpiryTime <= DateTime.UtcNow)
+                return new AuthResult { success = false, message = "憑證已過期或不合法，請重新登入" };
+
+            var newAccessToken = GenerateJwtToken(user);
+            var newRefreshToken = GenerateRefreshToken();
+
+            user.RefreshToken = newRefreshToken;
+            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+            await _context.SaveChangesAsync();
+
+            var userdto = new UserDto
+            {
+                UserId = user.Id,
+                Username = user.Username,
+                Email = user.Email,
+                Role = user.Role
+            };
+
+            return new AuthResult
+            {
+                success = true,
+                message = "憑證刷新成功",
+                token = newAccessToken,
+                RefreshToken = newRefreshToken, 
+                userdto = userdto
+            };
+        }
+
+
+
+
 
         public async Task<AuthResult> UpdateProfileAsync(int userId, UpdateProfileDto dto)
         {
@@ -139,10 +187,10 @@ namespace SupermarketMock.Services
 
             var userdto = new UserDto
             {
-                userId = user.Id,
-                username = user.Username,
-                email = user.Email,
-                role = user.Role
+                UserId = user.Id,
+                Username = user.Username,
+                Email = user.Email,
+                Role = user.Role
             };
 
             return new AuthResult
@@ -199,6 +247,14 @@ namespace SupermarketMock.Services
 
             return new JwtSecurityTokenHandler().WriteToken(token);
 
+        }
+
+        private string GenerateRefreshToken()
+        {
+            var randomNumber = new byte[64];
+            using var rng = RandomNumberGenerator.Create();
+            rng.GetBytes(randomNumber);
+            return Convert.ToBase64String(randomNumber);
         }
     }
             

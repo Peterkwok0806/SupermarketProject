@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SupermarketMock.DTOs;
 using SupermarketMock.Services;
@@ -49,15 +50,70 @@ namespace SupermarketMock.Controllers
                     return BadRequest(new { message = result.message });
                 }
 
-                return Ok(result);
+                if (!string.IsNullOrEmpty(result.RefreshToken))
+                {
+                    SetRefreshTokenCookie(result.RefreshToken);
+                }
+
+                return Ok(new
+                {
+                    success = result.success,
+                    message = result.message,
+                    token = result.token,       
+                    userdto = result.userdto
+                });
             }
             catch (Exception ex) 
             {
                 return StatusCode(500, new { message = "登入失敗", error = ex.Message });
             }
-            
+        }
 
+        [HttpPost("refresh-token")]
+        public async Task<IActionResult> RefreshToken()
+        {
+            // 從客戶端自動帶過來的 Cookie 中讀取加密的 Refresh Token
+            if (!Request.Cookies.TryGetValue("refreshToken", out var oldRefreshToken))
+            {
+                return Unauthorized(new { message = "找不到刷新憑證" });
+            }
 
+            var result = await _authService.RefreshTokenAsync(oldRefreshToken);
+
+            if (!result.success)
+            {
+                return Unauthorized(new { message = result.message });
+            }
+
+            // 滾動式更新：將全新的 Refresh Token 重新寫入 Cookie
+            if (!string.IsNullOrEmpty(result.RefreshToken))
+            {
+                SetRefreshTokenCookie(result.RefreshToken);
+            }
+
+            // 只回傳全新的 Access Token 給前端 LocalStorage
+            return Ok(new
+            {
+                success = result.success,
+                message = result.message,
+                token = result.token,
+                userdto = result.userdto
+            });
+        }
+
+        [HttpPost("logout")]
+        public IActionResult Logout()
+        {
+            // 透過將過期時間設定為「過去的某一秒」，強制瀏覽器立刻銷毀該 Cookie
+            Response.Cookies.Append("refreshToken", "", new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Lax,
+                Expires = DateTime.UtcNow.AddDays(-1)
+            });
+
+            return Ok(new { success = true, message = "已安全登出並清除憑證" });
         }
 
         [HttpPut("profile")]
@@ -76,6 +132,17 @@ namespace SupermarketMock.Controllers
             return result.success ? Ok(result) : BadRequest(result);
         }
 
+        private void SetRefreshTokenCookie(string refreshToken)
+        {
+            var cookieOptions = new CookieOptions
+            {
+                HttpOnly = true,     
+                Secure = true,          
+                SameSite = SameSiteMode.Lax, 
+                Expires = DateTime.UtcNow.AddDays(7) 
+            };
 
+            Response.Cookies.Append("refreshToken", refreshToken, cookieOptions);
+        }
     }
 }

@@ -1,5 +1,5 @@
 import { Injectable, inject, signal, computed } from '@angular/core';
-import { firstValueFrom, lastValueFrom } from 'rxjs';
+import { lastValueFrom, Observable, tap } from 'rxjs';
 import { RegisterRequest, AuthResponse, LoginRequest, updateProfileRequest } from '../models/auth';
 import { AuthApiService } from './auth-api.service';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -20,6 +20,35 @@ export class AuthService {
 
   constructor() { 
     this.loadTokenFromStorage();
+  }
+
+  // 獲取目前 LocalStorage 中的 Access Token，提供給全域攔截器組裝 Header
+  getAccessToken(): string | null {
+    return localStorage.getItem('token');
+  }
+
+  // 💡 全新新增：提供給全域攔截器（authInterceptor）使用的無感刷新方法
+  // 這裡回傳 Observable 是為了配合攔截器的 RxJS 管道操作 (switchMap/catchError)
+  refreshToken(): Observable<AuthResponse> {
+    return this.authApi.refreshToken().pipe(
+      tap({
+        next: (response) => {
+          if (response?.success && response.token) {
+            // 收到新發放的 Access Token，更新本地存儲與狀態
+            localStorage.setItem('token', response.token);
+            if (response.userdto) {
+              localStorage.setItem('currentUser', JSON.stringify(response.userdto));
+              this.currentUser.set(response.userdto);
+            }
+            this.isLoggedIn.set(true);
+          }
+        },
+        error: (err) => {
+          console.error('背景自動刷新憑證失敗，Refresh Token 已過期', err);
+          this.clearLocalData(); // 刷新失敗代表沒救了，直接抹除本地殘留資料
+        }
+      })
+    );
   }
 
   async registerUser(data: RegisterRequest){
@@ -90,10 +119,11 @@ export class AuthService {
   async updateProfile(data:updateProfileRequest){
     try{
       const response = await lastValueFrom( this.authApi.updateProfile(data));
-      if(response.success && response.token)
+      if(response.success && response.token){
         localStorage.setItem('token', response.token);
         localStorage.setItem('currentUser', JSON.stringify(response.userdto));
         this.currentUser.set(response.userdto);
+      }
     }catch (error: any){
       console.error('Login error', error);
     }
@@ -108,13 +138,26 @@ export class AuthService {
   }
 
   
-  logout() {
+  // 💡 修正優化：將原本的同步登出改為 async 非同步
+  // 除了清除前端記憶體，還必須發送請求通知後端 .NET 刪除 Cookie 裡的 Refresh Token
+  async logout() {
+    try {
+      // 💡 呼叫後端 API，讓後端將過期的空 Cookie 覆蓋回來進而銷毀憑證
+      await lastValueFrom(this.authApi.logout());
+    } catch (error) {
+      console.error('後端 Cookie 清除失敗，但仍將強制清理前端狀態', error);
+    } finally {
+      // 💡 不管後端成功與否，前端都必須確實執行清除與跳轉
+      this.clearLocalData();
+      this.router.navigate(['/login']);
+    }
+  }
+
+  private clearLocalData() {
     localStorage.removeItem('token');
     localStorage.removeItem('currentUser');
     this.currentUser.set(null);
     this.isLoggedIn.set(false);
-  
-    this.router.navigate(['/login']);
   }
 
   isTokenValid(): boolean {

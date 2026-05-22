@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, OnDestroy } from '@angular/core';
+import { Component, inject,signal,HostListener } from '@angular/core';
 import { RouterLink,Router } from '@angular/router';
 import { CommonModule} from '@angular/common';
 import { CartService } from '../../services/cart.service';
@@ -25,6 +25,7 @@ export class HeaderComponent {
   searchTerm:string="";
   private searchTerms$ = new Subject<string>();
   showSuggestions: boolean = false;
+  isDropdownOpen = signal<boolean>(false);
 
 
   totalItems = this.cartService.totalItems;
@@ -70,6 +71,17 @@ export class HeaderComponent {
     setTimeout(() => {
       this.showSuggestions = false;
     }, 150); // 微調為 150 毫秒
+  }
+
+  toggleDropdown(event: Event) {
+    event.stopPropagation();
+    this.isDropdownOpen.update(prev => !prev);
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: Event) {
+    // 只要點擊網頁其他地方，就強制將選單關閉
+    this.isDropdownOpen.set(false);
   }
 
 
