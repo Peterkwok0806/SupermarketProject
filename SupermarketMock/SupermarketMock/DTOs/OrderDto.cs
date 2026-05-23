@@ -12,7 +12,7 @@ namespace SupermarketMock.DTOs
 
     public class OrderDto
     {
-        public int id { get; set; }
+        public string snowflakeId { get; set; }
         public decimal totalAmount { get; set; }
         public OrderStatus status { get; set; }
         public string fullName { get; set; } = string.Empty;

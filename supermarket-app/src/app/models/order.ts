@@ -6,7 +6,7 @@ export interface OrderRequest {
 }
 
 export interface OrderEntity {
-  id: number;
+  snowflakeId: string;
   totalAmount: number;
   status: OrderStatus;
   fullName: string;

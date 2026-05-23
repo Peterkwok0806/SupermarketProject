@@ -18,10 +18,10 @@ export class OrderSuccessComponent implements OnInit{
  
   ngOnInit() {
     this.route.queryParams.subscribe(async params => {
-      const id = params['id'];
-      if (id) {
+      const snowflakeId = params['snowflakeId'];
+      if (snowflakeId) {
         // 通知邏輯層去撈取資料
-        await this.orderService.loadOrderDetail(id);
+        await this.orderService.loadOrderDetail(snowflakeId);
       }
     });
   }

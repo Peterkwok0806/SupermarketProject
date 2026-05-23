@@ -1,22 +1,26 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using IdGen;
+using Microsoft.EntityFrameworkCore;
 using SupermarketMock.DTOs;
 using SupermarketMock.Models;
+using System.Reflection.Emit;
 namespace SupermarketMock.Services
 {
     public class OrderService : IOrderService
     {
         private readonly SupermarketContext _context;
+        private readonly IIdGenerator<long> _idGenerator;
 
-        public OrderService(SupermarketContext context)
+        public OrderService(SupermarketContext context, IIdGenerator<long> idGenerator)
         {
             _context = context;
+            _idGenerator = idGenerator;
         }
 
         private OrderDto MapToOrderDto(Order order, Dictionary<int, Product> lockedProducts)
         {
             return new OrderDto
             {
-                id = order.Id,
+                snowflakeId = order.SnowflakeId.ToString(),
                 totalAmount = order.TotalAmount,
                 status = order.Status,
                 fullName = order.FullName,
@@ -43,7 +47,7 @@ namespace SupermarketMock.Services
         {
             return new OrderDto
             {
-                id = order.Id,
+                snowflakeId = order.SnowflakeId.ToString(),
                 totalAmount = order.TotalAmount,
                 status = order.Status,
                 fullName = order.FullName,
@@ -98,6 +102,7 @@ namespace SupermarketMock.Services
                 var order = new Order
                 {
                     UserId = userId,
+                    SnowflakeId = _idGenerator.CreateId(),
                     FullName = dto.FullName,
                     Phone = dto.Phone,
                     Address = dto.Address,
@@ -160,12 +165,18 @@ namespace SupermarketMock.Services
 
         }
 
-        public async Task<OrderDto?> GetOrderByIdAsync(int orderId, int userId)
+        public async Task<OrderDto?> GetOrderByIdAsync(string orderSnowflakeId, int userId)
         {
+
+            if (!long.TryParse(orderSnowflakeId, out long snowflakeIdLong))
+            {
+                return null;
+            }
+
             var order = await _context.Orders
                 .Include(o => o.OrderItems)
                 .ThenInclude(oi => oi.Product)
-                .FirstOrDefaultAsync(o => o.Id == orderId && o.UserId == userId);
+                .FirstOrDefaultAsync(o => o.SnowflakeId == snowflakeIdLong && o.UserId == userId);
             if (order == null) return null;
             return MapToOrderDto(order);
 

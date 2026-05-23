@@ -5,6 +5,8 @@ using SupermarketMock;
 using SupermarketMock.DTOs;
 using SupermarketMock.Services;
 using System.Text;
+using IdGen;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -58,6 +60,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 builder.Services.AddAuthorization();
+
+// 註冊雪花 ID 產生器，設定當前伺服器節點編號為 1
+builder.Services.AddSingleton<IIdGenerator<long>>(new IdGenerator(1));
 
 
 var app = builder.Build();

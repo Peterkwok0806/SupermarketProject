@@ -66,6 +66,8 @@ namespace SupermarketMock
 
                 // 2. 複合索引（適用於後台管理：依狀態排序最新訂單）
                 entity.HasIndex(o => new { o.Status, o.CreatedAt });
+
+                entity.HasIndex(p => p.SnowflakeId).IsUnique();
             });
 
             // ==================== User 與 Cart 一對一 ====================

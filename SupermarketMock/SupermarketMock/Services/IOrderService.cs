@@ -6,7 +6,7 @@ namespace SupermarketMock.Services
     public interface IOrderService
     {
         Task<OrderResult> CreateOrderAsync(int userId, CreateOrderDto dto);
-        Task<OrderDto?> GetOrderByIdAsync(int orderId, int userId);
+        Task<OrderDto?> GetOrderByIdAsync(string orderSnowflakeId, int userId);
         Task<List<OrderDto>> GetOrdersByUserIdAsync(int userId);
     }
 

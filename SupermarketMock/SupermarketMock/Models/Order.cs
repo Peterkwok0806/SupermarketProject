@@ -15,6 +15,8 @@
         public int UserId { get; set; }
         public User User { get; set; } = null!;
 
+        public long SnowflakeId { get; set; }
+
         public decimal TotalAmount { get; set; }
 
         // 使用 Enum

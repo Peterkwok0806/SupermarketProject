@@ -18,8 +18,8 @@ export class OrderApiService {
   }
 
   /** 取得單筆訂單 */
-  getOrderById(orderId: number): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/${orderId}`);
+  getOrderById(ordersnowflakeId: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/${ordersnowflakeId}`);
   }
 
   /** 取得我的所有訂單 */

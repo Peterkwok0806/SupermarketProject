@@ -24,10 +24,10 @@ export class OrderService {
     this.isSubmitting.set(true);
     try {
       const response = await lastValueFrom(this.orderApi.createOrder(data));
-      if (response.success && response?.order?.id){
+      if (response.success && response?.order?.snowflakeId){
         this.cartService.clearCart();  
         await this.router.navigate(['/order-success'], {
-        queryParams: { id: response.order.id }
+        queryParams: { snowflakeId: response.order.snowflakeId }
       });
       }
     }catch (error: any){
@@ -37,10 +37,10 @@ export class OrderService {
     }
   }
 
-  async loadOrderDetail(orderId: number){
+  async loadOrderDetail(orderSnowflakeId: string){
     this.isProcessing.set(false);
     try{
-      const response = await lastValueFrom(this.orderApi.getOrderById(orderId));
+      const response = await lastValueFrom(this.orderApi.getOrderById(orderSnowflakeId));
       this.currentOrder.set(response);
     }catch(error){
       console.error('邏輯層：獲取訂單詳細失敗', error);

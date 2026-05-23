@@ -21,14 +21,17 @@ order =this.orderServices.currentOrder;
 isLoading = true;
 
 ngOnInit() {
-    const orderId = Number(this.route.snapshot.paramMap.get('id'));
-    this.loadOrder(orderId);
+    const orderSnowflakeId = (this.route.snapshot.paramMap.get('snowflakeId'));
+    this.loadOrder(orderSnowflakeId);
   }
 
-async loadOrder(orderId: number) {
+async loadOrder(snowflakeId: string| null) {
     this.isLoading = true;
+    if (snowflakeId == null){
+      return;
+    }
     try{
-    await this.orderServices.loadOrderDetail(orderId);
+    await this.orderServices.loadOrderDetail(snowflakeId);
     }catch(err){
       console.error(err);
     }finally{

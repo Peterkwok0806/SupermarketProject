@@ -8,7 +8,7 @@
     <ng-container matColumnDef="id">
       <!-- 2. 使用 !bg-purple-700 和 !text-white 強制覆蓋標頭 -->
       <mat-header-cell *matHeaderCellDef class="!bg-purple-700 !text-white font-semibold"> Order ID </mat-header-cell>
-      <mat-cell *matCellDef="let order" class="!text-gray-700">#{{ order.id }}</mat-cell>
+      <mat-cell *matCellDef="let order" class="!text-gray-700">#{{ order.snowflakeId }}</mat-cell>
     </ng-container>
 
     <!-- Date -->
@@ -42,7 +42,7 @@
       <mat-cell *matCellDef="let order">
         <!-- 移除 color="primary"，改用 Tailwind 強制設定藍底白字與正方形 -->
         <button mat-raised-button 
-                [routerLink]="['/order', order.id]"
+                [routerLink]="['/order', order.snowflakeId]"
                 class="!bg-blue-600 !text-white !rounded-none font-medium px-4 py-2 transition-colors hover:!bg-blue-700">
           Detail
         </button>

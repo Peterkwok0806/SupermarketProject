@@ -29,11 +29,11 @@ namespace SupermarketMock.Controllers
             return result.Success ? Ok(result) : BadRequest(result);
         }
 
-        [HttpGet("{orderId}")]
-        public async Task<IActionResult> GetOrder(int orderId)
+        [HttpGet("{ordersnowflakeId}")]
+        public async Task<IActionResult> GetOrder(string orderSnowflakeId)
         {
             int userId = GetCurrentUserId();
-            var order = await _orderService.GetOrderByIdAsync(orderId, userId);
+            var order = await _orderService.GetOrderByIdAsync(orderSnowflakeId, userId);
             return order != null ? Ok(order) : NotFound();
         }
 
