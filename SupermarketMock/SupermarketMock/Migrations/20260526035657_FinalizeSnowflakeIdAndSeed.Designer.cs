@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SupermarketMock;
 
@@ -11,9 +12,11 @@ using SupermarketMock;
 namespace SupermarketMock.Migrations
 {
     [DbContext(typeof(SupermarketContext))]
-    partial class SupermarketContextModelSnapshot : ModelSnapshot
+    [Migration("20260526035657_FinalizeSnowflakeIdAndSeed")]
+    partial class FinalizeSnowflakeIdAndSeed
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -140,9 +143,6 @@ namespace SupermarketMock.Migrations
 
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
-
-                    b.Property<decimal>("SubTotal")
-                        .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("UnitPrice")
                         .HasColumnType("decimal(18,2)");
@@ -557,9 +557,6 @@ namespace SupermarketMock.Migrations
                     b.Property<DateTime?>("OverrideStartDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("Priority")
-                        .HasColumnType("int");
-
                     b.HasKey("ProductId", "PromotionId");
 
                     b.HasIndex("PromotionId");
@@ -570,47 +567,40 @@ namespace SupermarketMock.Migrations
                         new
                         {
                             ProductId = 1,
-                            PromotionId = 1,
-                            Priority = 10
+                            PromotionId = 1
                         },
                         new
                         {
                             ProductId = 11,
                             PromotionId = 1,
                             OverrideEndDate = new DateTime(2026, 7, 15, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            OverrideStartDate = new DateTime(2026, 6, 15, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Priority = 10
+                            OverrideStartDate = new DateTime(2026, 6, 15, 0, 0, 0, 0, DateTimeKind.Unspecified)
                         },
                         new
                         {
                             ProductId = 6,
-                            PromotionId = 2,
-                            Priority = 20
+                            PromotionId = 2
                         },
                         new
                         {
                             ProductId = 12,
-                            PromotionId = 2,
-                            Priority = 20
+                            PromotionId = 2
                         },
                         new
                         {
                             ProductId = 7,
-                            PromotionId = 3,
-                            Priority = 5
+                            PromotionId = 3
                         },
                         new
                         {
                             ProductId = 13,
                             PromotionId = 3,
-                            OverrideEndDate = new DateTime(2026, 5, 25, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Priority = 5
+                            OverrideEndDate = new DateTime(2026, 5, 25, 0, 0, 0, 0, DateTimeKind.Unspecified)
                         },
                         new
                         {
                             ProductId = 8,
-                            PromotionId = 4,
-                            Priority = 1
+                            PromotionId = 4
                         });
                 });
 
@@ -743,9 +733,9 @@ namespace SupermarketMock.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2026, 5, 26, 9, 41, 39, 408, DateTimeKind.Utc).AddTicks(411),
+                            CreatedAt = new DateTime(2026, 5, 26, 3, 56, 56, 794, DateTimeKind.Utc).AddTicks(380),
                             Email = "admin@supermart.com",
-                            PasswordHash = "$2a$11$6jZhESDnyEvP3nU/4HLDi.epkOpuT0YDJx4elZc72LmXlqdA8fc.O",
+                            PasswordHash = "$2a$11$uvvjFrsD..fxYjtT4Ob1MuLheZKEEO0K26Ev4nTiTOXD2HqVAXUwC",
                             Role = "Admin",
                             Username = "admin"
                         });

@@ -51,35 +51,60 @@
   <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
     <!-- 💡 直接循環 products 變數，不用再寫 async -->
     @for (item of products; track item.id) {
-      <div class="bg-white rounded-2xl shadow-sm hover:shadow-lg transition overflow-hidden group flex flex-col justify-between">
+      <div class="bg-white rounded-2xl shadow-sm hover:shadow-lg transition overflow-hidden group flex flex-col justify-between relative">
         
         <div>
           <div [routerLink]="['/product', item.id]" class="cursor-pointer">
-          <!-- Image -->
+            <!-- Image Container -->
             <div class="aspect-square bg-gray-100 relative overflow-hidden">
               <img 
                 [src]="'/images/products/' + item.photo"
                 [alt]="item.name"
                 class="w-full h-full object-cover group-hover:scale-105 transition duration-300"
                 onerror="this.src='https://picsum.photos'; this.onerror=null;">
+
+              <!-- 💡 新增：浮動促銷標籤區塊（左上角疊加） -->
+              @if (item.isOnSale && item.promotionNames?.length) {
+                <div class="absolute top-3 left-3 flex flex-col gap-1.5 z-10 max-w-[85%]">
+                  @for (promoName of item.promotionNames; track promoName) {
+                    <span class="bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-sm backdrop-blur-sm truncate">
+                      🔥 {{ promoName }}
+                    </span>
+                  }
+                </div>
+              }
             </div>
 
             <!-- Info -->
             <div class="p-5">
-              <!-- 💡 修正：直接點出商品內附帶的分類圖示與名稱 -->
-              <h3 class="font-semibold text-lg line-clamp-2 h-12 mt-1 text-gray-800">{{ item.name }}</h3>
+              <h3 class="font-semibold text-lg line-clamp-2 h-12 mt-1 text-gray-800 hover:text-purple-700 transition">{{ item.name }}</h3>
             </div>
           </div>  
         </div>
 
         <!-- Price & Action -->
         <div class="p-5 pt-0">
-          <p class="text-2xl font-bold text-purple-700 mt-1">
-            {{ item.price | currency:'HKD':'symbol-narrow' }}
-          </p>
+          <!-- 💡 新增：支援優惠價格顯示的區塊 -->
+          <div class="flex flex-wrap items-baseline gap-2 mt-1 min-h-[2.5rem]">
+            @if (item.isOnSale && item.originalPrice) {
+              <!-- 特價時：顯示紅/紫色的折後最終售價 -->
+              <span class="text-2xl font-black text-red-600">
+                {{ item.price | currency:'HKD':'symbol-narrow' }}
+              </span>
+              <!-- 特價時：顯示灰色劃掉的原價 -->
+              <span class="text-sm font-medium text-gray-400 line-through">
+                {{ item.originalPrice | currency:'HKD':'symbol-narrow' }}
+              </span>
+            } @else {
+              <!-- 原價時：只顯示一般的原價 -->
+              <span class="text-2xl font-bold text-purple-700">
+                {{ item.price | currency:'HKD':'symbol-narrow' }}
+              </span>
+            }
+          </div>
 
           <button (click)="addToCart(item.id, 1)" 
-                  class="mt-5 w-full bg-purple-700 hover:bg-purple-800 text-white py-3 rounded-2xl font-medium transition shadow-sm hover:shadow">
+                  class="mt-4 w-full bg-purple-700 hover:bg-purple-800 text-white py-3 rounded-2xl font-medium transition shadow-sm hover:shadow active:scale-[0.98]">
             Add to Cart
           </button>
         </div>
@@ -100,3 +125,4 @@
     <p class="text-gray-500 text-lg font-medium">Loading our products...</p>
   </div>
 </ng-template>
+

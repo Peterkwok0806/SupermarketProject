@@ -1,14 +1,6 @@
 ﻿namespace SupermarketMock.Models
 {
-    public enum OrderStatus
-    {
-        Pending,     // 待處理
-        Paid,        // 已付款
-        Processing,  // 處理中
-        Shipped,     // 已出貨
-        Completed,   // 已完成
-        Cancelled    // 已取消
-    }
+    
     public class Order
     {
         public int Id { get; set; }
@@ -44,6 +36,18 @@
         public int Quantity { get; set; } = 1;
         public decimal UnitPrice { get; set; }     // 購買當時的單價
 
+        public decimal SubTotal { get; set; }
+
         public DateTime AddedAt { get; set; } = DateTime.UtcNow;
+    }
+
+    public enum OrderStatus
+    {
+        Pending,     // 待處理
+        Paid,        // 已付款
+        Processing,  // 處理中
+        Shipped,     // 已出貨
+        Completed,   // 已完成
+        Cancelled    // 已取消
     }
 }

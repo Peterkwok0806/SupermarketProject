@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SupermarketMock;
 
@@ -11,9 +12,11 @@ using SupermarketMock;
 namespace SupermarketMock.Migrations
 {
     [DbContext(typeof(SupermarketContext))]
-    partial class SupermarketContextModelSnapshot : ModelSnapshot
+    [Migration("20260526031300_AllPromotionAndProductPromotionTable")]
+    partial class AllPromotionAndProductPromotionTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -141,9 +144,6 @@ namespace SupermarketMock.Migrations
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
-                    b.Property<decimal>("SubTotal")
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<decimal>("UnitPrice")
                         .HasColumnType("decimal(18,2)");
 
@@ -197,7 +197,7 @@ namespace SupermarketMock.Migrations
                     b.Property<int?>("ReviewCount")
                         .HasColumnType("int");
 
-                    b.Property<long>("SnowflakeId")
+                    b.Property<long?>("SnowflakeId")
                         .HasColumnType("bigint");
 
                     b.Property<int>("StockQuantity")
@@ -210,14 +210,11 @@ namespace SupermarketMock.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal?>("Weight")
-                        .HasColumnType("decimal(18,3)");
+                        .HasColumnType("decimal(10,3)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("CategoryId");
-
-                    b.HasIndex("SnowflakeId")
-                        .IsUnique();
 
                     b.ToTable("Products");
 
@@ -231,7 +228,6 @@ namespace SupermarketMock.Migrations
                             Name = "Fresh Milk",
                             Photo = "milk.jpg",
                             Price = 22.90m,
-                            SnowflakeId = 317625235773855528L,
                             StockQuantity = 120,
                             Unit = "piece"
                         },
@@ -244,7 +240,6 @@ namespace SupermarketMock.Migrations
                             Name = "Whole Wheat Bread",
                             Photo = "bread.jpg",
                             Price = 18.50m,
-                            SnowflakeId = 317625235773854947L,
                             StockQuantity = 80,
                             Unit = "piece"
                         },
@@ -257,7 +252,6 @@ namespace SupermarketMock.Migrations
                             Name = "Large Eggs (10pcs)",
                             Photo = "eggs.jpg",
                             Price = 28.00m,
-                            SnowflakeId = 317625235773856039L,
                             StockQuantity = 65,
                             Unit = "piece"
                         },
@@ -270,7 +264,6 @@ namespace SupermarketMock.Migrations
                             Name = "Red Apple",
                             Photo = "apple.jpg",
                             Price = 15.90m,
-                            SnowflakeId = 317625235773857742L,
                             StockQuantity = 200,
                             Unit = "piece"
                         },
@@ -283,7 +276,6 @@ namespace SupermarketMock.Migrations
                             Name = "Banana",
                             Photo = "banana.jpg",
                             Price = 12.90m,
-                            SnowflakeId = 317625235773855304L,
                             StockQuantity = 150,
                             Unit = "piece"
                         },
@@ -296,7 +288,6 @@ namespace SupermarketMock.Migrations
                             Name = "Chicken Breast",
                             Photo = "chicken.jpg",
                             Price = 48.00m,
-                            SnowflakeId = 317625235773856174L,
                             StockQuantity = 45,
                             Unit = "piece"
                         },
@@ -309,7 +300,6 @@ namespace SupermarketMock.Migrations
                             Name = "Coca Cola 1.25L",
                             Photo = "coke.jpg",
                             Price = 9.90m,
-                            SnowflakeId = 317625235773855812L,
                             StockQuantity = 90,
                             Unit = "piece"
                         },
@@ -322,7 +312,6 @@ namespace SupermarketMock.Migrations
                             Name = "Potato Chips",
                             Photo = "chips.jpg",
                             Price = 14.50m,
-                            SnowflakeId = 317625235773854539L,
                             StockQuantity = 110,
                             Unit = "piece"
                         },
@@ -335,7 +324,6 @@ namespace SupermarketMock.Migrations
                             Name = "White Rice 5kg",
                             Photo = "rice.jpg",
                             Price = 45.00m,
-                            SnowflakeId = 317625235773856987L,
                             StockQuantity = 60,
                             Unit = "piece"
                         },
@@ -348,7 +336,6 @@ namespace SupermarketMock.Migrations
                             Name = "Tomato",
                             Photo = "tomato.jpg",
                             Price = 8.90m,
-                            SnowflakeId = 317625235773854504L,
                             StockQuantity = 180,
                             Unit = "piece"
                         },
@@ -361,7 +348,6 @@ namespace SupermarketMock.Migrations
                             Name = "Strawberry Yogurt",
                             Photo = "yogurt.jpg",
                             Price = 7.90m,
-                            SnowflakeId = 317625235773856480L,
                             StockQuantity = 95,
                             Unit = "piece"
                         },
@@ -374,7 +360,6 @@ namespace SupermarketMock.Migrations
                             Name = "Salmon Fillet",
                             Photo = "salmon.jpg",
                             Price = 89.00m,
-                            SnowflakeId = 317625235773857309L,
                             StockQuantity = 30,
                             Unit = "piece"
                         },
@@ -387,7 +372,6 @@ namespace SupermarketMock.Migrations
                             Name = "Orange Juice",
                             Photo = "orangejuice.jpg",
                             Price = 19.90m,
-                            SnowflakeId = 317625235773854823L,
                             StockQuantity = 70,
                             Unit = "piece"
                         },
@@ -400,7 +384,6 @@ namespace SupermarketMock.Migrations
                             Name = "Ice Cream Vanilla",
                             Photo = "icecream.jpg",
                             Price = 35.00m,
-                            SnowflakeId = 317625235773854877L,
                             StockQuantity = 55,
                             Unit = "piece"
                         },
@@ -413,7 +396,6 @@ namespace SupermarketMock.Migrations
                             Name = "Toothpaste",
                             Photo = "toothpaste.jpg",
                             Price = 16.90m,
-                            SnowflakeId = 317625235773854243L,
                             StockQuantity = 140,
                             Unit = "piece"
                         });
@@ -557,9 +539,6 @@ namespace SupermarketMock.Migrations
                     b.Property<DateTime?>("OverrideStartDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("Priority")
-                        .HasColumnType("int");
-
                     b.HasKey("ProductId", "PromotionId");
 
                     b.HasIndex("PromotionId");
@@ -570,47 +549,40 @@ namespace SupermarketMock.Migrations
                         new
                         {
                             ProductId = 1,
-                            PromotionId = 1,
-                            Priority = 10
+                            PromotionId = 1
                         },
                         new
                         {
                             ProductId = 11,
                             PromotionId = 1,
                             OverrideEndDate = new DateTime(2026, 7, 15, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            OverrideStartDate = new DateTime(2026, 6, 15, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Priority = 10
+                            OverrideStartDate = new DateTime(2026, 6, 15, 0, 0, 0, 0, DateTimeKind.Unspecified)
                         },
                         new
                         {
                             ProductId = 6,
-                            PromotionId = 2,
-                            Priority = 20
+                            PromotionId = 2
                         },
                         new
                         {
                             ProductId = 12,
-                            PromotionId = 2,
-                            Priority = 20
+                            PromotionId = 2
                         },
                         new
                         {
                             ProductId = 7,
-                            PromotionId = 3,
-                            Priority = 5
+                            PromotionId = 3
                         },
                         new
                         {
                             ProductId = 13,
                             PromotionId = 3,
-                            OverrideEndDate = new DateTime(2026, 5, 25, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Priority = 5
+                            OverrideEndDate = new DateTime(2026, 5, 25, 0, 0, 0, 0, DateTimeKind.Unspecified)
                         },
                         new
                         {
                             ProductId = 8,
-                            PromotionId = 4,
-                            Priority = 1
+                            PromotionId = 4
                         });
                 });
 
@@ -626,7 +598,7 @@ namespace SupermarketMock.Migrations
                         .HasColumnType("int");
 
                     b.Property<decimal?>("DiscountValue")
-                        .HasColumnType("decimal(18, 2)");
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<DateTime>("EndDate")
                         .HasColumnType("datetime2");
@@ -743,9 +715,9 @@ namespace SupermarketMock.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2026, 5, 26, 9, 41, 39, 408, DateTimeKind.Utc).AddTicks(411),
+                            CreatedAt = new DateTime(2026, 5, 26, 3, 12, 59, 325, DateTimeKind.Utc).AddTicks(8220),
                             Email = "admin@supermart.com",
-                            PasswordHash = "$2a$11$6jZhESDnyEvP3nU/4HLDi.epkOpuT0YDJx4elZc72LmXlqdA8fc.O",
+                            PasswordHash = "$2a$11$Wg09rqBbC0.0cxWPKGMl9eSf38nVpGckye6G.iAcTrJ7T.Qsk.y6.",
                             Role = "Admin",
                             Username = "admin"
                         });

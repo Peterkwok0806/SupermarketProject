@@ -8,6 +8,7 @@ export interface ProductCategory {
 
 export interface Product {
   id: number;
+  snowflakeId: string;
   name: string;
   price: number;
   description?: string;
@@ -20,12 +21,19 @@ export interface Product {
   weight?: number;
   unit?: string;
   isOnSale?: boolean;
-  discountPercentage?: number;
+  promotionNames?: string[];
+
 }
 
 export interface ProductDto{
   id: number;
+  snowflakeId: string;
   name: string;
   price: number;
   photo: string;
+  isOnSale: boolean;
+  originalPrice?: number;
+  promotionNames?: string[];
 }
+
+

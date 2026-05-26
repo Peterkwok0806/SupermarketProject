@@ -25,17 +25,7 @@ namespace SupermarketMock.Services
                 query = query.Where(p => p.CategoryId == category.Value);
             }
 
-            var products = await query
-            .OrderBy(p => p.Name)
-            .Select(p => new ProductDto
-            {
-                id = p.Id,
-                name = p.Name,
-                price = p.Price,
-                photo = p.Photo
-            }).ToListAsync();
-
-            return products;
+            return await BuildProductDtosAsync(query);
         }
 
         public async Task<IEnumerable<ProductCategory>> GetCategoriesAsync()
@@ -45,11 +35,55 @@ namespace SupermarketMock.Services
                          .ToListAsync();
         }
 
-        public async Task<Product?> GetProductByIdAsync(int id)
+        public async Task<ProductDetailDto?> GetProductByIdAsync(int id)
         {
-            return await _context.Products
-                                .Include(p => p.Category)
-                                .FirstOrDefaultAsync(p => p.Id == id);
+            var now = DateTime.UtcNow;
+
+            var product = await _context.Products
+                            .Include(p => p.Category)
+                            .Include(p => p.ProductPromotions
+                                .Where(pp => (pp.OverrideStartDate ?? pp.Promotion.StartDate) <= now
+                                          && (pp.OverrideEndDate ?? pp.Promotion.EndDate) >= now)
+                                .OrderByDescending(pp => pp.Priority))
+                                .ThenInclude(pp => pp.Promotion)
+                            .FirstOrDefaultAsync(p => p.Id == id);
+
+            if (product == null) return null;
+
+            var activePromotions = product.ProductPromotions
+                                   .Select(pp => pp.Promotion)
+                                   .ToList();
+
+            var primaryPromotion = activePromotions.FirstOrDefault();
+
+            decimal finalPrice = primaryPromotion == null ? product.Price : primaryPromotion.Type switch
+            {
+            PromotionType.PercentageOff => Math.Round(product.Price * (1 - (primaryPromotion.DiscountValue!.Value / 100)), 2),
+            PromotionType.FixedDiscount => Math.Max(0, product.Price - primaryPromotion.DiscountValue!.Value),
+            _ => product.Price
+            };
+
+            return new ProductDetailDto
+            {
+                id = product.Id,
+                snowflakeId = product.SnowflakeId,
+                name = product.Name,
+                description = product.Description,
+                price = finalPrice, // 最終折後價
+                originalPrice = activePromotions.Any() ? product.Price : null, // 原價
+                photo = product.Photo,
+                stockQuantity = product.StockQuantity,
+                categoryId = product.CategoryId,    
+                category = product.Category,
+                brand = product.Brand,
+                weight = product.Weight,
+                unit = product.Unit,
+                rating = product.Rating,
+                reviewCount = product.ReviewCount,
+                isOnSale = activePromotions.Any(),
+                promotionNames = activePromotions.Select(p => p.Name).ToList()
+            };
+
         }
 
         public async Task<IEnumerable<ProductDto>> GetProductByKeywordAsync(string keyword)
@@ -60,21 +94,13 @@ namespace SupermarketMock.Services
                 return Enumerable.Empty<ProductDto>();
             }
 
-            var products = await _context.Products
-                            .AsNoTracking()
-                            .Where(p => p.Name.Contains(keyword) ||
-                                        (p.Description != null && p.Description.Contains(keyword)) || 
-                                        (p.Brand != null && p.Brand.Contains(keyword)))
-                            .OrderBy(p => p.Name)
-                            .Select(p => new ProductDto
-                            {
-                                id = p.Id,
-                                name = p.Name,
-                                price = p.Price,
-                                photo = p.Photo
-                            }).ToListAsync();
+            var query = _context.Products.AsNoTracking()
+                .Where(p => p.Name.Contains(keyword) ||
+                            (p.Description != null && p.Description.Contains(keyword)) ||
+                            (p.Brand != null && p.Brand.Contains(keyword)));
 
-            return products;
+
+            return await BuildProductDtosAsync(query);
         }
 
         public async Task<IEnumerable<string>> GetProductSuggestionsAsync(string query)
@@ -95,6 +121,68 @@ namespace SupermarketMock.Services
                 .Take(8)
                 .ToListAsync();
         }
+
+        private ProductDto CalculateMultipleDiscounts(Product product, List<Promotion> promotions)
+        {
+            var dto = new ProductDto
+            {
+                id = product.Id,
+                snowflakeId = product.SnowflakeId.ToString(),
+                name = product.Name,
+                photo = product.Photo,
+                isOnSale = promotions.Any(), // 只要有命中活動就是特價中
+                originalPrice = promotions.Any() ? product.Price : null,
+                promotionNames = promotions.Select(promotion => promotion.Name).ToList()
+            };
+
+            if (!promotions.Any())
+            {
+                dto.price = product.Price;
+                return dto;
+            }
+
+            // 權重最高的活動會排在 List 的第一個 (Index 0), 用它來計算最終顯示價格
+            var primaryPromotion = promotions.First();
+
+            dto.price = primaryPromotion.Type switch
+            {
+                PromotionType.PercentageOff =>
+                    Math.Round(product.Price * (1 - (primaryPromotion.DiscountValue!.Value / 100)), 2),
+
+                PromotionType.FixedDiscount =>
+                    Math.Max(0, product.Price - primaryPromotion.DiscountValue!.Value),
+
+                _ => product.Price
+            };
+
+            return dto;
+
+        }
+
+        private async Task<IEnumerable<ProductDto>> BuildProductDtosAsync(IQueryable<Product> query)
+        {
+            var now = DateTime.UtcNow;
+
+            var rawData = await query
+                .Select(p => new
+                {
+                    Product = p,
+                    ActivePromotions = p.ProductPromotions
+                        .Where(pp => (pp.OverrideStartDate ?? pp.Promotion.StartDate) <= now
+                                  && (pp.OverrideEndDate ?? pp.Promotion.EndDate) >= now)
+                        .OrderByDescending(pp => pp.Priority)
+                        .Select(pp => pp.Promotion)
+                        .ToList()
+                })
+                .ToListAsync();
+
+            return rawData
+                .Select(item => CalculateMultipleDiscounts(item.Product, item.ActivePromotions))
+                .OrderBy(dto => dto.name)
+                .ToList();
+        }
+
+       
 
     }
 }

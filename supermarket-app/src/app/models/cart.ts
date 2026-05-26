@@ -4,6 +4,7 @@ export interface Cart {
   id: number;
   userId: number;
   cartItems: CartItemDto[];
+  totalAmount:number;
 }
 
 export interface CartItemDto {

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SupermarketMock;
 
@@ -11,9 +12,11 @@ using SupermarketMock;
 namespace SupermarketMock.Migrations
 {
     [DbContext(typeof(SupermarketContext))]
-    partial class SupermarketContextModelSnapshot : ModelSnapshot
+    [Migration("20260526052143_UpdateProductPromotionSeedWithPriority")]
+    partial class UpdateProductPromotionSeedWithPriority
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -140,9 +143,6 @@ namespace SupermarketMock.Migrations
 
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
-
-                    b.Property<decimal>("SubTotal")
-                        .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("UnitPrice")
                         .HasColumnType("decimal(18,2)");
@@ -743,9 +743,9 @@ namespace SupermarketMock.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2026, 5, 26, 9, 41, 39, 408, DateTimeKind.Utc).AddTicks(411),
+                            CreatedAt = new DateTime(2026, 5, 26, 5, 21, 42, 967, DateTimeKind.Utc).AddTicks(792),
                             Email = "admin@supermart.com",
-                            PasswordHash = "$2a$11$6jZhESDnyEvP3nU/4HLDi.epkOpuT0YDJx4elZc72LmXlqdA8fc.O",
+                            PasswordHash = "$2a$11$3J/rucxK6yflWshe28BETuqhMP2cOp3Ql7hyk94ix6eHinOTVXX4u",
                             Role = "Admin",
                             Username = "admin"
                         });

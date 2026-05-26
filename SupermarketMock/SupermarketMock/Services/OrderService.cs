@@ -37,7 +37,8 @@ namespace SupermarketMock.Services
                         productName = currentProduct.Name,
                         productPhoto = currentProduct.Photo,
                         quantity = oi.Quantity,
-                        unitPrice = oi.UnitPrice
+                        unitPrice = oi.UnitPrice,
+                        subTotal = oi.SubTotal
                     };
                 }).ToList()
             };
@@ -62,7 +63,9 @@ namespace SupermarketMock.Services
                     productName = oi.Product.Name, 
                     productPhoto = oi.Product.Photo,
                     quantity = oi.Quantity,
-                    unitPrice = oi.UnitPrice
+                    unitPrice = oi.UnitPrice,
+                    subTotal = oi.SubTotal
+
                 }).ToList()
             };
         }
@@ -79,6 +82,7 @@ namespace SupermarketMock.Services
             // 2. 依商品 ID 排序，確保所有執行緒加鎖順序一致，徹底封鎖死鎖（Deadlock）
             var sortedCartItems = cartItems.OrderBy(ci => ci.ProductId).ToList();
             int[] productIds = sortedCartItems.Select(ci => ci.ProductId).ToArray();
+            var now = DateTime.UtcNow;
 
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
@@ -88,9 +92,14 @@ namespace SupermarketMock.Services
                 // 依商品 ID 從小到大，嚴格依序鎖定
                 foreach (var pid in productIds)
                 {
-                    // 傳入單一 int，.FromSql 會轉譯為安全的 WHERE Id = @p0，100% 成功
+                    //利用 FromSql 鎖定行資料的同時，透過 Include 載入「當前有效」的促銷活動
                     var product = await _context.Products
                         .FromSql($"SELECT * FROM Products WITH (UPDLOCK, ROWLOCK) WHERE Id = {pid}")
+                        .Include(p => p.ProductPromotions
+                            .Where(pp => (pp.OverrideStartDate ?? pp.Promotion.StartDate) <= now
+                                          && (pp.OverrideEndDate ?? pp.Promotion.EndDate) >= now)
+                            .OrderByDescending(pp => pp.Priority))
+                        .ThenInclude(pp => pp.Promotion)
                         .FirstOrDefaultAsync();
 
                     if (product != null)
@@ -130,19 +139,70 @@ namespace SupermarketMock.Services
                     // 扣減記憶體中的實體庫存
                     dbProduct.StockQuantity -= cartItem.Quantity;
 
+                    // 重新防禦性計價：抓出該商品目前權重最高的活動
+                    var primaryPromotion = dbProduct.ProductPromotions
+                       .Select(pp => pp.Promotion)
+                       .FirstOrDefault();
+
+                    // 計算這款商品的「基礎折後單價」
+                    decimal finalUnitPrice = primaryPromotion == null ? dbProduct.Price : primaryPromotion.Type switch
+                    {
+                        PromotionType.PercentageOff =>
+                            Math.Round(dbProduct.Price * (1 - (primaryPromotion.DiscountValue!.Value / 100)), 2),
+
+                        PromotionType.FixedDiscount =>
+                            Math.Max(0, dbProduct.Price - primaryPromotion.DiscountValue!.Value),
+
+                        _ => dbProduct.Price // 買二送一、兩件特價時，單件基礎價維持原價
+                    };
+
+                    // 計算這款品項的最終明細總額（處理件數組合優惠）
+                    decimal itemSubTotal = 0;
+
+                    if (primaryPromotion != null && primaryPromotion.Type == PromotionType.BuyXGetYFree)
+                    {
+                        int buyQty = primaryPromotion.BuyQuantity!.Value;
+                        int freeQty = primaryPromotion.FreeQuantity!.Value;
+                        int groupSize = buyQty + freeQty;
+
+                        int completedGroups = cartItem.Quantity / groupSize;
+                        int remainder = cartItem.Quantity % groupSize;
+
+                        int chargeableQuantity = (buyQty * completedGroups) + remainder;
+                        itemSubTotal = finalUnitPrice * chargeableQuantity;
+                    }
+                    else if (primaryPromotion != null && primaryPromotion.Type == PromotionType.QuantitySpecialPrice)
+                    {
+                        int specialQty = primaryPromotion.BuyQuantity!.Value;
+                        decimal specialPrice = primaryPromotion.DiscountValue!.Value;
+
+                        int specialGroups = cartItem.Quantity / specialQty;
+                        int remainder = cartItem.Quantity % specialQty;
+
+                        itemSubTotal = (specialGroups * specialPrice) + (remainder * finalUnitPrice);
+                    }
+                    else
+                    {
+                        // 無數量優惠或無活動，總價 = 基礎折後單價 * 數量
+                        itemSubTotal = finalUnitPrice * cartItem.Quantity;
+                    }
+
                     // 建立訂單明細
                     var orderItem = new OrderItem
                     {
                         ProductId = cartItem.ProductId,
                         Quantity = cartItem.Quantity,
-                        UnitPrice = cartItem.UnitPrice
+                        UnitPrice = finalUnitPrice,
+                        SubTotal = itemSubTotal
                     };
 
                     order.OrderItems.Add(orderItem);
-                    totalAmount += cartItem.UnitPrice * cartItem.Quantity;
+
+                    // 累加每次防禦性計算出的明細總金額
+                    totalAmount += itemSubTotal;
                 }
 
-                order.TotalAmount = totalAmount;
+                order.TotalAmount = Math.Round(totalAmount, 2);
 
                 _context.Orders.Add(order);
                 _context.CartItems.RemoveRange(cartItems); // 移除這批購物車項目

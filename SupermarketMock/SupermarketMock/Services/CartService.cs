@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SupermarketMock.Models;
 using SupermarketMock.DTOs;
-using System.Linq;
+
 
 namespace SupermarketMock.Services
 {
@@ -20,41 +20,143 @@ namespace SupermarketMock.Services
             {
                 Id = cart.Id,
                 UserId = cart.UserId,
-                CartItems = cart.CartItems.Select(ci => new CartItemDto
-                {
-                    ProductId = ci.ProductId,
-                    UnitPrice = ci.UnitPrice,
-                    Quantity = ci.Quantity,
-                    Product = new ProductDto
+                CartItems = cart.CartItems.Select(ci => {
+                    var activePromotions = ci.Product.ProductPromotions
+                        .Select(pp => pp.Promotion)
+                        .ToList();
+
+                    var primaryPromotion = activePromotions.FirstOrDefault();
+
+                    decimal currentPrice = primaryPromotion == null ? ci.Product.Price : primaryPromotion.Type switch
                     {
-                        id = ci.Product.Id,
-                        name = ci.Product.Name,
-                        price = ci.Product.Price,
-                        photo = ci.Product.Photo
-                    }
-                }).ToList()
+                        PromotionType.PercentageOff => Math.Round(ci.Product.Price * (1 - (primaryPromotion.DiscountValue!.Value / 100)), 2),
+                        PromotionType.FixedDiscount => Math.Max(0, ci.Product.Price - primaryPromotion.DiscountValue!.Value),
+                        _ => ci.Product.Price
+                    };
+
+                    return new CartItemDto
+                    {
+                        ProductId = ci.ProductId,
+                        UnitPrice = currentPrice,
+                        Quantity = ci.Quantity,
+                        Product = new ProductDto
+                        {
+                            id = ci.Product.Id,
+                            snowflakeId = ci.Product.SnowflakeId.ToString(),
+                            name = ci.Product.Name,
+                            price = currentPrice,
+                            photo = ci.Product.Photo,
+                            isOnSale = activePromotions.Any(),
+                            originalPrice = activePromotions.Any() ? ci.Product.Price : null,
+                            promotionNames = activePromotions.Select(p => p.Name).ToList() // 輸出多個標籤
+                        }
+                    };
+                }).ToList(),
+
+                TotalAmount = TotalPrice(cart)
+
+
             };
         }
 
         private decimal TotalPrice(Cart cart) 
         {
-            return cart.CartItems.Sum(item => item.UnitPrice * item.Quantity);
+            decimal finalTotal = 0;
+            var now = DateTime.UtcNow;
+
+            foreach (var item in cart.CartItems)
+            {
+                // 該商品目前最優先 (Priority 最高) 的活動
+                var primaryPromotion = item.Product.ProductPromotions
+                                        .Select(pp => pp.Promotion)
+                                        .FirstOrDefault();
+
+                // 計算這款商品的「基礎折後單價」（處理單品打折、現折）
+                decimal basePrice = primaryPromotion == null ? item.Product.Price : primaryPromotion.Type switch
+                {
+                    PromotionType.PercentageOff =>
+                        Math.Round(item.Product.Price * (1 - (primaryPromotion.DiscountValue!.Value / 100)), 2),
+
+                    PromotionType.FixedDiscount =>
+                        Math.Max(0, item.Product.Price - primaryPromotion.DiscountValue!.Value),
+
+                    _ => item.Product.Price // 買二送一、兩件特價時，單件基礎價維持原價
+                };
+
+                // 如果沒有命中數量類型活動，該品項總價就是：基礎折後價 * 數量
+                if (primaryPromotion == null ||
+                    (primaryPromotion.Type != PromotionType.BuyXGetYFree &&
+                     primaryPromotion.Type != PromotionType.QuantitySpecialPrice))
+                {
+                    finalTotal += basePrice * item.Quantity;
+                    continue;
+                }
+
+                if (primaryPromotion.Type == PromotionType.BuyXGetYFree)
+                {
+                    // 買 X 送 Y (例如：買 2 送 1)
+                    int buyQty = primaryPromotion.BuyQuantity!.Value;
+                    int freeQty = primaryPromotion.FreeQuantity!.Value;
+                    int groupSize = buyQty + freeQty; // 一組總共 3 件
+
+                    int completedGroups = item.Quantity / groupSize; // 命中幾組
+                    int remainder = item.Quantity % groupSize;       // 剩下沒滿組的散件
+
+                    // 實際要收費的件數 = (每組應付件數 * 組數) + 散件
+                    int chargeableQuantity = (buyQty * completedGroups) + remainder;
+                    finalTotal += basePrice * chargeableQuantity;
+                }
+                else if (primaryPromotion.Type == PromotionType.QuantitySpecialPrice)
+                {
+                    // N 件特價 (例如：2 件特價 25 元)
+                    int specialQty = primaryPromotion.BuyQuantity!.Value;
+                    decimal specialPrice = primaryPromotion.DiscountValue!.Value;
+
+                    int specialGroups = item.Quantity / specialQty; // 命中幾組特價
+                    int remainder = item.Quantity % specialQty;     // 剩下沒湊滿的散件
+
+                    // 總價 = (特價組數 * 特價總額) + (散件 * 基礎單價)
+                    finalTotal += (specialGroups * specialPrice) + (remainder * basePrice);
+                }
+                
+            }
+            return Math.Round(finalTotal, 2);
+
+        }
+
+        private async Task<Cart?> GetCartWithPromotionsAsync(int userId)
+        {
+            var now = DateTime.UtcNow;
+
+            return await _context.Carts
+                .Include(c => c.CartItems)
+                    .ThenInclude(ci => ci.Product)
+                        // 💡 核心優化：在 SQL 層級直接過濾時間、並依 Priority 降冪排序（最高權重在第一個）
+                        .ThenInclude(p => p.ProductPromotions
+                            .Where(pp => (pp.OverrideStartDate ?? pp.Promotion.StartDate) <= now
+                                      && (pp.OverrideEndDate ?? pp.Promotion.EndDate) >= now)
+                            .OrderByDescending(pp => pp.Priority))
+                        .ThenInclude(pp => pp.Promotion)
+                .FirstOrDefaultAsync(c => c.UserId == userId);
         }
 
         public async Task<CartOperationResult> GetCartByUserIdAsync(int userId)
         {
-            var cart = await _context.Carts
-            .Include(c => c.CartItems)
-            .ThenInclude(ci => ci.Product)
-            .FirstOrDefaultAsync(c => c.UserId == userId);
+            var cart = await GetCartWithPromotionsAsync(userId);
 
-            if (cart == null) return null;
+            if (cart == null)
+            {
+                return new CartOperationResult
+                {
+                    Success = false,
+                    Message = "找不到該使用者的購物車"
+                };
+            }
 
             return new CartOperationResult
             {
                 Success = true,
                 Message = "已找到購物車",
-                totalAmount = TotalPrice(cart),
                 Cart = MapToDto(cart)
             };
 
@@ -64,10 +166,7 @@ namespace SupermarketMock.Services
 
         public async Task<CartOperationResult> AddToCartAsync(int userId, int productId, int quantity)
         {
-            var cart = await _context.Carts
-            .Include(c => c.CartItems)
-            .ThenInclude(ci => ci.Product)
-            .FirstOrDefaultAsync(c => c.UserId == userId);
+            var cart = await GetCartWithPromotionsAsync(userId);
 
             if (cart == null)
             {
@@ -108,17 +207,13 @@ namespace SupermarketMock.Services
             {
                 Success = true,
                 Message = "已加入購物車",
-                totalAmount = TotalPrice(cart),
                 Cart = MapToDto(cart)
             };
         }
 
         public async Task<CartOperationResult> UpdateQuantityAsync(int userId, int productId, int quantity)
         {
-            var cart = await _context.Carts
-             .Include(c => c.CartItems)
-             .ThenInclude(ci => ci.Product)
-             .FirstOrDefaultAsync(c => c.UserId == userId);
+            var cart = await GetCartWithPromotionsAsync(userId);
             if (cart == null)
                 return new CartOperationResult { Success = false, Message = "購物車不存在" };
 
@@ -142,17 +237,13 @@ namespace SupermarketMock.Services
             return new CartOperationResult
             {
                 Success = true,
-                totalAmount = TotalPrice(cart),
                 Cart = MapToDto(cart)
             };
         }
 
         public async Task<CartOperationResult> RemoveFromCartAsync(int userId, int productId)
         {
-            var cart = await _context.Carts
-            .Include(c => c.CartItems)
-            .ThenInclude(ci => ci.Product)
-            .FirstOrDefaultAsync(c => c.UserId == userId);
+            var cart = await GetCartWithPromotionsAsync(userId);
             if (cart == null)
                 return new CartOperationResult { Success = false, Message = "購物車不存在" };
 
@@ -165,26 +256,18 @@ namespace SupermarketMock.Services
 
             return new CartOperationResult 
             { Success = true, 
-              totalAmount = TotalPrice(cart), 
               Cart = MapToDto(cart) 
             };
          }
 
         public async Task ClearCartAsync(int userId)
         {
-            var cart = await _context.Carts
-            .Include(c => c.CartItems)
-            .ThenInclude(ci => ci.Product)
-            .FirstOrDefaultAsync(c => c.UserId == userId);
+            var cart = await GetCartWithPromotionsAsync(userId);
             if (cart != null)
             {
                 cart.CartItems.Clear();
                 await _context.SaveChangesAsync();
             }
         }
-
-        
-
-
     }
 }

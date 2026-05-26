@@ -10,7 +10,7 @@ namespace SupermarketMock.Services
 
         Task<IEnumerable<ProductCategory>> GetCategoriesAsync();
 
-        Task<Product?> GetProductByIdAsync(int id);
+        Task<ProductDetailDto?> GetProductByIdAsync(int id);
 
         Task<IEnumerable<ProductDto>> GetProductByKeywordAsync(string keyword);
 

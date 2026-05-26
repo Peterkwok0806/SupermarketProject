@@ -1,12 +1,12 @@
 <div class="max-w-7xl mx-auto px-6 py-10" *ngIf="product">
-  <a routerLink="/products" class="text-purple-600 hover:underline mb-6 inline-block">
+  <a routerLink="/products" class="text-purple-600 hover:underline mb-6 inline-block font-medium">
     ← Back to Products
   </a>
 
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
     
     <!-- Image -->
-    <div class="bg-gray-100 rounded-3xl overflow-hidden">
+    <div class="bg-gray-100 rounded-3xl overflow-hidden aspect-square max-h-[600px] shadow-inner relative">
       <img [src]="'/images/products/' + product.photo" 
            [alt]="product.name"
            class="w-full h-full object-cover">
@@ -14,76 +14,123 @@
 
     <!-- Details -->
     <div>
-      <p class="text-purple-600 font-medium">{{ product.category.name || 'Uncategorized' }}</p>
-      <h1 class="text-4xl font-bold mt-2">{{ product.name }}</h1>
-      
-      <p class="text-3xl font-bold text-purple-700 mt-6">
-        {{ product.price | currency:'HKD':'symbol-narrow' }}
+      <p class="text-purple-600 font-semibold tracking-wider text-sm uppercase">
+        {{ product.category.name || 'Uncategorized' }}
       </p>
+      <h1 class="text-4xl font-black mt-2 text-gray-900 leading-tight">{{ product.name }}</h1>
+      
+      <!-- 💡 新增與修正：主商品精美價格區塊 -->
+      <div class="mt-6 p-4 bg-purple-50 rounded-2xl flex flex-wrap items-center gap-4 min-h-[4.5rem]">
+        @if (product.isOnSale && product.originalPrice) {
+          <!-- 特價大字 -->
+          <span class="text-4xl font-black text-red-600">
+            {{ product.price | currency:'HKD':'symbol-narrow' }}
+          </span>
+          <!-- 劃掉的原價 -->
+          <span class="text-lg font-medium text-gray-400 line-through">
+            {{ product.originalPrice | currency:'HKD':'symbol-narrow' }}
+          </span>
+          <!-- 💡 貼心小提示：幫消費者計算省下多少錢 -->
+          <span class="bg-red-100 text-red-700 text-xs font-bold px-2.5 py-1 rounded-lg shadow-sm">
+            SAVE {{ (product.originalPrice - product.price) | currency:'HKD':'symbol-narrow' }}
+          </span>
+        } @else {
+          <!-- 無特價時的一般大字 -->
+          <span class="text-4xl font-black text-purple-700">
+            {{ product.price | currency:'HKD':'symbol-narrow' }}
+          </span>
+        }
+      </div>
 
-      @if (product.originalPrice) {
-        <p class="text-gray-500 line-through">
-          {{ product.originalPrice | currency:'HKD':'symbol-narrow' }}
-        </p>
+      <!-- 💡 新增：商品專屬有效促銷活動展示區塊 -->
+      @if (product.isOnSale && product.promotionNames?.length) {
+        <div class="mt-6 space-y-2.5">
+          <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">Available Offers</p>
+          <div class="flex flex-col gap-2">
+            @for (promoName of product.promotionNames; track promoName) {
+              <div class="flex items-center gap-3 bg-gradient-to-r from-red-50 to-pink-50 border border-red-100 p-3.5 rounded-xl transition hover:shadow-sm">
+                <span class="text-xl">🔥</span>
+                <span class="text-sm font-bold text-gray-800">{{ promoName }}</span>
+              </div>
+            }
+          </div>
+        </div>
       }
 
-      <p class="mt-8 text-gray-700 leading-relaxed">{{ product.description }}</p>
+      <p class="mt-8 text-gray-700 leading-relaxed text-base border-t border-gray-100 pt-6">
+        {{ product.description }}
+      </p>
 
       <!-- Quantity -->
-      <div class="mt-10">
-        <label class="block text-sm font-medium mb-3">Quantity</label>
+      <div class="mt-10 border-t border-gray-100 pt-6">
+        <label class="block text-sm font-bold text-gray-500 uppercase tracking-wider mb-3">Quantity</label>
         <div class="flex items-center gap-4">
           <button (click)="changeQuantity(-1)" 
-                  class="w-12 h-12 border rounded-2xl hover:bg-gray-100 text-2xl">-</button>
-          <span class="w-12 text-center text-2xl font-semibold">{{ quantity }}</span>
+                  class="w-12 h-12 border border-gray-300 rounded-2xl hover:bg-gray-50 text-2xl font-medium transition active:scale-95">-</button>
+          <span class="w-12 text-center text-2xl font-black text-gray-800">{{ quantity }}</span>
           <button (click)="changeQuantity(1)" 
-                  class="w-12 h-12 border rounded-2xl hover:bg-gray-100 text-2xl">+</button>
+                  class="w-12 h-12 border border-gray-300 rounded-2xl hover:bg-gray-50 text-2xl font-medium transition active:scale-95">+</button>
         </div>
       </div>
 
-      <div class="mt-10">
+      <div class="mt-8">
         <button (click)="addToCart()"
-                class="w-full bg-purple-700 hover:bg-purple-800 text-white py-5 rounded-2xl text-xl font-semibold transition">
-          🛒 Add to Cart
+                class="w-full bg-purple-700 hover:bg-purple-800 text-white py-5 rounded-2xl text-xl font-bold transition shadow-md hover:shadow-lg active:scale-[0.99] flex items-center justify-center gap-2">
+          <span>🛒</span> Add to Cart
         </button>
       </div>
 
-      <div class="mt-8 grid grid-cols-2 gap-6 text-sm">
-        <div>Stock: <span class="font-medium">{{ product.stockQuantity }}</span></div>
-        <div>Brand: <span class="font-medium">{{ product.brand || 'N/A' }}</span></div>
+      <div class="mt-8 grid grid-cols-2 gap-6 text-sm border-t border-gray-100 pt-6 text-gray-500">
+        <div>Stock: <span class="font-bold text-gray-800">{{ product.stockQuantity }}</span></div>
+        <div>Brand: <span class="font-bold text-gray-800">{{ product.brand || 'N/A' }}</span></div>
       </div>
     </div>
   </div>
 
   <!-- Related Products -->
-    <div class="mt-16">
-    <h2 class="text-3xl font-bold mb-8">You May Also Like</h2>
+  <div class="mt-20 border-t border-gray-200 pt-12">
+    <h2 class="text-3xl font-black text-gray-900 mb-8">You May Also Like</h2>
     
     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        @for (related of relatedProducts; track related.id) {
-        <div class="bg-white rounded-2xl shadow-sm hover:shadow-md transition overflow-hidden">
-            <div [routerLink]="['/product', related.id]" class="cursor-pointer">
-                <div class="aspect-square bg-gray-100">
-                <img [src]="'/images/products/' + related.photo" 
-                    [alt]="related.name"
-                    class="w-full h-full object-cover hover:scale-105 transition">
-                </div>
-                
-                <div class="p-5">
-                <h4 class="font-semibold line-clamp-2 h-12 mt-1">{{ related.name }}</h4>
-                <p class="text-xl font-bold text-purple-700 mt-3">
-                    {{ related.price | currency:'HKD':'symbol-narrow' }}
-                </p>
-                </div>
+      @for (related of relatedProducts; track related.id) {
+        <div class="bg-white rounded-2xl shadow-sm hover:shadow-lg transition overflow-hidden group flex flex-col justify-between">
+          <div [routerLink]="['/product', related.id]" class="cursor-pointer">
+            <div class="aspect-square bg-gray-100 overflow-hidden relative">
+              <img [src]="'/images/products/' + related.photo" 
+                   [alt]="related.name"
+                   class="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+                   onerror="this.src='https://picsum.photos'; this.onerror=null;">
+
+              <!-- 💡 相關推薦卡片左上角的迷你火苗活動標籤 -->
+              @if (related.isOnSale && related.promotionNames?.length) {
+                <span class="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-black px-2 py-1 rounded-md shadow-sm">
+                  SALE
+                </span>
+              }
             </div>
+            
+            <div class="p-5">
+              <h4 class="font-semibold line-clamp-2 h-12 mt-1 text-gray-800 group-hover:text-purple-700 transition">{{ related.name }}</h4>
+              
+              <!-- 💡 修正：推薦商品的價格也必須同步支援特價/原價雙線渲染 -->
+              <div class="flex items-baseline gap-2 mt-3 min-h-[1.75rem]">
+                @if (related.isOnSale && related.originalPrice) {
+                  <span class="text-xl font-black text-red-600">
+                    {{ related.price | currency:'HKD':'symbol-narrow' }}
+                  </span>
+                  <span class="text-xs font-medium text-gray-400 line-through">
+                    {{ related.originalPrice | currency:'HKD':'symbol-narrow' }}
+                  </span>
+                } @else {
+                  <span class="text-xl font-bold text-purple-700">
+                    {{ related.price | currency:'HKD':'symbol-narrow' }}
+                  </span>
+                }
+              </div>
+            </div>
+          </div>
         </div>
-        }
+      }
     </div>
-</div>
-
-
-
-
-
-
+  </div>
 </div>

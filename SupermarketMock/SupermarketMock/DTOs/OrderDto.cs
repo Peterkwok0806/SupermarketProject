@@ -12,7 +12,7 @@ namespace SupermarketMock.DTOs
 
     public class OrderDto
     {
-        public string snowflakeId { get; set; }
+        public string snowflakeId { get; set; } = string.Empty;
         public decimal totalAmount { get; set; }
         public OrderStatus status { get; set; }
         public string fullName { get; set; } = string.Empty;
@@ -30,5 +30,6 @@ namespace SupermarketMock.DTOs
         public string? productPhoto { get; set; } // 如果有商品圖片
         public int quantity { get; set; }
         public decimal unitPrice { get; set; }
+        public decimal subTotal { get; set; }
     }
 }
