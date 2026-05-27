@@ -70,10 +70,10 @@ namespace SupermarketMock.Services
                 name = product.Name,
                 description = product.Description,
                 price = finalPrice, // 最終折後價
-                originalPrice = activePromotions.Any() ? product.Price : null, // 原價
+                originalPrice = activePromotions.Any(promotion => promotion.Type== PromotionType.PercentageOff|| promotion.Type == PromotionType.FixedDiscount) ? product.Price : null, // 原價
                 photo = product.Photo,
                 stockQuantity = product.StockQuantity,
-                categoryId = product.CategoryId,    
+                categoryId = product.CategoryId,
                 category = product.Category,
                 brand = product.Brand,
                 weight = product.Weight,
@@ -81,7 +81,7 @@ namespace SupermarketMock.Services
                 rating = product.Rating,
                 reviewCount = product.ReviewCount,
                 isOnSale = activePromotions.Any(),
-                promotionNames = activePromotions.Select(p => p.Name).ToList()
+                promotionNames = activePromotions.Select(promotion => promotion.Name).ToList(),
             };
 
         }
@@ -131,8 +131,8 @@ namespace SupermarketMock.Services
                 name = product.Name,
                 photo = product.Photo,
                 isOnSale = promotions.Any(), // 只要有命中活動就是特價中
-                originalPrice = promotions.Any() ? product.Price : null,
-                promotionNames = promotions.Select(promotion => promotion.Name).ToList()
+                originalPrice = promotions.Any(promotion => promotion.Type == PromotionType.PercentageOff || promotion.Type == PromotionType.FixedDiscount) ? product.Price : null,
+                promotionNames = promotions.Select(promotion => promotion.Name).ToList(),
             };
 
             if (!promotions.Any())

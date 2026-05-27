@@ -52,5 +52,6 @@ namespace SupermarketMock.DTOs
         public bool isOnSale { get; set; }          // 是否正在特價
         public decimal? originalPrice { get; set; }  // 原價（特價時才顯示，平時為 null）
         public List<string> promotionNames { get; set; } = new();    // 命中哪一個活動名稱
+
     }
 }

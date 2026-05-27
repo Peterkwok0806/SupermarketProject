@@ -13,6 +13,7 @@ export interface CartItemDto {
   product: Product;
   quantity: number;
   unitPrice: number;
+  subtotal: number;
   addedAt?: string;
 }
 

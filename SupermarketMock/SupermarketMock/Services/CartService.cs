@@ -16,14 +16,19 @@ namespace SupermarketMock.Services
 
         private CartDto MapToDto(Cart cart)
         {
+            decimal totalprice = 0;
+
             return new CartDto
             {
                 Id = cart.Id,
                 UserId = cart.UserId,
+                
                 CartItems = cart.CartItems.Select(ci => {
                     var activePromotions = ci.Product.ProductPromotions
                         .Select(pp => pp.Promotion)
                         .ToList();
+
+                    decimal subtoal = 0;
 
                     var primaryPromotion = activePromotions.FirstOrDefault();
 
@@ -34,11 +39,47 @@ namespace SupermarketMock.Services
                         _ => ci.Product.Price
                     };
 
+                    if (primaryPromotion == null ||
+                    (primaryPromotion.Type != PromotionType.BuyXGetYFree &&
+                     primaryPromotion.Type != PromotionType.QuantitySpecialPrice))
+                    {
+                        subtoal = currentPrice * ci.Quantity;
+                    }
+                    else if (primaryPromotion.Type == PromotionType.BuyXGetYFree)
+                    {
+                        // 買 X 送 Y (例如：買 2 送 1)
+                        int buyQty = primaryPromotion.BuyQuantity!.Value;
+                        int freeQty = primaryPromotion.FreeQuantity!.Value;
+                        int groupSize = buyQty + freeQty; // 一組總共 3 件
+
+                        int completedGroups = ci.Quantity / groupSize; // 命中幾組
+                        int remainder = ci.Quantity % groupSize;       // 剩下沒滿組的散件
+
+                        // 實際要收費的件數 = (每組應付件數 * 組數) + 散件
+                        int chargeableQuantity = (buyQty * completedGroups) + remainder;
+                        subtoal = currentPrice * chargeableQuantity;
+                    }
+                    else if (primaryPromotion.Type == PromotionType.QuantitySpecialPrice)
+                    {
+                        // N 件特價 (例如：2 件特價 25 元)
+                        int specialQty = primaryPromotion.BuyQuantity!.Value;
+                        decimal specialPrice = primaryPromotion.DiscountValue!.Value;
+
+                        int specialGroups = ci.Quantity / specialQty; // 命中幾組特價
+                        int remainder = ci.Quantity % specialQty;     // 剩下沒湊滿的散件
+
+                        // 總價 = (特價組數 * 特價總額) + (散件 * 基礎單價)
+                        subtoal = (specialGroups * specialPrice) + (remainder * currentPrice);
+                    }
+
+                    totalprice += subtoal;
+
                     return new CartItemDto
                     {
                         ProductId = ci.ProductId,
                         UnitPrice = currentPrice,
                         Quantity = ci.Quantity,
+                        Subtotal = subtoal,
                         Product = new ProductDto
                         {
                             id = ci.Product.Id,
@@ -53,7 +94,7 @@ namespace SupermarketMock.Services
                     };
                 }).ToList(),
 
-                TotalAmount = TotalPrice(cart)
+                TotalAmount = Math.Round(totalprice, 2)
 
 
             };
@@ -185,8 +226,13 @@ namespace SupermarketMock.Services
 
             if (existingItem != null)
             {
-                existingItem.Quantity += quantity;
+                int previousQuantity = existingItem.Quantity;
+                int targetQuantity = previousQuantity + quantity;
+
+                existingItem.Quantity = targetQuantity;
                 existingItem.UpdatedAt = DateTime.UtcNow;
+
+                ApplyCartItemPromotionAndPricing(existingItem, previousQuantity, targetQuantity);
             }
             else
             {
@@ -222,6 +268,9 @@ namespace SupermarketMock.Services
             if (item == null)
                 return new CartOperationResult { Success = false, Message = "購物車中無此商品" };
 
+            // 記錄原本的舊數量，用來判斷使用者是點了 [+] 還是 [-]
+            int previousQuantity = item.Quantity;
+
             if (quantity < 1)
             {
                 _context.CartItems.Remove(item);
@@ -230,6 +279,29 @@ namespace SupermarketMock.Services
             {
                 item.Quantity = quantity;
                 item.UpdatedAt = DateTime.UtcNow;
+            }
+
+            var activepromotion = item.Product.ProductPromotions.Select(pp => pp.Promotion).ToList();
+            var BuyXGetYFreeactivepromotion = activepromotion.FirstOrDefault(p => p.Type == PromotionType.BuyXGetYFree);
+
+            if (BuyXGetYFreeactivepromotion!=null)
+            {
+
+                int buyQty = BuyXGetYFreeactivepromotion.BuyQuantity!.Value;
+                int freeQty = BuyXGetYFreeactivepromotion.FreeQuantity!.Value;
+                int groupSize = buyQty + freeQty;
+
+                if ((previousQuantity < quantity) && (quantity == groupSize - 1))
+                {
+                    if (item.Product.StockQuantity >= groupSize)
+                    {
+                        item.Quantity = groupSize; // 自動變 3 件
+                    }
+                }
+                else if ((previousQuantity == groupSize) && (quantity == groupSize - 1))
+                {
+                    item.Quantity = buyQty - 1;
+                }
             }
 
             await _context.SaveChangesAsync();
@@ -267,6 +339,30 @@ namespace SupermarketMock.Services
             {
                 cart.CartItems.Clear();
                 await _context.SaveChangesAsync();
+            }
+        }
+
+        private void ApplyCartItemPromotionAndPricing(CartItem item, int previousQuantity, int currentQuantity)
+        {
+            if (item.Product?.ProductPromotions == null) return;
+
+            var activePromotions = item.Product.ProductPromotions.Select(pp => pp.Promotion).ToList();
+            var buyXGetYFreePromo = activePromotions.FirstOrDefault(p => p.Type == PromotionType.BuyXGetYFree);
+
+            if (buyXGetYFreePromo != null)
+            {
+                int buyQty = buyXGetYFreePromo.BuyQuantity!.Value;   // 例如: 2
+                int freeQty = buyXGetYFreePromo.FreeQuantity!.Value; // 例如: 1
+                int groupSize = buyQty + freeQty;                    // 例如: 3
+
+                // 買二送一自動加碼：使用者原本只有 1 件或沒有，現在加到 2 件時，自動幫他加到 3 件
+                if (previousQuantity < currentQuantity && currentQuantity == groupSize - 1)
+                {
+                    if (item.Product.StockQuantity >= groupSize)
+                    {
+                        item.Quantity = groupSize; // 自動變 3 件
+                    }
+                }
             }
         }
     }
