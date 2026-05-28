@@ -1,4 +1,4 @@
-import { Component, inject,signal,HostListener } from '@angular/core';
+import { Component, inject,signal,HostListener , computed} from '@angular/core';
 import { RouterLink,Router } from '@angular/router';
 import { CommonModule} from '@angular/common';
 import { CartService } from '../../services/cart.service';
@@ -22,54 +22,70 @@ export class HeaderComponent {
   private productService = inject(ProductService);
   private router = inject(Router);
 
-  searchTerm:string="";
-  private searchTerms$ = new Subject<string>();
-  showSuggestions: boolean = false;
+  // Signals
   isDropdownOpen = signal<boolean>(false);
-
+  searchTerm = signal<string>('');
 
   totalItems = this.cartService.totalItems;
   currentUser = this.authService.currentUser;
   isLoggedIn = this.authService.isLoggedIn;
 
+  // Search
+  private searchTerms$ = new Subject<string>();
+  showSuggestions = signal<boolean>(false);
+
+
+  
+
   //用 toSignal 把 RxJS 資料流轉成唯讀 Signal
-   // 預設值為空陣列 []
+  // 預設值為空陣列 []
   suggestions = toSignal(
     this.searchTerms$.pipe(
       debounceTime(300),
       distinctUntilChanged(),
       tap(term => {
-        if (!term.trim()) this.showSuggestions = false;
+        if (!term.trim()) this.showSuggestions.set(false);
       }),
       switchMap(term => this.productService.getSearchSuggestions(term)),
-      tap(list => this.showSuggestions = list.length > 0)
+      tap(results => this.showSuggestions.set(results.length > 0))
     ),
     { initialValue: [] as string[] }
   );
 
+  // Computed for template cleanliness
+  hasSuggestions = computed(() => this.suggestions()?.length > 0);
+
   // 當使用者在 input 打字時觸發
-  onInputChanged() {
-    this.searchTerms$.next(this.searchTerm);
+  onSearchInput(term: string): void {
+    this.searchTerm.set(term);
+    this.searchTerms$.next(term);
   }
 
   // 點擊建議選單中的某一項
-  selectSuggestion(term: string) {
-    this.searchTerm = term;
-    this.showSuggestions = false;
-    this.onSearch(); // 直接觸發搜尋跳轉
+  selectSuggestion(term: string): void {
+    this.searchTerm.set(term);
+    this.showSuggestions.set(false);
+    this.performSearch();
   }
 
   // 按下 Enter 或點擊建議後的搜尋跳轉
   onSearch() {
-  this.showSuggestions = false;  
-  const term = this.searchTerm.trim();
-  this.router.navigate(['/products'], { queryParams: { search: term || null} });
+  this.performSearch();
+  }
+
+  private performSearch(): void {
+    this.showSuggestions.set(false);
+    const term = this.searchTerm().trim();
+    
+    this.router.navigate(['/products'], { 
+      queryParams: { search: term || null } 
+    });
   }
 
   // 當失去焦點時，延遲關閉選單（確保點擊事件能先被觸發）
   onBlur() {
     setTimeout(() => {
-      this.showSuggestions = false;
+      this.showSuggestions.set(false);
     }, 150); // 微調為 150 毫秒
   }
 
@@ -79,8 +95,18 @@ export class HeaderComponent {
   }
 
   @HostListener('document:click', ['$event'])
-  onDocumentClick(event: Event) {
-    // 只要點擊網頁其他地方，就強制將選單關閉
+  onDocumentClick(event: Event): void {
+    this.isDropdownOpen.set(false);
+  }
+
+  onDropdownClick(event: Event): void {
+    event.stopPropagation();
+  }
+
+  // Close suggestions when pressing Escape
+  @HostListener('window:keydown.escape', ['$event'])
+  onEscape(): void {
+    this.showSuggestions.set(false);
     this.isDropdownOpen.set(false);
   }
 

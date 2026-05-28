@@ -1,33 +1,35 @@
 <header class="bg-purple-700 text-white shadow-lg sticky top-0 z-50">
   <div class="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between">
-    
+   
     <!-- Logo -->
     <div class="flex items-center gap-3">
       <span class="text-4xl">🛒</span>
       <h1 class="text-3xl font-bold tracking-tight">SuperMart</h1>
     </div>
 
-    <!-- Search bar -->
+    <!-- Search Bar -->
     <div class="flex-1 max-w-xl mx-8">
       <div class="relative">
-        <input 
-          type="text" 
-          [(ngModel)]="searchTerm"
-          (input)="onInputChanged()"
+        <input
+          type="text"
+          [ngModel]="searchTerm()"
+          (ngModelChange)="onSearchInput($event)"
           (keyup.enter)="onSearch()"
           (blur)="onBlur()"
-          placeholder="Search products, fruits, snacks..." 
-          class="w-full px-6 py-3.5 border border-transparent rounded-full focus:outline-none focus:ring-4 focus:ring-purple-300 text-gray-900 bg-white text-lg pl-12 shadow-sm placeholder-gray-400">
+          placeholder="Search products, fruits, snacks..."
+          class="w-full px-6 py-3.5 border border-transparent rounded-full focus:outline-none focus:ring-4 focus:ring-purple-300 
+                 text-gray-900 bg-white text-lg pl-12 shadow-sm placeholder-gray-400">
+
         <span class="absolute left-5 top-1/2 -translate-y-1/2 text-gray-500 z-10">🔍</span>
 
-        <!-- 建議字下拉選單區塊 -->
-        @if (showSuggestions && suggestions().length > 0) {
-          <div class="absolute left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-50 text-gray-800">
+        <!-- Suggestions Dropdown -->
+        @if (showSuggestions() && suggestions().length > 0) {
+          <div class="absolute left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-50 text-gray-800 py-1">
             @for (item of suggestions(); track item) {
-              <button 
+              <button
                 type="button"
                 (mousedown)="selectSuggestion(item)"
-                class="w-full text-left px-6 py-3 hover:bg-purple-50 flex items-center gap-3 transition font-medium">
+                class="w-full text-left px-6 py-3 hover:bg-purple-50 flex items-center gap-3 transition-colors font-medium">
                 <span class="text-gray-400">🔍</span>
                 <span>{{ item }}</span>
               </button>
@@ -39,16 +41,15 @@
 
     <!-- Right Side -->
     <div class="flex items-center gap-6">
-      
+     
       <!-- Navigation -->
       <a routerLink="/" class="hover:text-purple-200 transition font-medium">Home</a>
       <a routerLink="/products" class="hover:text-purple-200 transition font-medium">Products</a>
 
       <!-- Cart -->
-      <button routerLink="/cart" 
+      <button routerLink="/cart"
               class="flex items-center gap-2 bg-white text-purple-700 hover:bg-purple-100 px-7 py-3 rounded-2xl font-semibold transition relative">
         🛍️ Cart
-        
         @if (totalItems() > 0) {
           <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full">
             {{ totalItems() }}
@@ -56,10 +57,12 @@
         }
       </button>
 
-      <!-- Auth Section with Dropdown -->
+      <!-- Auth Section -->
       @if (isLoggedIn()) {
-        <div class="relative inline-block">
-          <button (click)="toggleDropdown($event)" class="flex items-center gap-3 hover:bg-white/10 px-4 py-2 rounded-2xl transition">
+        <div class="relative" (click)="onDropdownClick($event)">
+          <button 
+            (click)="toggleDropdown($event)" 
+            class="flex items-center gap-3 hover:bg-white/10 px-4 py-2 rounded-2xl transition">
             <div class="w-9 h-9 bg-white/30 rounded-full flex items-center justify-center text-2xl">
               👤
             </div>
@@ -70,35 +73,34 @@
           </button>
 
           <!-- Dropdown Menu -->
-            <!-- 💡 修正亮點：移除 group-hover:block，改用 Angular 的 @if 進行結構控制 -->
-            @if (isDropdownOpen()) {
-              <div class="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl py-2 z-50">
-                <a routerLink="/profile" 
-                  (click)="isDropdownOpen.set(false)"
-                  class="flex items-center gap-3 px-5 py-3 hover:bg-gray-100 text-gray-700">
-                  👤 Profile
-                </a>
-                <a routerLink="/orders" 
-                  (click)="isDropdownOpen.set(false)"
-                  class="flex items-center gap-3 px-5 py-3 hover:bg-gray-100 text-gray-700">
-                  📋 My Orders
-                </a>
-                <div class="border-t my-2"></div>
-                <button (click)="logout(); isDropdownOpen.set(false)" 
-                        class="flex items-center gap-3 px-5 py-3 hover:bg-red-50 text-red-600 w-full text-left">
-                  🚪 Logout
-                </button>
-              </div>
-            }
+          @if (isDropdownOpen()) {
+            <div class="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl py-2 z-50 text-gray-700">
+              <a routerLink="/profile"
+                (click)="isDropdownOpen.set(false)"
+                class="flex items-center gap-3 px-5 py-3 hover:bg-gray-100">
+                👤 Profile
+              </a>
+              <a routerLink="/orders"
+                (click)="isDropdownOpen.set(false)"
+                class="flex items-center gap-3 px-5 py-3 hover:bg-gray-100">
+                📋 My Orders
+              </a>
+              <div class="border-t my-2"></div>
+              <button 
+                (click)="logout(); isDropdownOpen.set(false)"
+                class="flex items-center gap-3 px-5 py-3 hover:bg-red-50 text-red-600 w-full text-left">
+                🚪 Logout
+              </button>
+            </div>
+          }
         </div>
       } @else {
-        <!-- 未登入 -->
         <div class="flex items-center gap-3">
-          <a routerLink="/login" 
-            class="px-6 py-2.5 font-medium hover:bg-purple-600 rounded-xl transition text-white">
+          <a routerLink="/login"
+            class="px-6 py-2.5 font-medium hover:bg-purple-600 rounded-xl transition">
             Login
           </a>
-          <a routerLink="/register" 
+          <a routerLink="/register"
             class="bg-white text-purple-700 hover:bg-purple-100 px-6 py-2.5 font-semibold rounded-xl transition">
             Register
           </a>

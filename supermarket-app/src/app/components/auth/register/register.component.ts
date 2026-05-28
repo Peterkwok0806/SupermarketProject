@@ -25,6 +25,37 @@ export class RegisterComponent {
 
   errorMessage = '';
 
+  passwordChecklist = {
+    length: false,
+    uppercase: false,
+    lowercase: false,
+    specialChar: false,
+    allowedChars: true // 預設為 true，若輸入非法字元才變 false
+  };
+
+  onPasswordInput() {
+    const pwd = this.registerData.password;
+
+    if (pwd== null)
+      return;
+
+    // 1. 長度檢查 (至少 8 碼)
+    this.passwordChecklist.length = pwd.length >= 8;
+
+    // 2. 大寫字母檢查
+    this.passwordChecklist.uppercase = /[A-Z]/.test(pwd);
+
+    // 3. 小寫字母檢查
+    this.passwordChecklist.lowercase = /[a-z]/.test(pwd);
+
+    // 4. 特殊字元檢查
+    this.passwordChecklist.specialChar = /[!@#$%^&*]/.test(pwd);
+
+    // 5. 是否含有非法字元 (如果空字串算符合合法範圍)
+    const allowedPasswordRegex = /^[A-Za-z0-9!@#$%^&*]*$/;
+    this.passwordChecklist.allowedChars = allowedPasswordRegex.test(pwd);
+  }
+
   async onSubmit(){
     this.errorMessage = '';
 
@@ -38,21 +69,31 @@ export class RegisterComponent {
       return;
     }
 
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*])(?=.{6,})/;
-    if (!passwordRegex.test(this.registerData.password)) {
-      this.errorMessage ="Password must be at least 6 characters long and include at least one uppercase letter, one lowercase letter, and one special character (!@#$%^&*)";
+    const allowedPasswordRegex = /^[A-Za-z0-9!@#$%^&*]{8,}$/;
+    if (!allowedPasswordRegex.test(this.registerData.password)) {
+      this.errorMessage = "Password can only contain English letters (A-Z, a-z), numbers (0-9), and special characters (!@#$%^&*)";
+      return;
+    }
+    if (!/[A-Z]/.test(this.registerData.password)) {
+      this.errorMessage = "Password must contain at least one uppercase letter (A-Z)";
       return;
     }
 
-    if (this.registerData.password.length < 6) {
-    this.errorMessage ="Password must be at least 6 characters";
-    return;
+    if (!/[a-z]/.test(this.registerData.password)) {
+      this.errorMessage = "Password must contain at least one lowercase letter (a-z)";
+      return;
     }
+
+    if (!/[!@#$%^&*]/.test(this.registerData.password)) {
+      this.errorMessage = "Password must contain at least one special character (!@#$%^&*)";
+      return;
+    }
+
     try{
         await this.authService.registerUser(this.registerData);
          this.showModal = true;
     }catch (error:any) {
-    this.errorMessage = error.message; 
+    this.errorMessage = error.message || 'Registration failed'; 
     }
   }
 
