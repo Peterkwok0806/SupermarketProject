@@ -19,19 +19,24 @@ export class AuthApiService {
 
   login(data: LoginRequest): Observable<AuthResponse> {
   return this.http.post<AuthResponse>(`${this.apiUrl}/login`, data, {
-    withCredentials: true // 🔥 關鍵：強迫瀏覽器接收並儲存後端發回的 HttpOnly Cookie
+    withCredentials: true // 關鍵：強迫瀏覽器接收並儲存後端發回的 HttpOnly Cookie
   });
 }
 
-  refreshToken(): Observable<AuthResponse> {
+  refreshToken(skipInterceptor: boolean = false): Observable<AuthResponse> {
+    let headers: any = {};
+    if (skipInterceptor) {
+    headers['X-Skip-Interceptor'] = 'true';
+  }
     return this.http.post<AuthResponse>(`${this.apiUrl}/refresh-token`, {}, {
-      withCredentials: true // 🔥 關鍵：強制瀏覽器在背景自動帶上名稱為 refreshToken 的 Cookie
+      headers,
+      withCredentials: true // 關鍵：強制瀏覽器在背景自動帶上名稱為 refreshToken 的 Cookie
     });
   }
 
   logout(): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/logout`, {}, {
-      withCredentials: true // 🔥 關鍵：讓後端有權限對這個跨網域請求覆蓋空 Cookie
+      withCredentials: true // 關鍵：讓後端有權限對這個跨網域請求覆蓋空 Cookie
     });
   }
 
