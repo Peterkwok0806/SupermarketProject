@@ -27,6 +27,11 @@
             <!-- Details -->
             <div class="flex-1">
               <h3 class="font-semibold text-xl">{{ item.product.name }}</h3>
+              @if (item.product.isOnSale){
+                <p class="text-red-600 font-medium mt-1">
+                🔥  {{ item.product.promotionNames}}
+                </p>
+              }
               <p class="text-purple-600 font-medium mt-1">
                Unit Price: {{ item.unitPrice | currency:'HKD':'symbol-narrow' }}
               </p>

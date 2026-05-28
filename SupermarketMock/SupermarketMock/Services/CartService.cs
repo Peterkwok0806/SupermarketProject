@@ -290,17 +290,19 @@ namespace SupermarketMock.Services
                 int buyQty = BuyXGetYFreeactivepromotion.BuyQuantity!.Value;
                 int freeQty = BuyXGetYFreeactivepromotion.FreeQuantity!.Value;
                 int groupSize = buyQty + freeQty;
+                bool addingMeetGroupSize = (quantity + 1) % groupSize == 0;
+                bool subMeetGroupSize = previousQuantity % groupSize == 0;
 
-                if ((previousQuantity < quantity) && (quantity == groupSize - 1))
+                if ((previousQuantity < quantity) && addingMeetGroupSize)
                 {
-                    if (item.Product.StockQuantity >= groupSize)
+                    if (item.Product.StockQuantity >= item.Quantity+1)
                     {
-                        item.Quantity = groupSize; // 自動變 3 件
+                        item.Quantity +=1 ; // 自動變 3 件
                     }
                 }
-                else if ((previousQuantity == groupSize) && (quantity == groupSize - 1))
+                else if (subMeetGroupSize && (quantity == previousQuantity - 1))
                 {
-                    item.Quantity = buyQty - 1;
+                    item.Quantity -= 1;
                 }
             }
 
@@ -354,13 +356,14 @@ namespace SupermarketMock.Services
                 int buyQty = buyXGetYFreePromo.BuyQuantity!.Value;   // 例如: 2
                 int freeQty = buyXGetYFreePromo.FreeQuantity!.Value; // 例如: 1
                 int groupSize = buyQty + freeQty;                    // 例如: 3
+                bool meetgroupSize = (currentQuantity + 1) % groupSize == 0;
 
                 // 買二送一自動加碼：使用者原本只有 1 件或沒有，現在加到 2 件時，自動幫他加到 3 件
-                if (previousQuantity < currentQuantity && currentQuantity == groupSize - 1)
+                if (previousQuantity < currentQuantity && meetgroupSize)
                 {
-                    if (item.Product.StockQuantity >= groupSize)
+                    if (item.Product.StockQuantity >= (item.Quantity+1))
                     {
-                        item.Quantity = groupSize; // 自動變 3 件
+                        item.Quantity += 1;  // 自動變 groupSiz
                     }
                 }
             }
