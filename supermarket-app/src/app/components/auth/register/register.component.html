@@ -1,46 +1,53 @@
 <div class="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4">
   <div class="max-w-md w-full bg-white rounded-3xl shadow-xl p-8">
     
+    <!-- 標題區塊 -->
     <div class="text-center mb-8">
       <span class="text-5xl">🛒</span>
       <h1 class="text-3xl font-bold text-gray-900 mt-4">Create Account</h1>
       <p class="text-gray-600 mt-2">Join SuperMart today</p>
     </div>
 
-    <form (ngSubmit)="onSubmit()" class="space-y-6">
+    <!-- 1. 表單綁定 Reactive Form -->
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="space-y-6">
       
        <!-- Username 欄位 -->
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-2">Username</label>
         <input type="text" 
-               [(ngModel)]="registerData.username"
-               name="username"
-               required
-               class="w-full px-4 py-3 border border-gray-300 rounded-2xl focus:outline-none focus:border-purple-500">
+               formControlName="username"
+               class="w-full px-4 py-3 border border-gray-300 rounded-2xl focus:outline-none focus:border-purple-500 transition-colors"
+               [class.border-red-500]="f['username'].touched && f['username'].invalid">
+        @if (f['username'].touched && f['username'].errors?.['required']) {
+          <p class="text-red-500 text-xs mt-1 px-1">Username is required.</p>
+        }
       </div>
 
       <!-- Email 欄位 -->
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
         <input type="email" 
-               [(ngModel)]="registerData.email"
-               name="email"
-               required
-               class="w-full px-4 py-3 border border-gray-300 rounded-2xl focus:outline-none focus:border-purple-500">
+               formControlName="email"
+               class="w-full px-4 py-3 border border-gray-300 rounded-2xl focus:outline-none focus:border-purple-500 transition-colors"
+               [class.border-red-500]="f['email'].touched && f['email'].invalid">
+        @if (f['email'].touched && f['email'].invalid) {
+          <p class="text-red-500 text-xs mt-1 px-1">
+            @if (f['email'].errors?.['required']) { Email is required. }
+            @else if (f['email'].errors?.['email']) { Please enter a valid email address. }
+          </p>
+        }
       </div>
 
       <!-- Password 欄位 -->
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
         <input type="password" 
-              [(ngModel)]="registerData.password"
-              (input)="onPasswordInput()" 
-              name="password"
-              required
-              class="w-full px-4 py-3 border border-gray-300 rounded-2xl focus:outline-none focus:border-purple-500">
+               formControlName="password"
+               class="w-full px-4 py-3 border border-gray-300 rounded-2xl focus:outline-none focus:border-purple-500 transition-colors"
+               [class.border-red-500]="f['password'].touched && f['password'].invalid">
               
-        <!-- ✨ 新增：密碼強度即時檢查清單 ✨ -->
-        @if (registerData.password) {
+        <!-- 2. 密碼強度即時檢查清單 (透過 Component 的 Getter 自動運算) -->
+        @if (f['password'].value) {
           <div class="mt-3 p-4 bg-gray-50 rounded-2xl border border-gray-200 text-xs space-y-2 animate-[fadeIn_0.2s_ease-out]">
             <p class="font-medium text-gray-500 mb-1">Password Requirements:</p>
             
@@ -73,10 +80,10 @@
                 [class.text-green-600]="passwordChecklist.specialChar" 
                 [class.text-gray-400]="!passwordChecklist.specialChar">
               <span>{{ passwordChecklist.specialChar ? '✓' : '○' }}</span>
-              <span>At least one special character (!&#64;#$%^&*)</span>
+              <span>At least one special character {{ '(!@#$%^&*)' }}</span>
             </div>
 
-            <!-- 條件 5: 僅限合法字元 (若有錯會變紅) -->
+            <!-- 條件 5: 僅限合法字元 -->
             @if (!passwordChecklist.allowedChars) {
               <div class="flex items-center gap-2 text-red-500 font-medium">
                 <span>✕</span>
@@ -91,13 +98,17 @@
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-2">Confirm Password</label>
         <input type="password" 
-              [(ngModel)]="confirmPassword"
-              name="confirmPassword"
-              required
-              class="w-full px-4 py-3 border border-gray-300 rounded-2xl focus:outline-none focus:border-purple-500">
+               formControlName="confirmPassword"
+               class="w-full px-4 py-3 border border-gray-300 rounded-2xl focus:outline-none focus:border-purple-500 transition-colors"
+               [class.border-red-500]="f['confirmPassword'].touched && (f['confirmPassword'].invalid || registerForm.errors?.['passwordMismatch'])">
+        
+        <!-- 3. 顯示密碼不一致的錯誤提示 (監聽表單層級錯誤) -->
+        @if (f['confirmPassword'].touched && registerForm.errors?.['passwordMismatch']) {
+          <p class="text-red-500 text-xs mt-1 px-1">Passwords do not match.</p>
+        }
       </div>
 
-       <!-- ✨ 新增：動態錯誤訊息顯示區塊 ✨ -->
+       <!-- 後端 API 錯誤訊息顯示區塊 -->
       @if (errorMessage) {
         <div class="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-2xl text-sm flex items-center gap-2">
           <span>⚠️</span>
@@ -105,35 +116,38 @@
         </div>
       }
 
+      <!-- 送出按鈕：表單不合法或正在載入時自動禁用 -->
       <button type="submit"
-              [disabled]="isLoading()"
-              class="w-full bg-purple-700 hover:bg-purple-800 text-white py-4 rounded-2xl font-semibold text-lg transition">
-        {{ isLoading()? 'Creating Account...' : 'Register' }}
+              [disabled]="isLoading() || registerForm.invalid"
+              class="w-full bg-purple-700 hover:bg-purple-800 disabled:bg-purple-300 text-white py-4 rounded-2xl font-semibold text-lg transition disabled:cursor-not-allowed shadow-lg shadow-purple-100">
+        {{ isLoading() ? 'Creating Account...' : 'Register' }}
       </button>
     </form>
 
+    <!-- 頁尾登入連結 -->
     <div class="text-center mt-6">
       <p class="text-gray-600">
         Already have an account? 
         <a routerLink="/login" class="text-purple-700 hover:underline font-medium">Login here</a>
       </p>
     </div>
+
+    <!-- 成功通知彈窗 -->
     @if (showModal) {
-  <!-- 利用 Tailwind 任意值：動態直接寫在中括號內 -->
-  <div class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-[fadeIn_0.2s_ease-out_forwards]">
-    <div class="bg-white rounded-3xl max-w-sm w-full p-6 text-center shadow-2xl transform transition-all animate-[slideUp_0.2s_ease-out_forwards]">
-      <div class="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-3xl mx-auto mb-4">
-        ✓
+      <div class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-[fadeIn_0.2s_ease-out_forwards]">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-6 text-center shadow-2xl transform transition-all animate-[slideUp_0.2s_ease-out_forwards]">
+          <div class="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-3xl mx-auto mb-4">
+            ✓
+          </div>
+          <h3 class="text-2xl font-bold text-gray-950 mb-2">註冊成功！</h3>
+          <p class="text-gray-600 mb-6">歡迎加入 SuperMart，請前往登入您的帳號。</p>
+          <button (click)="closeModalAndNavigate()" 
+                  class="w-full bg-purple-700 hover:bg-purple-800 text-white font-semibold py-3 rounded-2xl transition shadow-lg shadow-purple-200">
+            前往登入
+          </button>
+        </div>
       </div>
-      <h3 class="text-2xl font-bold text-gray-950 mb-2">註冊成功！</h3>
-      <p class="text-gray-600 mb-6">歡迎加入 SuperMart，請前往登入您的帳號。</p>
-      <button (click)="closeModalAndNavigate()" 
-              class="w-full bg-purple-700 hover:bg-purple-800 text-white font-semibold py-3 rounded-2xl transition shadow-lg shadow-purple-200">
-        前往登入
-      </button>
-    </div>
-  </div>
-}
+    }
 
   </div>
 </div>
