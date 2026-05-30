@@ -27,6 +27,8 @@ namespace SupermarketMock
 
         public DbSet<ProductPromotion> ProductPromotions => Set<ProductPromotion>();
 
+        public DbSet<EmailVerification> EmailVerifications => Set<EmailVerification>();
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             // === 解決 Decimal Precision Warning ===

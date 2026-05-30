@@ -6,6 +6,7 @@ namespace SupermarketMock.Services
     public interface IAuthService
     {
         Task<AuthResult> RegisterAsync(UserRegisterDto request);
+        Task<AuthResult> VerifyAndRegisterAsync(VerifyCodeDto request);
         Task<AuthResult> LoginAsync(LoginDto dto);
         Task<AuthResult> RefreshTokenAsync(string oldRefreshToken);
         Task<AuthResult> UpdateProfileAsync(int userId, UpdateProfileDto dto);

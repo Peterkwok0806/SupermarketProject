@@ -6,6 +6,7 @@ using SupermarketMock.DTOs;
 using SupermarketMock.Services;
 using System.Text;
 using IdGen;
+using Hangfire;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -34,15 +35,28 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<SupermarketContext>(options =>
     options.UseSqlServer(connectionString));
 
+// 註冊 Hangfire 並指定使用 SQL Server
+builder.Services.AddHangfire(configuration => configuration
+    .SetDataCompatibilityLevel(CompatibilityLevel.Version_180) // 支援到最新的 SqlServer 規格
+    .UseSimpleAssemblyNameTypeSerializer()
+    .UseRecommendedSerializerSettings()
+    .UseSqlServerStorage(connectionString));
+
+builder.Services.AddHangfireServer();
+
 
 //Services註冊
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
 
-// === JWT Configuration ===
+// 綁定 appsettings.json 中的 "Jwt" 區段到 JwtSetting 類別
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
+
+// 綁定 appsettings.json 中的 "Smtp" 區段到 SmtpSettings 類別
+builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("Smtp"));
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -81,5 +95,7 @@ app.UseCors("AllowAngularApp");
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.UseHangfireDashboard();
 
 app.Run();

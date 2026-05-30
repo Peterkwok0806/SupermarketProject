@@ -38,6 +38,21 @@ namespace SupermarketMock.Controllers
 
         }
 
+        [HttpPost("verify")]
+        public async Task<IActionResult> VerifyAndRegister([FromBody] VerifyCodeDto dto)
+        {
+
+            var result = await _authService.VerifyAndRegisterAsync(dto);
+
+            if (!result.success)
+            {
+                return BadRequest(new { message = result.message });
+            }
+
+            return Ok(new { message = result.message });
+        }
+    
+
         [HttpPost("login")]
         public async Task<IActionResult> LoginAsync([FromBody] LoginDto dto)
         {

@@ -8,6 +8,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using Hangfire;
 
 
 namespace SupermarketMock.Services
@@ -43,19 +44,72 @@ namespace SupermarketMock.Services
                 };
             }
 
-            var user = new User
+            // 使用安全隨機數產生 6 位數驗證碼
+            var verificationCode = GenerateSecureCode();
+
+            // 儲存驗證紀錄至資料庫
+            var verification = new EmailVerification
             {
-                Username = dto.username,
                 Email = dto.email,
+                Username = dto.username,
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.password),
+                Code = verificationCode,
+                ExpiresAt = DateTime.UtcNow.AddMinutes(15),
+                IsUsed = false,
+                CreatedAt = DateTime.UtcNow
             };
 
-            _context.Users.Add(user);
+            _context.EmailVerifications.Add(verification);
+            await _context.SaveChangesAsync();
+
+            //交由 Hangfire 背景執行緒發送 EmailService
+            BackgroundJob.Enqueue<EmailService>(service =>
+            service.SendVerificationEmailAsync(dto.email, verificationCode));
+
+            return new AuthResult
+            {
+                success = true,
+                message = "驗證碼已發送至您的 Email，請輸入驗證碼以完成註冊",
+            };
+        }
+
+        public async Task<AuthResult> VerifyAndRegisterAsync(VerifyCodeDto dto)
+        {
+            var verification = await _context.EmailVerifications
+                                .Where(v => v.Email == dto.Email && !v.IsUsed)
+                                .OrderByDescending(v => v.CreatedAt)
+                                .FirstOrDefaultAsync();
+
+            // 檢查驗證碼正確性
+            if (verification == null || verification.Code != dto.Code)
+            {
+                return new AuthResult { success = false, message = "驗證碼錯誤或已失效" };
+            }
+
+            // 檢查驗證碼是否過期
+            if (verification.ExpiresAt < DateTime.UtcNow)
+            {
+                return new AuthResult { success = false, message = "驗證碼已過期，請重新獲取" };
+            }
+
+            // 將該驗證碼標記為已使用，避免重複驗證
+            verification.IsUsed = true;
+            _context.EmailVerifications.Update(verification);
+
+            var User = new User
+            {
+                Username = verification.Username,
+                Email = verification.Email,
+                PasswordHash = verification.PasswordHash, // 帶入當初暫存的密碼
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _context.Users.Add(User);
             await _context.SaveChangesAsync();
 
             var cart = new Cart
             {
-                UserId = user.Id,
+                UserId = User.Id,
             };
 
             _context.Carts.Add(cart);
@@ -63,16 +117,16 @@ namespace SupermarketMock.Services
 
             var userdto = new UserDto
             {
-                UserId = user.Id,
-                Username = user.Username,
-                Email = user.Email,
-                Role= user.Role
+                UserId = User.Id,
+                Username = User.Username,
+                Email = User.Email,
+                Role = User.Role
             };
 
             return new AuthResult
             {
                 success = true,
-                message = "註冊成功！",
+                message = "驗證成功！帳號已順利註冊並開通。",
                 userdto = userdto
             };
 
@@ -260,6 +314,11 @@ namespace SupermarketMock.Services
             using var rng = RandomNumberGenerator.Create();
             rng.GetBytes(randomNumber);
             return Convert.ToBase64String(randomNumber);
+        }
+
+        private string GenerateSecureCode()
+        {
+            return RandomNumberGenerator.GetInt32(100000, 1000000).ToString();
         }
     }
             
