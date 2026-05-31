@@ -1,5 +1,5 @@
 import { Injectable, inject, signal} from '@angular/core';
-import { lastValueFrom, Observable, BehaviorSubject, filter, take, switchMap, tap, throwError, catchError } from 'rxjs';
+import { lastValueFrom, Observable, BehaviorSubject, filter, take, switchMap, tap, throwError, catchError, firstValueFrom } from 'rxjs';
 import { RegisterRequest, AuthResponse, LoginRequest, updateProfileRequest } from '../models/auth';
 import { AuthApiService } from './auth-api.service';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -124,7 +124,20 @@ export class AuthService {
     }finally{
       this.isLoading.set(false);
     }
+  }
 
+  async verifyEmail(data: any){
+    try {
+      const response = await firstValueFrom(this.authApi.verifyEmail(data));
+      if (!response.success) {
+      throw new Error(response.message || '註冊失敗');
+      }
+    }catch (error: any) {
+    console.error('Registration API error', error);
+    throw new Error(error.error?.message || error.message || '網路連線異常');
+    }finally{
+      this.isLoading.set(false);
+    }
   }
 
   private loadTokenFromStorage() {

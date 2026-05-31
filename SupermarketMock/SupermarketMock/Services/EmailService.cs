@@ -4,7 +4,7 @@ using MailKit.Net.Smtp;
 
 namespace SupermarketMock.Services
 {
-    public class EmailService
+    public class EmailService: IEmailService
     {
         private readonly SupermarketContext _context;
         private readonly SmtpSettings _smtpSettings;

@@ -1,19 +1,19 @@
-import { Component, inject ,OnInit,signal} from '@angular/core';
+import { Component, inject ,OnInit,signal, OnDestroy} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink, Router } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
-import { RegisterRequest } from '../../../models/auth';
+import { RegisterRequest,VerifyRequest } from '../../../models/auth';
 import { FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 import { ReactiveFormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-register',
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink,FormsModule],
   templateUrl: './register.component.html',
   styleUrl: './register.component.css'
 })
-export class RegisterComponent implements OnInit
+export class RegisterComponent implements OnInit,OnDestroy
 {
   
   public authService = inject(AuthService);
@@ -22,13 +22,19 @@ export class RegisterComponent implements OnInit
 
   registerForm!: FormGroup;
   registerData: RegisterRequest = { username: '', email: '', password: '' };
+  verifyData: VerifyRequest={email: '', code :''};
+
   pwdCheckingResult: any = null;
 
   // UI 狀態控制
   showModal = false;
   isLoading = signal(false);
   errorMessage: string | null = null;
+  step: 1 | 2 = 1;
 
+  verificationCode = '';
+  timeLeft = 900; // 15 分鐘（以秒計算）
+  timer: any = null;
 
 
  
@@ -83,9 +89,49 @@ export class RegisterComponent implements OnInit
 
     try{
         await this.authService.registerUser(this.registerData);
-         this.showModal = true;
+         this.step = 2;
+         this.startTimer();
     }catch (error:any) {
     this.errorMessage = error.message || 'Registration failed'; 
+    }finally {
+      this.isLoading.set(false);
+    }
+  }
+
+  async verifyCode() {
+    if (this.verificationCode.length !== 6) return;
+
+    this.isLoading.set(true);
+
+    this.verifyData={
+      email:this.registerData.email,
+      code:this.verificationCode
+    }
+
+    try {
+      await this.authService.verifyEmail(this.verifyData);
+      this.clearTimer();
+      this.showModal = true;
+      this.router.navigate(['/login']);
+    } catch (error: any) {
+      this.errorMessage =error?.message || "Invalid verification code";
+    } finally {
+      this.isLoading.set(false);
+    }
+  }
+
+
+  async resendCode(){
+    this.isLoading.set(true);
+
+    try{
+        await this.authService.registerUser(this.registerData);
+        this.clearTimer();
+        this.startTimer();
+    }catch (error: any) {
+      this.errorMessage =error?.message || "Invalid verification code";
+    } finally {
+      this.isLoading.set(false);
     }
   }
 
@@ -93,6 +139,44 @@ export class RegisterComponent implements OnInit
     this.showModal = false;
     this.router.navigate(['/login']);
   }
+
+
+  // 啟動 15 分鐘倒數計時
+  startTimer(): void {
+    this.timeLeft = 900;
+    if (this.timer) {
+      clearInterval(this.timer);
+    }
+
+    this.timer = setInterval(() => {
+      this.timeLeft--;
+      if (this.timeLeft <= 0) {
+        this.clearTimer();
+        this.step = 1;
+      }
+    }, 1000);
+  }
+
+  // 清除計時器防止記憶體洩漏
+  private clearTimer(): void {
+    if (this.timer) {
+      clearInterval(this.timer);
+      this.timer = null;
+    }
+  }
+
+  // 元件銷毀時清除計時器
+  ngOnDestroy(): void {
+    this.clearTimer();
+  }
+
+  // MM:SS 倒數格式
+  get formattedTimeLeft(): string {
+    const minutes = Math.floor(this.timeLeft / 60);
+    const seconds = this.timeLeft % 60;
+    return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+  }
+
 
   passwordStrengthValidator(): ValidatorFn{
     return (control: AbstractControl): ValidationErrors | null =>{

@@ -1,153 +1,205 @@
-<div class="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4">
+<div class="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 relative">
   <div class="max-w-md w-full bg-white rounded-3xl shadow-xl p-8">
     
-    <!-- 標題區塊 -->
-    <div class="text-center mb-8">
-      <span class="text-5xl">🛒</span>
-      <h1 class="text-3xl font-bold text-gray-900 mt-4">Create Account</h1>
-      <p class="text-gray-600 mt-2">Join SuperMart today</p>
+    <!-- 步驟狀態指示條 (Step Indicator) -->
+    <div class="flex justify-center gap-2 mb-8">
+      <div [class.bg-purple-700]="step === 1" [class.bg-gray-200]="step !== 1" class="w-8 h-1.5 rounded-full transition-colors duration-300"></div>
+      <div [class.bg-purple-700]="step === 2" [class.bg-gray-200]="step !== 2" class="w-8 h-1.5 rounded-full transition-colors duration-300"></div>
     </div>
 
-    <!-- 1. 表單綁定 Reactive Form -->
-    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="space-y-6">
-      
-       <!-- Username 欄位 -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2">Username</label>
-        <input type="text" 
-               formControlName="username"
-               class="w-full px-4 py-3 border border-gray-300 rounded-2xl focus:outline-none focus:border-purple-500 transition-colors"
-               [class.border-red-500]="f['username'].touched && f['username'].invalid">
-        @if (f['username'].touched && f['username'].errors?.['required']) {
-          <p class="text-red-500 text-xs mt-1 px-1">Username is required.</p>
-        }
+    <!-- 後端 API 錯誤訊息顯示區塊 -->
+    @if (errorMessage) {
+      <div class="mb-6 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-2xl text-sm flex items-center gap-2 animate-[fadeIn_0.2s_ease-out]">
+        <span>⚠️</span>
+        <span>{{ errorMessage }}</span>
       </div>
+    }
 
-      <!-- Email 欄位 -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
-        <input type="email" 
-               formControlName="email"
-               class="w-full px-4 py-3 border border-gray-300 rounded-2xl focus:outline-none focus:border-purple-500 transition-colors"
-               [class.border-red-500]="f['email'].touched && f['email'].invalid">
-        @if (f['email'].touched && f['email'].invalid) {
-          <p class="text-red-500 text-xs mt-1 px-1">
-            @if (f['email'].errors?.['required']) { Email is required. }
-            @else if (f['email'].errors?.['email']) { Please enter a valid email address. }
-          </p>
-        }
-      </div>
+    <!-- ================= 步驟一：註冊表單 ================= -->
+    @if (step === 1) {
+      <div class="animate-[fadeIn_0.2s_ease-out]">
+        <!-- 標題區塊 -->
+        <div class="text-center mb-8">
+          <span class="text-5xl">🛒</span>
+          <h1 class="text-3xl font-bold text-gray-900 mt-4">Create Account</h1>
+          <p class="text-gray-600 mt-2">Join SuperMart today</p>
+        </div>
 
-      <!-- Password 欄位 -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
-        <input type="password" 
-               formControlName="password"
-               class="w-full px-4 py-3 border border-gray-300 rounded-2xl focus:outline-none focus:border-purple-500 transition-colors"
-               [class.border-red-500]="f['password'].touched && f['password'].invalid">
-              
-        <!-- 2. 密碼強度即時檢查清單 (透過 Component 的 Getter 自動運算) -->
-        @if (f['password'].value) {
-          <div class="mt-3 p-4 bg-gray-50 rounded-2xl border border-gray-200 text-xs space-y-2 animate-[fadeIn_0.2s_ease-out]">
-            <p class="font-medium text-gray-500 mb-1">Password Requirements:</p>
-            
-            <!-- 條件 1: 長度 -->
-            <div class="flex items-center gap-2 transition-colors duration-200"
-                [class.text-green-600]="passwordChecklist.length" 
-                [class.text-gray-400]="!passwordChecklist.length">
-              <span>{{ passwordChecklist.length ? '✓' : '○' }}</span>
-              <span>At least 8 characters</span>
-            </div>
+        <!-- 表單綁定 Reactive Form -->
+        <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="space-y-6">
+          
+          <!-- Username 欄位 -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Username</label>
+            <input type="text" 
+                   formControlName="username"
+                   class="w-full px-4 py-3 border border-gray-300 rounded-2xl focus:outline-none focus:border-purple-500 transition-colors"
+                   [class.border-red-500]="f['username'].touched && f['username'].invalid">
+            @if (f['username'].touched && f['username'].errors?.['required']) {
+              <p class="text-red-500 text-xs mt-1 px-1">Username is required.</p>
+            }
+          </div>
 
-            <!-- 條件 2: 大寫字母 -->
-            <div class="flex items-center gap-2 transition-colors duration-200"
-                [class.text-green-600]="passwordChecklist.uppercase" 
-                [class.text-gray-400]="!passwordChecklist.uppercase">
-              <span>{{ passwordChecklist.uppercase ? '✓' : '○' }}</span>
-              <span>At least one uppercase letter (A-Z)</span>
-            </div>
+          <!-- Email 欄位 -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+            <input type="email" 
+                   formControlName="email"
+                   class="w-full px-4 py-3 border border-gray-300 rounded-2xl focus:outline-none focus:border-purple-500 transition-colors"
+                   [class.border-red-500]="f['email'].touched && f['email'].invalid">
+            @if (f['email'].touched && f['email'].invalid) {
+              <p class="text-red-500 text-xs mt-1 px-1">
+                @if (f['email'].errors?.['required']) { Email is required. }
+                @else if (f['email'].errors?.['email']) { Please enter a valid email address. }
+              </p>
+            }
+          </div>
 
-            <!-- 條件 3: 小寫字母 -->
-            <div class="flex items-center gap-2 transition-colors duration-200"
-                [class.text-green-600]="passwordChecklist.lowercase" 
-                [class.text-gray-400]="!passwordChecklist.lowercase">
-              <span>{{ passwordChecklist.lowercase ? '✓' : '○' }}</span>
-              <span>At least one lowercase letter (a-z)</span>
-            </div>
+          <!-- Password 欄位 -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+            <input type="password" 
+                   formControlName="password"
+                   class="w-full px-4 py-3 border border-gray-300 rounded-2xl focus:outline-none focus:border-purple-500 transition-colors"
+                   [class.border-red-500]="f['password'].touched && f['password'].invalid">
+                  
+            <!-- 密碼強度即時檢查清單 -->
+            @if (f['password'].value) {
+              <div class="mt-3 p-4 bg-gray-50 rounded-2xl border border-gray-200 text-xs space-y-2 animate-[fadeIn_0.2s_ease-out]">
+                <p class="font-medium text-gray-500 mb-1">Password Requirements:</p>
+                
+                <div class="flex items-center gap-2 transition-colors duration-200"
+                    [class.text-green-600]="passwordChecklist.length" 
+                    [class.text-gray-400]="!passwordChecklist.length">
+                  <span>{{ passwordChecklist.length ? '✓' : '○' }}</span>
+                  <span>At least 8 characters</span>
+                </div>
 
-            <!-- 條件 4: 特殊字元 -->
-            <div class="flex items-center gap-2 transition-colors duration-200"
-                [class.text-green-600]="passwordChecklist.specialChar" 
-                [class.text-gray-400]="!passwordChecklist.specialChar">
-              <span>{{ passwordChecklist.specialChar ? '✓' : '○' }}</span>
-              <span>At least one special character {{ '(!@#$%^&*)' }}</span>
-            </div>
+                <div class="flex items-center gap-2 transition-colors duration-200"
+                    [class.text-green-600]="passwordChecklist.uppercase" 
+                    [class.text-gray-400]="!passwordChecklist.uppercase">
+                  <span>{{ passwordChecklist.uppercase ? '✓' : '○' }}</span>
+                  <span>At least one uppercase letter (A-Z)</span>
+                </div>
 
-            <!-- 條件 5: 僅限合法字元 -->
-            @if (!passwordChecklist.allowedChars) {
-              <div class="flex items-center gap-2 text-red-500 font-medium">
-                <span>✕</span>
-                <span>Contains invalid characters!</span>
+                <div class="flex items-center gap-2 transition-colors duration-200"
+                    [class.text-green-600]="passwordChecklist.lowercase" 
+                    [class.text-gray-400]="!passwordChecklist.lowercase">
+                  <span>{{ passwordChecklist.lowercase ? '✓' : '○' }}</span>
+                  <span>At least one lowercase letter (a-z)</span>
+                </div>
+
+                <div class="flex items-center gap-2 transition-colors duration-200"
+                    [class.text-green-600]="passwordChecklist.specialChar" 
+                    [class.text-gray-400]="!passwordChecklist.specialChar">
+                  <span>{{ passwordChecklist.specialChar ? '✓' : '○' }}</span>
+                  <span>At least one special character {{ '(!@#$%^&*)' }}</span>
+                </div>
+
+                @if (!passwordChecklist.allowedChars) {
+                  <div class="flex items-center gap-2 text-red-500 font-medium">
+                    <span>✕</span>
+                    <span>Contains invalid characters!</span>
+                  </div>
+                }
               </div>
             }
           </div>
-        }
-      </div>
 
-      <!-- Confirm Password 欄位 -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2">Confirm Password</label>
-        <input type="password" 
-               formControlName="confirmPassword"
-               class="w-full px-4 py-3 border border-gray-300 rounded-2xl focus:outline-none focus:border-purple-500 transition-colors"
-               [class.border-red-500]="f['confirmPassword'].touched && (f['confirmPassword'].invalid || registerForm.errors?.['passwordMismatch'])">
-        
-        <!-- 3. 顯示密碼不一致的錯誤提示 (監聽表單層級錯誤) -->
-        @if (f['confirmPassword'].touched && registerForm.errors?.['passwordMismatch']) {
-          <p class="text-red-500 text-xs mt-1 px-1">Passwords do not match.</p>
-        }
-      </div>
-
-       <!-- 後端 API 錯誤訊息顯示區塊 -->
-      @if (errorMessage) {
-        <div class="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-2xl text-sm flex items-center gap-2">
-          <span>⚠️</span>
-          <span>{{ errorMessage }}</span>
-        </div>
-      }
-
-      <!-- 送出按鈕：表單不合法或正在載入時自動禁用 -->
-      <button type="submit"
-              [disabled]="isLoading() || registerForm.invalid"
-              class="w-full bg-purple-700 hover:bg-purple-800 disabled:bg-purple-300 text-white py-4 rounded-2xl font-semibold text-lg transition disabled:cursor-not-allowed shadow-lg shadow-purple-100">
-        {{ isLoading() ? 'Creating Account...' : 'Register' }}
-      </button>
-    </form>
-
-    <!-- 頁尾登入連結 -->
-    <div class="text-center mt-6">
-      <p class="text-gray-600">
-        Already have an account? 
-        <a routerLink="/login" class="text-purple-700 hover:underline font-medium">Login here</a>
-      </p>
-    </div>
-
-    <!-- 成功通知彈窗 -->
-    @if (showModal) {
-      <div class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-[fadeIn_0.2s_ease-out_forwards]">
-        <div class="bg-white rounded-3xl max-w-sm w-full p-6 text-center shadow-2xl transform transition-all animate-[slideUp_0.2s_ease-out_forwards]">
-          <div class="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-3xl mx-auto mb-4">
-            ✓
+          <!-- Confirm Password 欄位 -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Confirm Password</label>
+            <input type="password" 
+                   formControlName="confirmPassword"
+                   class="w-full px-4 py-3 border border-gray-300 rounded-2xl focus:outline-none focus:border-purple-500 transition-colors"
+                   [class.border-red-500]="f['confirmPassword'].touched && (f['confirmPassword'].invalid || registerForm.errors?.['passwordMismatch'])">
+            
+            @if (f['confirmPassword'].touched && registerForm.errors?.['passwordMismatch']) {
+              <p class="text-red-500 text-xs mt-1 px-1">Passwords do not match.</p>
+            }
           </div>
-          <h3 class="text-2xl font-bold text-gray-950 mb-2">註冊成功！</h3>
-          <p class="text-gray-600 mb-6">歡迎加入 SuperMart，請前往登入您的帳號。</p>
-          <button (click)="closeModalAndNavigate()" 
-                  class="w-full bg-purple-700 hover:bg-purple-800 text-white font-semibold py-3 rounded-2xl transition shadow-lg shadow-purple-200">
-            前往登入
+
+          <!-- 送出按鈕 -->
+          <button type="submit"
+                  [disabled]="isLoading() || registerForm.invalid"
+                  class="w-full bg-purple-700 hover:bg-purple-800 disabled:bg-purple-300 text-white py-4 rounded-2xl font-semibold text-lg transition disabled:cursor-not-allowed shadow-lg shadow-purple-100 active:scale-[0.99]">
+            {{ isLoading() ? 'Sending Code...' : 'Send Verification Code' }}
           </button>
+        </form>
+
+        <!-- 頁尾登入連結 -->
+        <div class="text-center mt-6">
+          <p class="text-gray-600">
+            Already have an account? 
+            <a routerLink="/login" class="text-purple-700 hover:underline font-medium">Login here</a>
+          </p>
         </div>
       </div>
     }
 
+    <!-- ================= 步驟二：輸入電子郵件驗證碼 ================= -->
+    @if (step === 2) {
+      <div class="text-center animate-[fadeIn_0.2s_ease-out]">
+        <!-- 標題區塊 -->
+        <div class="mb-8">
+          <span class="text-5xl">📩</span>
+          <h2 class="text-3xl font-bold text-gray-900 mt-4">Verify Your Email</h2>
+          <p class="text-gray-600 mt-2">
+            We sent a 6-digit code to<br>
+            <strong class="text-gray-900 font-semibold">{{ registerData.email }}</strong>
+          </p>
+        </div>
+
+        <!-- 驗證碼大輸入框 (支援雙向綁定與 maxlength) -->
+        <div class="mb-6">
+          <input type="text" 
+                 [(ngModel)]="verificationCode"
+                 maxlength="6"
+                 placeholder="000000"
+                 class="w-48 text-center text-4xl tracking-widest font-mono border-b-2 border-purple-700 focus:outline-none text-purple-900 bg-transparent placeholder-gray-200">
+        </div>
+
+        <!-- 串接元件內重構後的 formattedTimeLeft 計算屬性 -->
+        <p class="text-sm text-gray-500 mb-8 font-medium">
+          Code expires in <span class="text-purple-700 font-mono font-bold text-base">{{ formattedTimeLeft }}</span>
+        </p>
+
+        <!-- 驗證並正式註冊按鈕 -->
+        <button type="button"
+                (click)="verifyCode()"
+                [disabled]="isLoading() || verificationCode.length !== 6"
+                class="w-full bg-purple-700 hover:bg-purple-800 disabled:bg-purple-300 text-white py-4 rounded-2xl font-semibold text-lg transition disabled:cursor-not-allowed shadow-lg shadow-purple-100 active:scale-[0.99]">
+          {{ isLoading() ? 'Verifying...' : 'Verify & Register' }}
+        </button>
+
+        <!-- 🔥 新增：重新發送驗證碼按鈕連結 -->
+        <div class="mt-4">
+          <button type="button"
+                  (click)="resendCode()"
+                  [disabled]="isLoading()"
+                  class="text-sm text-purple-700 hover:text-purple-900 font-semibold hover:underline disabled:text-gray-400 disabled:no-underline disabled:cursor-not-allowed transition">
+            {{ isLoading() ? 'Resending...' : "Didn't receive the code? Resend Code" }}
+          </button>
+        </div>
+      </div>
+    }
   </div>
+
+  <!-- ================= 成功通知彈窗 (Modal Overlay) ================= -->
+  @if (showModal) {
+    <div class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-[fadeIn_0.2s_ease-out_forwards]">
+      <div class="bg-white rounded-3xl max-w-sm w-full p-6 text-center shadow-2xl transform transition-all animate-[slideUp_0.2s_ease-out_forwards]">
+        <div class="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-3xl mx-auto mb-4">
+          ✓
+        </div>
+        <h3 class="text-2xl font-bold text-gray-950 mb-2">註冊成功！</h3>
+        <p class="text-gray-600 mb-6">歡迎加入 SuperMart，請前往登入您的帳號。</p>
+        <button (click)="closeModalAndNavigate()" 
+                class="w-full bg-purple-700 hover:bg-purple-800 text-white font-semibold py-3 rounded-2xl transition shadow-lg shadow-purple-200 active:scale-[0.99]">
+          前往登入
+        </button>
+      </div>
+    </div>
+  }
 </div>
+

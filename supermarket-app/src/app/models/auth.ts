@@ -5,6 +5,11 @@ export interface RegisterRequest
     password?: string; 
 }
 
+export interface VerifyRequest{
+  email: string;
+  code:string
+}
+
 export interface LoginRequest {
   email: string;
   password: string;
@@ -17,6 +22,8 @@ export interface AuthResponse {
   userdto: User;
 }
 
+
+
 export interface updateProfileRequest {
   username: string;
   email: string;
@@ -28,4 +35,5 @@ export interface User{
     email: string;
     role: string;
 }
+
 
