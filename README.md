@@ -80,20 +80,22 @@
     前端應用將會在 `https://localhost:4200` 上運行。
 
 ## 📁 專案目錄結構 (Project Structure)
+```text
 .
 ├── supermarket-app/ # 前端 Angular 專案
-│ ├── src/
-│ │ ├── app/
-│ │ │ ├── components/ # UI 元件 (商品、購物車、訂單等)
-│ │ │ ├── models/ # 前端資料模型
-│ │ │ └── services/ # API 呼叫與狀態管理服務
-│ │ └── ...
-│ └── package.json # 前端依賴套件
+│   ├── src/
+│   │   └── app/
+│   │       ├── components/ # UI 元件 (商品、購物車、訂單等)
+│   │       ├── models/ # 前端資料模型
+│   │       └── services/ # API 呼叫與狀態管理服務
+│   │       └── ...
+│   └── package.json # 前端依賴套件
 │
 └── SupermarketMock/ # 後端 ASP.NET Core 專案
-├── Controllers/ # API 控制器 (Auth, Product, Cart, Order)
-├── DTOs/ # 資料傳輸物件
-├── Models/ # EF Core 資料模型
-├── Services/ # 商業邏輯服務
-├── appsettings.json # 應用程式設定
-└── Program.cs # 程式進入點與服務設定
+    ├── Controllers/ # API 控制器 (Auth, Product, Cart, Order)
+    ├── DTOs/ # 資料傳輸物件
+    ├── Models/ # EF Core 資料模型
+    ├── Services/ # 商業邏輯服務
+    ├── appsettings.json # 應用程式設定
+    └── Program.cs # 程式進入點與服務設定
+```
