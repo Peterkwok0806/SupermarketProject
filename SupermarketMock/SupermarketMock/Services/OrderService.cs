@@ -88,19 +88,35 @@ namespace SupermarketMock.Services
             try
             {
                 var lockedProducts = new Dictionary<int, Product>();
+                
 
                 // 依商品 ID 從小到大，嚴格依序鎖定
                 foreach (var pid in productIds)
                 {
-                    //利用 FromSql 鎖定行資料的同時，透過 Include 載入「當前有效」的促銷活動
-                    var product = await _context.Products
-                        .FromSql($"SELECT * FROM Products WITH (UPDLOCK, ROWLOCK) WHERE Id = {pid}")
-                        .Include(p => p.ProductPromotions
-                            .Where(pp => (pp.OverrideStartDate ?? pp.Promotion.StartDate) <= now
-                                          && (pp.OverrideEndDate ?? pp.Promotion.EndDate) >= now)
-                            .OrderByDescending(pp => pp.Priority))
-                        .ThenInclude(pp => pp.Promotion)
-                        .FirstOrDefaultAsync();
+                    Product? product;
+                    if (_context.Database.ProviderName?.Contains("InMemory") == true)
+                    {
+                        // 測試環境：使用一般查詢（不支援 UPDLOCK）
+                        product = await _context.Products
+                            .Include(p => p.ProductPromotions
+                                .Where(pp => (pp.OverrideStartDate ?? pp.Promotion.StartDate) <= now
+                                              && (pp.OverrideEndDate ?? pp.Promotion.EndDate) >= now)
+                                .OrderByDescending(pp => pp.Priority))
+                            .ThenInclude(pp => pp.Promotion)
+                            .FirstOrDefaultAsync(p => p.Id == pid);
+                    }
+                    else
+                    {
+                        // 正式環境（SQL Server）：使用原本的鎖定方式
+                        product = await _context.Products
+                            .FromSql($"SELECT * FROM Products WITH (UPDLOCK, ROWLOCK) WHERE Id = {pid}")
+                            .Include(p => p.ProductPromotions
+                                .Where(pp => (pp.OverrideStartDate ?? pp.Promotion.StartDate) <= now
+                                              && (pp.OverrideEndDate ?? pp.Promotion.EndDate) >= now)
+                                .OrderByDescending(pp => pp.Priority))
+                            .ThenInclude(pp => pp.Promotion)
+                            .FirstOrDefaultAsync();
+                    }
 
                     if (product != null)
                     {
