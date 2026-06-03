@@ -6,13 +6,13 @@ namespace SupermarketMock.Services
     public interface IProductService
     {
 
-        Task<IEnumerable<ProductDto>> GetProductsAsync(int? category = null);
+        Task<PagedResultDto<ProductDto>> GetProductsAsync(int? category = null, int pageNumber = 1, int pageSize = 10);
 
         Task<IEnumerable<ProductCategory>> GetCategoriesAsync();
 
         Task<ProductDetailDto?> GetProductByIdAsync(int id);
 
-        Task<IEnumerable<ProductDto>> GetProductByKeywordAsync(string keyword);
+        Task<PagedResultDto<ProductDto>> GetProductByKeywordAsync(string keyword, int pageNumber = 1, int pageSize = 10);
 
         Task<IEnumerable<string>> GetProductSuggestionsAsync(string query);
     }

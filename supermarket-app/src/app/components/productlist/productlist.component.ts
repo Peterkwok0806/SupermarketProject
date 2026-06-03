@@ -1,12 +1,15 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, } from '@angular/core';
 import { Product, ProductCategory, ProductDto } from '../../models/product';
 import { ProductService } from '../../services/product.service';
+import { SearchService } from '../../services/search.service';
 import { CartService } from '../../services/cart.service';
 import { CommonModule } from '@angular/common';
 import { Observable } from 'rxjs';
 import { lastValueFrom } from 'rxjs';
-import { RouterLink, ActivatedRoute  } from '@angular/router'; 
-import { switchMap } from 'rxjs/operators';
+import { RouterLink, ActivatedRoute, Router} from '@angular/router'; 
+import { switchMap, map } from 'rxjs';
+import { toSignal } from '@angular/core/rxjs-interop';
+
 
 
 
@@ -21,32 +24,71 @@ export class ProductlistComponent implements OnInit{
 
   private productService = inject(ProductService);
   private cartService = inject(CartService);
+  private searchService = inject(SearchService);
   private route = inject(ActivatedRoute);
+  private router = inject(Router);
+
 
   products$!: Observable<ProductDto[]>;
   categories: ProductCategory[] = [];
 
-  selectedCategory: number | null = null;
-  searchTerm :string = '';
+  pageSize = signal<number>(10);
+  selectedCategory = signal<number | null>(null);
+
+  searchTerm = toSignal(
+    this.route.queryParams.pipe(
+      map(params => {
+        const search = params['search'] || '';
+        this.searchService.searchInputValue.set(search); // 💡 關鍵：讓 Header 輸入框與網址字串保持絕對同步！
+        return search;
+      })
+    ),
+    { initialValue: '' }
+  );
+
+  currentPage = toSignal(
+    this.route.queryParams.pipe(
+      map(params => {
+        const page = params['page'] ? Number(params['page']) : 1;
+        return page < 1 ? 1 : page; // 防禦性防錯，確保頁碼不小於 1
+      })
+    ),
+    { initialValue: 1 }
+  );
+
+  private productsResult$ = this.route.queryParams.pipe(
+    switchMap(params => {
+      const search = params['search'] || '';
+      const page = params['page'] ? Number(params['page']) : 1;
+      const catId = params['catId'] ? Number(params['catId']) : 1;
+      
+      if (search.trim()) {
+        this.selectedCategory.set(null); // 清空分類
+        return this.productService.searchProducts(search.trim(), page, this.pageSize());
+      } else {
+        const catId = this.selectedCategory() ?? undefined;
+        return this.productService.getProducts(catId, page, this.pageSize());
+      }
+    })
+  );
+
+  pagedResult = toSignal(this.productsResult$);
+
+  products = computed(() => this.pagedResult()?.items || []);
+  totalPages = computed(() => this.pagedResult()?.totalPages || 0);
+  totalCount = computed(() => this.pagedResult()?.totalCount || 0);
+
+  navigatePage(pageNumber: number): void {
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { page: pageNumber },
+      queryParamsHandling: 'merge' // 保持現有的 search 或 category 參數不變
+    });
+  }
 
   async ngOnInit(): Promise<void> {
       await this.loadCategories();
-
-      this.products$ = this.route.queryParams.pipe(
-      switchMap(params => {
-        this.searchTerm = params['search'] || ''; // 同步搜尋字串到畫面
-        
-        if (this.searchTerm.trim()) {
-          this.selectedCategory = null; // 有搜尋字，取消分類篩選
-          return this.productService.searchProducts(this.searchTerm.trim());
-        } else {
-          // 沒有搜尋字，走原本的分類邏輯 (此處傳入目前的選中分類或預設 null)
-          const searchId = this.selectedCategory ?? undefined;
-          return this.productService.getProducts(searchId);
-        }
-      })
-    );
-    }
+  }
 
   async loadCategories() {
     try{
@@ -56,21 +98,26 @@ export class ProductlistComponent implements OnInit{
     }
   }
 
-  filterByCategory(categoryId: number | null) {
-    this.selectedCategory = categoryId;
-    this.searchTerm = '';
-    const searchId = categoryId ?? undefined;
-    this.products$ = this.productService.getProducts(searchId);
-  }
+  
 
-  onSearch() {
-    if (this.searchTerm.trim()) {
-      this.selectedCategory = null; // 取消分類篩選
-      this.products$ = this.productService.searchProducts(this.searchTerm.trim());
-    } else {
-      this.filterByCategory(null);
-    }
-  }
+
+  filterByCategory(categoryId: number | null) {
+  // 1. 更新本地的分類 Signal 狀態，驅動畫面按鈕的高亮樣式
+  console.log("button is clicked");
+  this.selectedCategory.set(categoryId);
+
+  // 2. 💡 完美的一擊：一次性更新 URL 參數，重設頁碼為 1，並直接在網址清空搜尋字串
+  this.router.navigate([], {
+    relativeTo: this.route,
+    queryParams: {
+      catId :this.selectedCategory(),
+      page: 1, 
+      search: null // 點擊分類時，主動把網址上的 ?search=xxx 拔掉，維持邏輯乾淨
+    }, 
+    queryParamsHandling: 'merge'
+  });
+}
+  
 
 
   async addToCart(prodcutid: number, quantity: number ) {
@@ -82,6 +129,19 @@ export class ProductlistComponent implements OnInit{
     } catch (error) {
       console.error(error);
       alert('加入購物車失敗，請稍後再試');
+    }
+  }
+
+  // 點擊「下一頁」按鈕
+  nextPage(): void {
+    if (this.currentPage() < this.totalPages()) {
+      this.navigatePage(this.currentPage() + 1);
+    }
+  }
+
+  prevPage(): void {
+    if (this.currentPage() > 1) {
+       this.navigatePage(this.currentPage() - 1);
     }
   }
 

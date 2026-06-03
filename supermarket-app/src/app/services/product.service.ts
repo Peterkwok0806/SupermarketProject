@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
-import { Product, ProductCategory, ProductDto } from '../models/product';
+import { Product, ProductCategory, ProductDto,PagedResult } from '../models/product';
 
 
 
@@ -15,12 +15,16 @@ export class ProductService {
 
   
 
-  getProducts(categoryId?: number): Observable<ProductDto[]> {
-    let url = this.apiUrl;
-    if (categoryId !== undefined) {
-      url += `?category=${categoryId}`;
-    }
-    return this.http.get<ProductDto[]>(url);
+  getProducts(categoryId?: number, page: number = 1, pageSize: number = 10): Observable<PagedResult<ProductDto>> {
+    let params = new HttpParams()
+      .set('page', page.toString())
+      .set('pageSize', pageSize.toString());
+
+       if (categoryId){
+          params = params.set('category', categoryId.toString());
+       }
+       
+       return this.http.get<PagedResult<ProductDto>>(this.apiUrl, { params });
   }
 
   getCategories():Observable<ProductCategory[]>{
@@ -31,8 +35,12 @@ export class ProductService {
   return this.http.get<Product>(`${this.apiUrl}/${id}`);
 }
 
-  searchProducts(keyword: string): Observable<ProductDto[]> {
-    return this.http.get<ProductDto[]>(`${this.apiUrl}/search?keyword=${encodeURIComponent(keyword)}`);
+  searchProducts(keyword: string, page: number = 1, pageSize: number = 10): Observable<PagedResult<ProductDto>> {
+    let params = new HttpParams()
+    .set('keyword', keyword)
+    .set('page', page.toString())
+    .set('pageSize', pageSize.toString());
+    return this.http.get<PagedResult<ProductDto>>(`${this.apiUrl}/search`, { params });
   }
 
   getSearchSuggestions(term: string): Observable<string[]> {

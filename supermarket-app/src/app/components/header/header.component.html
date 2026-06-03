@@ -1,111 +1,98 @@
-<header class="bg-purple-700 text-white shadow-lg sticky top-0 z-50">
-  <div class="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between">
-   
-    <!-- Logo -->
-    <div class="flex items-center gap-3">
-      <span class="text-4xl">🛒</span>
-      <h1 class="text-3xl font-bold tracking-tight">SuperMart</h1>
-    </div>
+<header class="bg-purple-600 border-b border-gray-200 sticky top-0 z-50">
+  <div class="container mx-auto px-4 h-16 flex items-center justify-between gap-4">
+    
+    <!-- 1. Logo / 專案名稱 -->
+    <a routerLink="/products" class="text-xl font-bold text-white flex items-center gap-2 shrink-0">
+      🛒 <span class="hidden sm:inline">Supermarket</span>
+    </a>
 
-    <!-- Search Bar -->
-    <div class="flex-1 max-w-xl mx-8">
-      <div class="relative">
-        <input
-          type="text"
-          [ngModel]="searchTerm()"
+    <!-- 2. ⚙️ 重構核心：中央共享搜尋框（帶有防抖即時建議功能） -->
+    <div class="flex-1 max-w-xl relative">
+      <div class="flex items-center relative">
+        <input 
+          type="text" 
+          [ngModel]="searchService.searchInputValue()" 
           (ngModelChange)="onSearchInput($event)"
           (keyup.enter)="onSearch()"
           (blur)="onBlur()"
-          placeholder="Search products, fruits, snacks..."
-          class="w-full px-6 py-3.5 border border-transparent rounded-full focus:outline-none focus:ring-4 focus:ring-purple-300 
-                 text-gray-900 bg-white text-lg pl-12 shadow-sm placeholder-gray-400">
+          placeholder="Search products..." 
+          class="w-full pl-10 pr-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition"
+        />
+        <!-- 放大鏡放大圖標 -->
+        <span class="absolute left-3 text-gray-400 text-sm pointer-events-none">🔍</span>
+      </div>
 
-        <span class="absolute left-5 top-1/2 -translate-y-1/2 text-gray-500 z-10">🔍</span>
-
-        <!-- Suggestions Dropdown -->
-        @if (showSuggestions() && suggestions().length > 0) {
-          <div class="absolute left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-50 text-gray-800 py-1">
-            @for (item of suggestions(); track item) {
-              <button
-                type="button"
-                (mousedown)="selectSuggestion(item)"
-                class="w-full text-left px-6 py-3 hover:bg-purple-50 flex items-center gap-3 transition-colors font-medium">
-                <span class="text-gray-400">🔍</span>
-                <span>{{ item }}</span>
-              </button>
-            }
-          </div>
-        }
+      <!-- 💡 下拉即時搜尋建議選單 (Autocomplete Dropdown) -->
+      <!-- 使用 Signal 函數式讀取：showSuggestions() 與 hasSuggestions() -->
+      <div 
+        *ngIf="showSuggestions() && hasSuggestions()" 
+        class="absolute left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-xl z-50 max-h-60 overflow-y-auto py-1"
+      >
+        <button 
+          *ngFor="let suggestion of suggestions()" 
+          (mousedown)="selectSuggestion(suggestion)"
+          class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none transition flex items-center gap-2"
+        >
+          <span class="text-gray-400 text-xs">🕒</span> {{ suggestion }}
+        </button>
       </div>
     </div>
 
-    <!-- Right Side -->
-    <div class="flex items-center gap-6">
-     
-      <!-- Navigation -->
-      <a routerLink="/" class="hover:text-purple-200 transition font-medium">Home</a>
-      <a routerLink="/products" class="hover:text-purple-200 transition font-medium">Products</a>
+    <!-- 3. 右側導航 (購物車、使用者狀態) -->
+    <div class="flex items-center gap-4 shrink-0">
+      <!-- 購物車按鈕 (帶有數量標籤) -->
+      <a routerLink="/cart" class="relative p-2 text-gray-600 hover:text-blue-600 transition">
+        <span class="text-xl">🛒</span>
+        <!-- 使用 Signal 讀取 totalItems() -->
+        <span 
+          *ngIf="totalItems() > 0" 
+          class="absolute top-0 right-0 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold transform translate-x-1 -translate-y-1 animate-pulse"
+        >
+          {{ totalItems() }}
+        </span>
+      </a>
 
-      <!-- Cart -->
-      <button routerLink="/cart"
-              class="flex items-center gap-2 bg-white text-purple-700 hover:bg-purple-100 px-7 py-3 rounded-2xl font-semibold transition relative">
-        🛍️ Cart
-        @if (totalItems() > 0) {
-          <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full">
-            {{ totalItems() }}
-          </span>
-        }
-      </button>
-
-      <!-- Auth Section -->
-      @if (isLoggedIn()) {
-        <div class="relative" (click)="onDropdownClick($event)">
+      <!-- 會員狀態區塊 -->
+      <ng-container *ngIf="isLoggedIn(); else loginBtn">
+        <!-- 已登入：使用者下拉選單 -->
+        <div class="relative">
           <button 
             (click)="toggleDropdown($event)" 
-            class="flex items-center gap-3 hover:bg-white/10 px-4 py-2 rounded-2xl transition">
-            <div class="w-9 h-9 bg-white/30 rounded-full flex items-center justify-center text-2xl">
-              👤
-            </div>
-            <div class="text-left">
-              <span class="text-white font-medium text-sm block">Hi, {{ currentUser()?.username }}</span>
-              <span class="text-purple-200 text-xs">{{ currentUser()?.email }}</span>
-            </div>
+            class="flex items-center gap-1 text-sm font-medium text-gray-700 hover:text-blue-600 focus:outline-none"
+          >
+            Hi, {{ currentUser()?.username }} 
+            <span class="text-xs transition-transform" [class.rotate-180]="isDropdownOpen()">▼</span>
           </button>
 
-          <!-- Dropdown Menu -->
-          @if (isDropdownOpen()) {
-            <div class="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl py-2 z-50 text-gray-700">
-              <a routerLink="/profile"
-                (click)="isDropdownOpen.set(false)"
-                class="flex items-center gap-3 px-5 py-3 hover:bg-gray-100">
-                👤 Profile
-              </a>
-              <a routerLink="/orders"
-                (click)="isDropdownOpen.set(false)"
-                class="flex items-center gap-3 px-5 py-3 hover:bg-gray-100">
-                📋 My Orders
-              </a>
-              <div class="border-t my-2"></div>
-              <button 
-                (click)="logout(); isDropdownOpen.set(false)"
-                class="flex items-center gap-3 px-5 py-3 hover:bg-red-50 text-red-600 w-full text-left">
-                🚪 Logout
-              </button>
-            </div>
-          }
+          <!-- 下拉選單內容 -->
+          <div 
+            *ngIf="isDropdownOpen()" 
+            (click)="onDropdownClick($event)"
+            class="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-50 text-sm"
+          >
+            <a routerLink="/profile" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">個人資料</a>
+            <a routerLink="/orders" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">歷史訂單</a>
+            <hr class="border-gray-100 my-1">
+            <button 
+              (click)="logout()" 
+              class="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 transition"
+            >
+              登出系統
+            </button>
+          </div>
         </div>
-      } @else {
-        <div class="flex items-center gap-3">
-          <a routerLink="/login"
-            class="px-6 py-2.5 font-medium hover:bg-purple-600 rounded-xl transition">
-            Login
-          </a>
-          <a routerLink="/register"
-            class="bg-white text-purple-700 hover:bg-purple-100 px-6 py-2.5 font-semibold rounded-xl transition">
-            Register
-          </a>
-        </div>
-      }
+      </ng-container>
+
+      <!-- 未登入：顯示登入按鈕 -->
+      <ng-template #loginBtn>
+        <a 
+          routerLink="/auth/login" 
+          class="text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg transition"
+        >
+          登入
+        </a>
+      </ng-template>
     </div>
+
   </div>
 </header>

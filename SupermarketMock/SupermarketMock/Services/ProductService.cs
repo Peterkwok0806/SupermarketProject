@@ -15,8 +15,10 @@ namespace SupermarketMock.Services
         }
 
 
-        public async Task<IEnumerable<ProductDto>> GetProductsAsync(int? category = null)
+        public async Task<PagedResultDto<ProductDto>> GetProductsAsync(int? category = null, int pageNumber = 1, int pageSize = 10)
         {
+            pageNumber = pageNumber < 1 ? 1 : pageNumber;
+            pageSize = pageSize < 1 ? 10: pageSize;
             var query = _context.Products.AsQueryable();
 
             // 關鍵邏輯：如果 category 是 null，此處會自動跳過，直接查詢全部商品
@@ -25,7 +27,22 @@ namespace SupermarketMock.Services
                 query = query.Where(p => p.CategoryId == category.Value);
             }
 
-            return await BuildProductDtosAsync(query);
+            int totalCount = await query.CountAsync();
+
+            var pagedQuery = query
+                .OrderBy(p => p.Name) // 分頁前必須排序，否則分頁順序會錯亂
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize);
+
+            var productDtos = await BuildProductDtosAsync(pagedQuery);
+
+            return new PagedResultDto<ProductDto>
+            {
+                Items = productDtos,
+                TotalCount = totalCount,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
         }
 
         public async Task<IEnumerable<ProductCategory>> GetCategoriesAsync()
@@ -86,12 +103,16 @@ namespace SupermarketMock.Services
 
         }
 
-        public async Task<IEnumerable<ProductDto>> GetProductByKeywordAsync(string keyword)
+        public async Task<PagedResultDto<ProductDto>> GetProductByKeywordAsync(string keyword, int pageNumber = 1, int pageSize = 10)
         {
-            // 1. 檢查關鍵字是否為空，避免全表掃描
+
+            pageNumber = pageNumber < 1 ? 1 : pageNumber;
+            pageSize = pageSize < 1 ? 10 : pageSize;
+
+            // 檢查關鍵字是否為空，避免全表掃描
             if (string.IsNullOrWhiteSpace(keyword))
             {
-                return Enumerable.Empty<ProductDto>();
+                return new PagedResultDto<ProductDto>();
             }
 
             var query = _context.Products.AsNoTracking()
@@ -99,8 +120,23 @@ namespace SupermarketMock.Services
                             (p.Description != null && p.Description.Contains(keyword)) ||
                             (p.Brand != null && p.Brand.Contains(keyword)));
 
+            int totalCount = await query.CountAsync();
 
-            return await BuildProductDtosAsync(query);
+            var pagedQuery = query
+                .OrderBy(p => p.Name) // 分頁前必須排序，否則分頁順序會錯亂
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize);
+
+
+            var productDtos = await BuildProductDtosAsync(pagedQuery);
+
+            return new PagedResultDto<ProductDto>
+            {
+                Items = productDtos,
+                TotalCount = totalCount,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
         }
 
         public async Task<IEnumerable<string>> GetProductSuggestionsAsync(string query)

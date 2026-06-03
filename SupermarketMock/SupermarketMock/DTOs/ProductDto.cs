@@ -54,4 +54,6 @@ namespace SupermarketMock.DTOs
         public List<string> promotionNames { get; set; } = new();    // 命中哪一個活動名稱
 
     }
+
+    
 }

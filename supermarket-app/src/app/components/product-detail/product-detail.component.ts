@@ -42,7 +42,7 @@ export class ProductDetailComponent implements OnInit,OnDestroy{
       this.product = await lastValueFrom(this.productService.getProductById(id)) 
       if (this.product) {
         const products = await lastValueFrom(this.productService.getProducts(this.product.categoryId));
-        this.relatedProducts = products
+        this.relatedProducts = products.items
           .filter(p => p.id !== id)
           .slice(0, 4);
       }

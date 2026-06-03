@@ -1,128 +1,150 @@
-<!-- 💡 核心優化：在最外層只訂閱一次 products$ 並存入 products 變數，防止重複觸發 API -->
-<div class="max-w-7xl mx-auto px-6 py-10" *ngIf="products$ | async as products; else loading">
+<div class="max-w-7xl mx-auto px-6 py-10">
   
-  <!-- Category Navigation Bar -->
+  <!-- 1. Category Navigation Bar -->
   <div class="mb-8 border-b border-gray-200">
     <div class="flex items-center gap-2 overflow-x-auto pb-4 hide-scroll">
+      <!-- 💡 修正：直接讀取 selectedCategory() 訊號進行狀態高亮比對 -->
       <button 
         (click)="filterByCategory(null)"
-        [class.bg-purple-700]="selectedCategory === null"
-        [class.text-white]="selectedCategory === null"
+        [class.bg-purple-700]="selectedCategory() === null"
+        [class.text-white]="selectedCategory() === null"
         class="px-6 py-3 whitespace-nowrap rounded-2xl font-medium transition-all hover:bg-purple-100 hover:text-purple-700">
         All Products
       </button>
 
-      <!-- 💡 修正：改為循環 categories 物件陣列 -->
       @for (cat of categories; track cat.id) {
         <button 
           (click)="filterByCategory(cat.id)"
-          [class.bg-purple-700]="selectedCategory === cat.id"
-          [class.text-white]="selectedCategory === cat.id"
+          [class.bg-purple-700]="selectedCategory() === cat.id"
+          [class.text-white]="selectedCategory() === cat.id"
           class="px-6 py-3 whitespace-nowrap rounded-2xl font-medium transition-all hover:bg-purple-100 hover:text-purple-700">
-          <!-- 💡 修正：直接顯示圖示與中文名稱，不再需要 Pipe -->
           {{ cat.icon }} {{ cat.description }}
         </button>
       }
     </div>
   </div>
 
-  <!-- Title & Item Count -->
+  <!-- 2. Title & Item Count -->
   <div class="flex justify-between items-center mb-8">
     <h2 class="text-3xl font-bold text-gray-800">
-      @if (selectedCategory === null) {
+      @if (selectedCategory() === null) {
         All Products
       } @else {
-        <!-- 💡 修正：從現有分類清單中比對，直接抓出對應的圖示與中文當作標題 -->
         @for (cat of categories; track cat.id) {
-          @if (cat.id === selectedCategory) {
+          @if (cat.id === selectedCategory()) {
             {{ cat.icon }} {{ cat.description }}
           }
         }
       }
     </h2>
     
-    <!-- 💡 直接讀取緩存變數的長度 -->
+    <!-- 💡 修正：使用 computed 產生的 totalCount() 訊號，精確顯示全站符合條件的總件數 -->
     <span class="text-gray-500 font-medium">
-      {{ products.length }} {{ products.length === 1 ? 'item' : 'items' }}
+      {{ totalCount() }} {{ totalCount() === 1 ? 'item' : 'items' }}
     </span>
   </div>
 
-  <!-- Product Grid -->
-  <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-    <!-- 💡 直接循環 products 變數，不用再寫 async -->
-    @for (item of products; track item.id) {
-      <div class="bg-white rounded-2xl shadow-sm hover:shadow-lg transition overflow-hidden group flex flex-col justify-between relative">
-        
-        <div>
-          <div [routerLink]="['/product', item.id]" class="cursor-pointer">
-            <!-- Image Container -->
-            <div class="aspect-square bg-gray-100 relative overflow-hidden">
-              <img 
-                [src]="'/images/products/' + item.photo"
-                [alt]="item.name"
-                class="w-full h-full object-cover group-hover:scale-105 transition duration-300"
-                onerror="this.src='https://picsum.photos'; this.onerror=null;">
+  <!-- 3. 讀取狀態控制：若 pagedResult() 還沒拿到資料，顯示 Loading 骨架 -->
+  @if (!pagedResult()) {
+    <div class="py-20 text-center">
+      <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-purple-500 border-t-transparent mb-4"></div>
+      <p class="text-gray-500 text-lg font-medium">Loading our products...</p>
+    </div>
+  } @else {
+    <!-- 4. Product Grid -->
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+      <!-- 💡 修正：直接循環讀取唯讀訊號 products() -->
+      @for (item of products(); track item.id) {
+        <div class="bg-white rounded-2xl shadow-sm hover:shadow-lg transition overflow-hidden group flex flex-col justify-between relative">
+          
+          <div>
+            <div [routerLink]="['/product', item.id]" class="cursor-pointer">
+              <!-- Image Container -->
+              <div class="aspect-square bg-gray-100 relative overflow-hidden">
+                <img 
+                  [src]="'/images/products/' + item.photo"
+                  [alt]="item.name"
+                  class="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+                  onerror="this.src='https://picsum.photos'; this.onerror=null;">
 
-              <!-- 💡 新增：浮動促銷標籤區塊（左上角疊加） -->
-              @if (item.isOnSale && item.promotionNames?.length) {
-                <div class="absolute top-3 left-3 flex flex-col gap-1.5 z-10 max-w-[85%]">
-                  @for (promoName of item.promotionNames; track promoName) {
-                    <span class="bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-sm backdrop-blur-sm truncate">
-                      🔥 {{ promoName }}
-                    </span>
-                  }
-                </div>
+                <!-- 促銷標籤區塊 -->
+                @if (item.isOnSale && item.promotionNames?.length) {
+                  <div class="absolute top-3 left-3 flex flex-col gap-1.5 z-10 max-w-[85%]">
+                    @for (promoName of item.promotionNames; track promoName) {
+                      <span class="bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-sm backdrop-blur-sm truncate">
+                        🔥 {{ promoName }}
+                      </span>
+                    }
+                  </div>
+                }
+              </div>
+
+              <!-- Info -->
+              <div class="p-5">
+                <h3 class="font-semibold text-lg line-clamp-2 h-12 mt-1 text-gray-800 hover:text-purple-700 transition">
+                  {{ item.name }}
+                </h3>
+              </div>
+            </div>  
+          </div>
+
+          <!-- Price & Action -->
+          <div class="p-5 pt-0">
+            <div class="flex flex-wrap items-baseline gap-2 mt-1 min-h-[2.5rem]">
+              @if (item.isOnSale && item.originalPrice) {
+                <span class="text-2xl font-black text-red-600">
+                  {{ item.price | currency:'HKD':'symbol-narrow' }}
+                </span>
+                <span class="text-sm font-medium text-gray-400 line-through">
+                  {{ item.originalPrice | currency:'HKD':'symbol-narrow' }}
+                </span>
+              } @else {
+                <span class="text-2xl font-bold text-purple-700">
+                  {{ item.price | currency:'HKD':'symbol-narrow' }}
+                </span>
               }
             </div>
 
-            <!-- Info -->
-            <div class="p-5">
-              <h3 class="font-semibold text-lg line-clamp-2 h-12 mt-1 text-gray-800 hover:text-purple-700 transition">{{ item.name }}</h3>
-            </div>
-          </div>  
-        </div>
-
-        <!-- Price & Action -->
-        <div class="p-5 pt-0">
-          <!-- 💡 新增：支援優惠價格顯示的區塊 -->
-          <div class="flex flex-wrap items-baseline gap-2 mt-1 min-h-[2.5rem]">
-            @if (item.isOnSale && item.originalPrice) {
-              <!-- 特價時：顯示紅/紫色的折後最終售價 -->
-              <span class="text-2xl font-black text-red-600">
-                {{ item.price | currency:'HKD':'symbol-narrow' }}
-              </span>
-              <!-- 特價時：顯示灰色劃掉的原價 -->
-              <span class="text-sm font-medium text-gray-400 line-through">
-                {{ item.originalPrice | currency:'HKD':'symbol-narrow' }}
-              </span>
-            } @else {
-              <!-- 原價時：只顯示一般的原價 -->
-              <span class="text-2xl font-bold text-purple-700">
-                {{ item.price | currency:'HKD':'symbol-narrow' }}
-              </span>
-            }
+            <button (click)="addToCart(item.id, 1)" 
+                    class="mt-4 w-full bg-purple-700 hover:bg-purple-800 text-white py-3 rounded-2xl font-medium transition shadow-sm hover:shadow active:scale-[0.98]">
+              Add to Cart
+            </button>
           </div>
 
-          <button (click)="addToCart(item.id, 1)" 
-                  class="mt-4 w-full bg-purple-700 hover:bg-purple-800 text-white py-3 rounded-2xl font-medium transition shadow-sm hover:shadow active:scale-[0.98]">
-            Add to Cart
+        </div>
+      } @empty {
+        <div class="col-span-full py-20 text-center text-gray-500 text-lg">
+          目前沒有找到符合的商品...
+        </div>
+      }
+    </div>
+
+    <!-- 5. ⚙️ 新增：商業標準分頁控制元件 -->
+    @if (totalPages() > 1) {
+      <div class="flex flex-col items-center justify-center space-y-2 mt-12 border-t border-gray-100 pt-6">
+        <div class="flex items-center space-x-4">
+          <!-- 上一頁按鈕 (當前是第一頁時自動停用) -->
+          <button 
+            (click)="prevPage()" 
+            [disabled]="currentPage() === 1"
+            class="px-5 py-2.5 bg-gray-100 text-gray-700 font-medium rounded-xl disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-200 transition">
+            ⬅️ 上一頁
+          </button>
+
+          <!-- 頁碼指示器 -->
+          <span class="text-gray-700 font-semibold text-sm bg-gray-50 px-4 py-2 rounded-xl border border-gray-200">
+            第 {{ currentPage() }} 頁 / 共 {{ totalPages() }} 頁
+          </span>
+
+          <!-- 下一頁按鈕 (當前是最後一頁時自動停用) -->
+          <button 
+            (click)="nextPage()" 
+            [disabled]="currentPage() === totalPages()"
+            class="px-5 py-2.5 bg-gray-100 text-gray-700 font-medium rounded-xl disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-200 transition">
+            下一頁 ➡️
           </button>
         </div>
-
-      </div>
-    } @empty {
-      <div class="col-span-full py-20 text-center text-gray-500 text-lg">
-        目前沒有找到符合的商品...
       </div>
     }
-  </div>
+  }
 </div>
-
-<!-- 讀取中骨架（Skeleton）-->
-<ng-template #loading>
-  <div class="max-w-7xl mx-auto px-6 py-20 text-center">
-    <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-purple-500 border-t-transparent mb-4"></div>
-    <p class="text-gray-500 text-lg font-medium">Loading our products...</p>
-  </div>
-</ng-template>
-

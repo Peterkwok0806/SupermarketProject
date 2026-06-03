@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using SupermarketMock.DTOs;
 using SupermarketMock.Models;
 using SupermarketMock.Services;
 
@@ -17,17 +18,13 @@ namespace SupermarketMock.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Get([FromQuery] int? category = null)
+        public async Task<ActionResult<PagedResultDto<ProductDto>>> GetProducts(
+            [FromQuery] int? category,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10)
         {
-            if (category.HasValue)
-            {
-                var filteredProducts = await _productService.GetProductsAsync(category.Value);
-                return Ok(filteredProducts);
-            }
-
-            // 沒傳參數就走原來的 GetAllProductsAsync
-            var allProducts = await _productService.GetProductsAsync();
-            return Ok(allProducts);
+            var result = await _productService.GetProductsAsync(category, page, pageSize);
+            return Ok(result);
         }
 
         [HttpGet("categories")]
@@ -48,15 +45,14 @@ namespace SupermarketMock.Controllers
 
         [HttpGet("search")]
 
-        public async Task<IActionResult> SearchProducts([FromQuery] string keyword)
+        public async Task<ActionResult<PagedResultDto<ProductDto>>> SearchProducts(
+            [FromQuery] string keyword,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10)
         {
-            var products = await _productService.GetProductByKeywordAsync(keyword);
-            if (products == null)
-            {
-                return NotFound(new { message = "找不到相關資源" });
-            }
+            var result = await _productService.GetProductByKeywordAsync(keyword,page,pageSize);
 
-            return Ok(products);
+            return Ok(result);
         }
 
         [HttpGet("suggestions")]

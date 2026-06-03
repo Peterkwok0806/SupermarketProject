@@ -4,6 +4,7 @@ import { CommonModule} from '@angular/common';
 import { CartService } from '../../services/cart.service';
 import { AuthService } from '../../services/auth.service';
 import { ProductService} from '../../services/product.service';
+import { SearchService } from '../../services/search.service'
 import { Subject} from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap, tap } from 'rxjs/operators';
 import { FormsModule } from '@angular/forms';
@@ -21,9 +22,11 @@ export class HeaderComponent {
   private authService = inject(AuthService);
   private productService = inject(ProductService);
   private router = inject(Router);
+  public searchService = inject(SearchService);
 
   // Signals
   isDropdownOpen = signal<boolean>(false);
+  showSuggestions = signal<boolean>(false);
   searchTerm = signal<string>('');
 
   totalItems = this.cartService.totalItems;
@@ -32,7 +35,7 @@ export class HeaderComponent {
 
   // Search
   private searchTerms$ = new Subject<string>();
-  showSuggestions = signal<boolean>(false);
+  
 
 
   
@@ -40,7 +43,7 @@ export class HeaderComponent {
   //用 toSignal 把 RxJS 資料流轉成唯讀 Signal
   // 預設值為空陣列 []
   suggestions = toSignal(
-    this.searchTerms$.pipe(
+    this.searchService.searchTerms$.pipe(
       debounceTime(300),
       distinctUntilChanged(),
       tap(term => {
@@ -57,13 +60,12 @@ export class HeaderComponent {
 
   // 當使用者在 input 打字時觸發
   onSearchInput(term: string): void {
-    this.searchTerm.set(term);
-    this.searchTerms$.next(term);
+    this.searchService.triggerInput(term); // 💡 改由 Service 統一廣播
   }
 
   // 點擊建議選單中的某一項
   selectSuggestion(term: string): void {
-    this.searchTerm.set(term);
+    this.searchService.triggerInput(term);
     this.showSuggestions.set(false);
     this.performSearch();
   }
@@ -75,10 +77,11 @@ export class HeaderComponent {
 
   private performSearch(): void {
     this.showSuggestions.set(false);
-    const term = this.searchTerm().trim();
+    const term = this.searchService.searchInputValue().trim();
     
     this.router.navigate(['/products'], { 
-      queryParams: { search: term || null } 
+      queryParams: { search: term || null, page: 1 },
+      queryParamsHandling: 'merge' 
     });
   }
 
