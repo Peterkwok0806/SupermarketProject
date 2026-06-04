@@ -52,8 +52,8 @@
         </span>
       </a>
 
-      <!-- 會員狀態區塊 -->
-      <ng-container *ngIf="isLoggedIn(); else loginBtn">
+      <!-- Auth Section -->
+      @if (isLoggedIn()) {
         <!-- 已登入：使用者下拉選單 -->
         <div class="relative">
           <button 
@@ -81,17 +81,20 @@
             </button>
           </div>
         </div>
-      </ng-container>
-
+      } @else {
       <!-- 未登入：顯示登入按鈕 -->
-      <ng-template #loginBtn>
-        <a 
-          routerLink="/auth/login" 
-          class="text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg transition"
-        >
-          登入
-        </a>
-      </ng-template>
+      <div class="flex items-center gap-3">
+          <a routerLink="/login" 
+             class="bg-purple-700 text-white hover:bg-purple-500 px-6 py-2.5 font-semibold rounded-xl transition">
+            Login
+          </a>
+          
+          <a routerLink="/register" 
+             class="bg-white text-purple-700 hover:bg-purple-100 px-6 py-2.5 font-semibold rounded-xl transition">
+            Register
+          </a>
+        </div>
+      }
     </div>
 
   </div>

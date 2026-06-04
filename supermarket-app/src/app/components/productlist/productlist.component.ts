@@ -58,13 +58,13 @@ export class ProductlistComponent implements OnInit{
     switchMap(params => {
       const search = params['search'] || '';
       const page = params['page'] ? Number(params['page']) : 1;
-      const catId = params['catId'] ? Number(params['catId']) : 1;
+      const catId = params['catId'] ? Number(params['catId']) : null;
       
       if (search.trim()) {
         this.selectedCategory.set(null); // 清空分類
         return this.productService.searchProducts(search.trim(), page, this.pageSize());
       } else {
-        return this.productService.getProducts(catId, page, this.pageSize());
+        return this.productService.getProducts(catId ?? undefined, page, this.pageSize());
       }
     })
   );
