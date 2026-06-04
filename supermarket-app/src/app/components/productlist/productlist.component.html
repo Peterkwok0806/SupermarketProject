@@ -18,7 +18,7 @@
           [class.bg-purple-700]="selectedCategory() === cat.id"
           [class.text-white]="selectedCategory() === cat.id"
           class="px-6 py-3 whitespace-nowrap rounded-2xl font-medium transition-all hover:bg-purple-100 hover:text-purple-700">
-          {{ cat.icon }} {{ cat.description }}
+          {{ cat.icon }} {{ cat.name }}
         </button>
       }
     </div>
@@ -32,7 +32,7 @@
       } @else {
         @for (cat of categories; track cat.id) {
           @if (cat.id === selectedCategory()) {
-            {{ cat.icon }} {{ cat.description }}
+            {{ cat.icon }} {{ cat.name }}
           }
         }
       }
@@ -128,12 +128,12 @@
             (click)="prevPage()" 
             [disabled]="currentPage() === 1"
             class="px-5 py-2.5 bg-gray-100 text-gray-700 font-medium rounded-xl disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-200 transition">
-            ⬅️ 上一頁
+            ⬅️ Pre
           </button>
 
           <!-- 頁碼指示器 -->
           <span class="text-gray-700 font-semibold text-sm bg-gray-50 px-4 py-2 rounded-xl border border-gray-200">
-            第 {{ currentPage() }} 頁 / 共 {{ totalPages() }} 頁
+             Page{{ currentPage() }} / Total {{ totalPages() }} Page
           </span>
 
           <!-- 下一頁按鈕 (當前是最後一頁時自動停用) -->
@@ -141,7 +141,7 @@
             (click)="nextPage()" 
             [disabled]="currentPage() === totalPages()"
             class="px-5 py-2.5 bg-gray-100 text-gray-700 font-medium rounded-xl disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-200 transition">
-            下一頁 ➡️
+            Next ➡️
           </button>
         </div>
       </div>
