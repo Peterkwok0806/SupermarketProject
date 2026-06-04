@@ -28,8 +28,6 @@ export class ProductlistComponent implements OnInit{
   private route = inject(ActivatedRoute);
   private router = inject(Router);
 
-
-  products$!: Observable<ProductDto[]>;
   categories: ProductCategory[] = [];
 
   pageSize = signal<number>(10);
@@ -66,7 +64,6 @@ export class ProductlistComponent implements OnInit{
         this.selectedCategory.set(null); // 清空分類
         return this.productService.searchProducts(search.trim(), page, this.pageSize());
       } else {
-        const catId = this.selectedCategory() ?? undefined;
         return this.productService.getProducts(catId, page, this.pageSize());
       }
     })
@@ -103,10 +100,9 @@ export class ProductlistComponent implements OnInit{
 
   filterByCategory(categoryId: number | null) {
   // 1. 更新本地的分類 Signal 狀態，驅動畫面按鈕的高亮樣式
-  console.log("button is clicked");
   this.selectedCategory.set(categoryId);
 
-  // 2. 💡 完美的一擊：一次性更新 URL 參數，重設頁碼為 1，並直接在網址清空搜尋字串
+  // 2. 一次性更新 URL 參數，重設頁碼為 1，並直接在網址清空搜尋字串
   this.router.navigate([], {
     relativeTo: this.route,
     queryParams: {
