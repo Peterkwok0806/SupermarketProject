@@ -38,7 +38,7 @@ namespace SupermarketMock.Tests
         }
 
         [Fact]
-        public async Task CreateOrderAsync_BuyXGetYFree_Success()
+        public async Task CreateOrderAsync_BuyXGetYFree_SuccessAndDeductStock()
         {
             // Arrange
             var product = SeedProduct(1, stock: 20, price: 100m);
@@ -48,13 +48,19 @@ namespace SupermarketMock.Tests
             // Act
             var result = await _service.CreateOrderAsync(1, CreateValidDto());
 
-            // Assert
+            // Assert 
+            //  // Validation A: Pricing integrity
             Assert.True(result.Success, $"建立訂單失敗: {result.Message}");
             Assert.Equal(400m, result.Order?.totalAmount);
+
+            // Validation B
+            var updatedProduct = await _context.Products.FindAsync(1);
+            Assert.NotNull(updatedProduct);
+            Assert.Equal(15, updatedProduct.StockQuantity);
         }
 
         [Fact]
-        public async Task CreateOrderAsync_QuantitySpecialPrice_Success()
+        public async Task CreateOrderAsync_QuantitySpecialPrice_SuccessAndDeductStock()
         {
             var product = SeedProduct(1, stock: 20, price: 100m);
             SeedPromotion(product, PromotionType.QuantitySpecialPrice, buyQty: 3, discountValue: 250m, priority: 10);
@@ -62,25 +68,36 @@ namespace SupermarketMock.Tests
 
             var result = await _service.CreateOrderAsync(1, CreateValidDto());
 
+            // Validation A: Pricing integrity
             Assert.True(result.Success, $"建立訂單失敗: {result.Message}");
             Assert.Equal(600m, result.Order?.totalAmount);
+
+            var updatedProduct = await _context.Products.FindAsync(1);
+            Assert.NotNull(updatedProduct);
+            Assert.Equal(13, updatedProduct.StockQuantity);
         }
 
         [Fact]
-        public async Task CreateOrderAsync_MultipleProducts_LocksInOrder_Success()
+        public async Task CreateOrderAsync_WhenStockIsInsufficient_ShouldRollbackAndReturnErrorMessage()
         {
-            SeedProduct(1, stock: 10, price: 200m);
-            SeedProduct(5, stock: 10, price: 100m);
-            SeedProduct(10, stock: 10, price: 150m);
+            SeedProduct(1, stock: 5, price: 200m);
 
-            SeedCartItem(1, productId: 5, quantity: 1);
-            SeedCartItem(1, productId: 1, quantity: 2);
-            SeedCartItem(1, productId: 10, quantity: 1);
+            SeedCartItem(1, productId: 1, quantity: 10);
+          
 
             var result = await _service.CreateOrderAsync(1, CreateValidDto());
 
-            Assert.True(result.Success, $"建立訂單失敗: {result.Message}");
-            Assert.Equal(3, result.Order?.orderItems?.Count ?? 0);
+            Assert.False(result.Success);
+            Assert.Contains("庫存不足", result.Message);
+
+            // Validation A: Zero inventory corruption (Stock must remain unchanged at 5)
+            var updatedProduct = await _context.Products.FindAsync(1);
+            Assert.NotNull(updatedProduct);
+            Assert.Equal(5, updatedProduct.StockQuantity);
+
+            // Validation B: Transaction abort check (No corrupt orders added to DB)
+            var savedOrder = await _context.Orders.FirstOrDefaultAsync(o => o.UserId == 1);
+            Assert.Null(savedOrder);
         }
 
         private CreateOrderDto CreateValidDto() => new CreateOrderDto
