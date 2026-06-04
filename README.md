@@ -1,101 +1,148 @@
 # 🛒 Supermarket E-Commerce Platform
 
-歡迎來到 Supermarket E-Commerce Platform！這是一個功能完整的全端電子商務解決方案，旨在提供流暢、安全且高效的線上購物體驗。前端採用 Angular 打造，後端則由穩定的 ASP.NET Core 驅動，實現了從使用者註冊、商品瀏覽到訂單完成的全流程功能。
+[![.NET 8](https://shields.io)](https://microsoft.com)
+[![Angular](https://shields.io)](https://angular.dev)
+[![Tailwind CSS](https://shields.io)](https://tailwindcss.com)
 
-## ✨ 特色功能 (Features)
+Welcome to the **Supermarket E-Commerce Platform**! This is a full-stack e-commerce solution engineered with an **Enterprise-grade Architecture** to deliver a secure, scalable, and high-performance online shopping experience.
 
-*   **使用者身份驗證**：
-    *   完整的註冊、登入與登出流程。
-    *   使用 JWT (JSON Web Tokens) 進行安全的 API 驗證。
-    *   支援 Refresh Token，可自動刷新 Access Token，提供無縫的使用者體驗。
-*   **購物車管理**：
-    *   將商品加入、移出購物車。
-    *   即時更新購物車內商品數量。
-    *   清空購物車。
-*   **訂單系統**：
-    *   從購物車建立訂單。
-    *   查詢歷史訂單列表。
-    *   查看單一訂單的詳細資訊。
-*   **商品瀏覽與搜尋**：
-    *   依分類篩選商品。
-    *   透過關鍵字搜尋商品。
-    *   提供即時的搜尋建議。
-*   **個人資料管理**：
-    *   使用者可以更新個人資料。
-    *   提供修改密碼功能。
-*   **背景任務處理**：
-    *   整合 Hangfire 處理背景任務，例如：非同步發送註冊驗證 Email。
+The system adopts a decoupled **Single-Page Application (SPA) frontend built with Angular 18+** and a robust **monolithic RESTful backend powered by ASP.NET Core Web API (.NET 8)**.
 
-## 🛠️ 技術棧 (Tech Stack)
+---
 
-*   **後端 (Backend)**:
-    *   .NET 8
-    *   ASP.NET Core Web API
-    *   Entity Framework Core
-    *   SQL Server
-    *   Hangfire (用於背景任務)
-    *   IdGen (用於產生雪花 ID)
-*   **前端 (Frontend)**:
-    *   Angular
-    *   RxJS
-    *   Tailwind CSS
+## Key Features (Business & Tech Highlights)
 
-## 🚀 快速開始 (Getting Started)
+*   **Secure Identity & Session Management**:
+    *   Full user registration, authentication, and token-based state lifecycle.
+    *   Secured via **JWT (JSON Web Tokens)** for stateless API authorization.
+    *   Implemented **Refresh Token Rotation (RTR)** to facilitate silent token renewal and replay attack detection, ensuring ironclad session management.
+*   **Shopping Cart & Server-Side Pricing**:
+    *   Real-time cart operations (Add, remove, atomic quantifiably distinct adjustments, flush).
+    *   On-the-fly server-side subtotal and total calculations to guarantee financial data integrity.
+*   **High-Concurrency Order Processing**:
+    *   Atomic transactional workflow transforming shopping cart items into verified finalized orders.
+    *   Equipped with a **Pessimistic Concurrency Guard** to eliminate deadlocks and over-selling under sudden peak traffic.
+*   **Product Discovery & Autocomplete Suggestions**:
+    *   Multi-level category filtering and keyword-based server-side fuzzy search.
+    *   Performance-optimized **Instant Search Auto-suggestions** using client-side RxJS debouncing and a backend top-8 distinct projection to optimize DB query overhead.
+*   **Asynchronous Background Processing**:
+    *   Integrated **Hangfire** to offload heavy, non-blocking tasks (e.g., transactional verification emails), optimizing the primary API thread responsiveness.
 
-### 後端 (ASP.NET Core API)
+---
 
-**環境要求**:
+## Tech Stack & Engineering Standards
+
+*   **Backend Architecture**:
+    *   Core Framework: .NET 8 / ASP.NET Core Web API
+    *   Data Access Layer: Entity Framework Core (Code First Workflow with Migrations)
+    *   Primary Database: Microsoft SQL Serve
+    *   Job Orchestration: Hangfire 
+    *   Distributed ID Generator: IdGen (Snowflake Id)
+*   **Frontend Architecture**:
+    *   Core Framework: Angular
+    *   Asynchronous Pipelines: RxJS
+    *   UI Framework: Tailwind CSS
+
+## Project Structure
+```text
+.
+├── supermarket-app/ # Angular Frontend Project
+│   ├── src/
+│   │   └── app/
+│   │       ├── components/ # Signal-driven UI Components (Products, Cart, Order)
+│   │       ├── models/ # TypeScript Domain Models & Contract Interfaces
+│   │       └── services/ # Cross-component Shared Services & RxJS API Pipes
+│   │       └── ...
+│   └── package.json # Frontend script automation and ecosystem
+│
+└── SupermarketMock/ # ASP.NET Core Backend Project
+    ├── Controllers/ # Thin REST Controllers decoupling routes from logic
+    ├── DTOs/ # Data Transfer Objects enforcing clean structural API schemas
+    ├── Models/ # EF Core Data Domain Entities
+    ├── Services/ # Core Business Logic Layer (Fully decoupled)
+    ├── appsettings.json # Application configuration nodes (JWT Keys, DB Connections)
+    └── Program.cs # Global IoC Service Bootstrapper & Middleware Registry
+```
+---
+
+## Quality Assurance & Test-Driven Standards
+
+To satisfy enterprise compliance and defend data-integrity boundaries, rigorous **Automated Unit Testing** is deeply integrated into the core services layer.
+
+*   **Testing Framework**: xUnit coupled with Moq.
+*   **Database Isolation**: EF Core InMemory Database Provider .
+
+### 1. ProductService Unit Specs (`ProductServiceTests.cs`)
+*   `GetProductsAsync_WhenCategoryIsNull_ShouldReturnPagedAllProducts`: Validates unrestricted server-side database slicing and page calculations.
+*   `GetProductsAsync_WhenCategoryHasValue_ShouldReturnPagedAndFilteredProducts`: Assures category lookup filtering complies with relational conditions.
+*   `GetProductSuggestionsAsync_WhenTriggered_ShouldReturnLimitToMax8DistinctNames`: Validates that the search autocomplete endpoint tightly caps results at 8 entries to maximize thread and network efficiency.
+
+### 2. OrderService Unit Specs (`OrderServiceTests.cs`)
+*   `CreateOrderAsync_BuyXGetYFree_SuccessAndDeductStock`: Tests intricate marketing algorithms ("Buy 2 Get 1 Free") to verify server-side defensive re-pricing and atomic inventory subtraction occur precisely
+*   `CreateOrderAsync_QuantitySpecialPrice_SuccessAndDeductStock`: Tests intricate marketing algorithms ("Buy 3 Get discountValue") to verify server-side defensive re-pricing and atomic inventory subtraction occur precisely
+*   `CreateOrderAsync_WhenStockIsInsufficient_ShouldRollbackAndReturnErrorMessage`: Verifies that if an over-selling condition triggers, the service instantly fails, blocks database commit, throws the appropriate domain error, and strictly leaves the          inventory count uncorrupted.
+
+---
+
+## Getting Started
+
+### Backend Setup (.NET 8 Web API)
+
+**Prerequisites**:
 *   .NET 8 SDK
+*   Microsoft SQL Server instance running locally
 
-**安裝與執行**:
-1.  **還原依賴套件**:
+**Execution**:
+1.  Navigate into the backend target folder:
     ```bash
-    dotnet restore
+    cd SupermarketMock
     ```
-2.  **更新資料庫**:
+2.  Restore the required NuGet dependencies and configure your local SQL Server instance in `appsettings.json`:
+    ```json
+    "ConnectionStrings": {
+      "DefaultConnection": "Server=YOUR_SERVER_NAME;Database=SupermarketDB;Trusted_Connection=True;TrustServerCertificate=True;"
+    }
+    ```
+3.  Execute the Entity Framework migration command (EF Core will automatically provision and spin up the database schema for you):
     ```bash
     dotnet ef database update
     ```
-3.  **執行專案**:
+4.  Launch the API engine:
     ```bash
     dotnet run
     ```
-    API 將會在 `https://localhost:7154` 上運行。
+    The API gateway will host locally at `https://localhost:7154`.
 
-### 前端 (Angular)
+### Frontend Setup (Angular)
 
-**環境要求**:
-*   Node.js (建議版本 18.x 或更高)
-*   Angular CLI
+**Prerequisites**:
+*   Node.js (v18.x or above)
+*   Angular CLI (`npm install -g @angular/cli`)
 
-**安裝與執行**:
-1.  **安裝依賴套件**:
+**Execution**:
+1.  Navigate into the frontend target folder:
+    ```bash
+    cd supermarket-app
+    ```
+2.  Install the required npm dependencies:
     ```bash
     npm install
     ```
-2.  **啟動開發伺服器**:
+3.  Launch the local development server under SSL:
     ```bash
     ng serve --ssl
     ```
-    前端應用將會在 `https://localhost:4200` 上運行。
+    The application will deploy at `https://localhost:4200` (SSL is forced to support secure HTTPS handshake agreements with the .NET Core backend).
 
-## 📁 專案目錄結構 (Project Structure)
-```text
-.
-├── supermarket-app/ # 前端 Angular 專案
-│   ├── src/
-│   │   └── app/
-│   │       ├── components/ # UI 元件 (商品、購物車、訂單等)
-│   │       ├── models/ # 前端資料模型
-│   │       └── services/ # API 呼叫與狀態管理服務
-│   │       └── ...
-│   └── package.json # 前端依賴套件
-│
-└── SupermarketMock/ # 後端 ASP.NET Core 專案
-    ├── Controllers/ # API 控制器 (Auth, Product, Cart, Order)
-    ├── DTOs/ # 資料傳輸物件
-    ├── Models/ # EF Core 資料模型
-    ├── Services/ # 商業邏輯服務
-    ├── appsettings.json # 應用程式設定
-    └── Program.cs # 程式進入點與服務設定
-```
+### Executing Automated Tests
+
+1.  Navigate into the backend target folder:
+    ```bash
+    cd SupermarketMock.Tests
+    ```
+2.  Execute the full suite of automated backend service test specs
+   ```bash
+   dotnet test
+   ```
+
+
