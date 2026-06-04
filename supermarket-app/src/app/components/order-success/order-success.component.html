@@ -24,25 +24,25 @@
         <span class="text-6xl">🎉</span>
       </div>
 
-      <h1 class="text-4xl font-bold text-gray-900 mb-2">訂單已成功建立！</h1>
-      <p class="text-green-600 text-lg mb-8">感謝您的購買，我們會盡快為您準備商品</p>
+      <h1 class="text-4xl font-bold text-gray-900 mb-2">Order Confirmed！</h1>
+      <p class="text-green-600 text-lg mb-8">Thank you for your purchase. We will prepare the goods for you as soon as possible.</p>
 
       <!-- 👑 訂單摘要資訊 -->
       <div class="bg-gray-50 rounded-2xl p-6 mb-6 text-left">
         <div class="flex justify-between py-2 border-b border-gray-200">
-          <span class="text-gray-600">訂單編號</span>
+          <span class="text-gray-600">Order ID</span>
           <span class="font-semibold font-mono">#{{ order.snowflakeId }}</span>
         </div>
         <div class="flex justify-between py-2 border-b border-gray-200">
-          <span class="text-gray-600">總金額</span>
+          <span class="text-gray-600">Total Price</span>
           <span class="font-semibold text-purple-700 text-xl">{{ order.totalAmount | currency:'HKD':'symbol':'1.2-2' }}</span>
         </div>
         <div class="flex justify-between py-2 border-b border-gray-200">
-          <span class="text-gray-600">收貨人</span>
+          <span class="text-gray-600">Receiver</span>
           <span class="font-medium text-gray-800">{{ order.fullName }}</span>
         </div>
         <div class="flex justify-between py-2">
-          <span class="text-gray-600">配送地址</span>
+          <span class="text-gray-600">Address</span>
           <span class="font-medium text-gray-800 text-sm max-w-[240px] text-right truncate" [title]="order.address">
             {{ order.address }}
           </span>
@@ -51,7 +51,7 @@
 
       <!-- 👑 新增：購買商品明細清單 (整合後端 Product Photo) -->
       <div class="text-left mb-6">
-        <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3 px-1">購買明細</h3>
+        <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3 px-1">Order Details</h3>
         <div class="max-h-60 overflow-y-auto pr-1 space-y-3 divide-y divide-gray-100">
           
           @for (item of order.orderItems; track item.productId) {
@@ -74,7 +74,7 @@
               </span>
             </div>
           } @empty {
-            <p class="text-gray-400 text-sm text-center py-2">暫無商品明細</p>
+            <p class="text-gray-400 text-sm text-center py-2">No Order</p>
           }
 
         </div>
@@ -83,7 +83,7 @@
       <!-- 👑 新增：訂單備註 (如果有填寫才顯示) -->
       @if (order.remark) {
         <div class="bg-purple-50 text-purple-700 text-sm rounded-xl p-4 mb-8 text-left border border-purple-100">
-          <span class="font-semibold block mb-1">💡 訂單備註</span>
+          <span class="font-semibold block mb-1">💡 Order Remark</span>
           <p class="text-purple-600 italic">「 {{ order.remark }} 」</p>
         </div>
       }
@@ -92,12 +92,12 @@
       <div class="space-y-4">
         <button routerLink="/"
                 class="w-full bg-purple-700 hover:bg-purple-800 text-white py-4 rounded-2xl font-semibold text-lg transition shadow-md shadow-purple-200">
-          返回首頁
+          Back to HomePage
         </button>
 
         <button routerLink="/orders"
                 class="w-full border border-gray-300 hover:bg-gray-50 text-gray-700 py-4 rounded-2xl font-semibold text-lg transition">
-          查看我的訂單
+          My Orders
         </button>
       </div>
     </div>
@@ -109,12 +109,12 @@
       <div class="mx-auto w-24 h-24 bg-red-100 rounded-full flex items-center justify-center mb-6">
         <span class="text-6xl">⚠️</span>
       </div>
-      <h1 class="text-3xl font-bold text-gray-900 mb-2">找不到此訂單</h1>
+      <h1 class="text-3xl font-bold text-gray-900 mb-2">No Order is found</h1>
       <p class="text-gray-500 mb-8">可能由於網路連線問題，或您無權讀取此訂單資訊。</p>
       
       <button (click)="handleReload()"
               class="w-full bg-gray-900 hover:bg-gray-800 text-white py-4 rounded-2xl font-semibold text-lg transition">
-        重新嘗試
+        Retrying
       </button>
     </div>
   }
