@@ -1,86 +1,116 @@
 # 🛒 Supermarket E-Commerce Platform
 
-[![.NET 8](https://shields.io)](https://microsoft.com)
-[![Angular](https://shields.io)](https://angular.dev)
-[![Tailwind CSS](https://shields.io)](https://tailwindcss.com)
+**Full-Stack .NET 8 + Angular 18+** Online Shopping System
 
-Welcome to the **Supermarket E-Commerce Platform**! This is a full-stack e-commerce solution engineered with an **Enterprise-grade Architecture** to deliver a secure, scalable, and high-performance online shopping experience.
+[![.NET 8](https://img.shields.io/badge/.NET-8-purple)](https://dotnet.microsoft.com)
+[![Angular](https://img.shields.io/badge/Angular-18-red)](https://angular.dev)
+[![Tailwind](https://img.shields.io/badge/Tailwind-3-blue)](https://tailwindcss.com)
 
-The system adopts a decoupled **Single-Page Application (SPA) frontend built with Angular 18+** and a robust **monolithic RESTful backend powered by ASP.NET Core Web API (.NET 8)**.
+A production-like full-stack e-commerce platform built to demonstrate modern web development practices, clean architecture, and problem-solving skills.
 
 ---
 
 ## Key Features (Business & Tech Highlights)
 
-*   **Secure Identity & Session Management**:
-    *   Full user registration, authentication, and token-based state lifecycle.
-    *   Secured via **JWT (JSON Web Tokens)** for stateless API authorization.
-    *   Implemented **Refresh Token Rotation (RTR)** to facilitate silent token renewal and replay attack detection, ensuring ironclad session management.
-*   **Shopping Cart & Server-Side Pricing**:
-    *   Real-time cart operations (Add, remove, atomic quantifiably distinct adjustments, flush).
-    *   On-the-fly server-side subtotal and total calculations to guarantee financial data integrity.
-*   **High-Concurrency Order Processing**:
-    *   Atomic transactional workflow transforming shopping cart items into verified finalized orders.
-    *   Equipped with a **Pessimistic Concurrency Guard** to eliminate deadlocks and over-selling under sudden peak traffic.
-*   **Product Discovery & Autocomplete Suggestions**:
-    *   Multi-level category filtering and keyword-based server-side fuzzy search.
-    *   Performance-optimized **Instant Search Auto-suggestions** using client-side RxJS debouncing and a backend top-8 distinct projection to optimize DB query overhead.
-*   **Asynchronous Background Processing**:
-    *   Integrated **Hangfire** to offload heavy, non-blocking tasks (e.g., transactional verification emails), optimizing the primary API thread responsiveness.
+- **User Authentication & Security**  
+  JWT Authentication with **Refresh Token Rotation** to prevent replay attacks and support secure silent refresh.
 
+- **Shopping Cart & Order Processing**  
+  Real-time cart management with server-side pricing calculation and atomic order creation.
+
+- **High Concurrency Handling**  
+  Implemented **Pessimistic Locking** (UPDLOCK) with ordered product IDs to eliminate deadlocks during peak checkout scenarios.
+
+- **Product Search & Discovery**  
+  Server-side fuzzy search with autocomplete suggestions (limited to top 8 results) and category filtering.
+
+- **Background Processing**  
+  Integrated **Hangfire** for asynchronous tasks (e.g. order confirmation emails).
+  
 ---
 
 ## Tech Stack & Engineering Standards
 
-*   **Backend Architecture**:
-    *   Core Framework: .NET 8 / ASP.NET Core Web API
-    *   Data Access Layer: Entity Framework Core (Code First Workflow with Migrations)
-    *   Primary Database: Microsoft SQL Serve
-    *   Job Orchestration: Hangfire 
-    *   Distributed ID Generator: IdGen (Snowflake Id)
-*   **Frontend Architecture**:
-    *   Core Framework: Angular
-    *   Asynchronous Pipelines: RxJS
-    *   UI Framework: Tailwind CSS
+**Backend**  
+- .NET 8 + ASP.NET Core Web API  
+- Entity Framework Core (Code-First)  
+- Microsoft SQL Server  
+- Hangfire + IdGen (Snowflake ID)  
+
+**Frontend**  
+- Angular 18+ with Signals  
+- RxJS + TypeScript  
+- Tailwind CSS  
+
+**Architecture & Quality**  
+- Clean Architecture + RESTful Design  
+- JWT Security  
+- xUnit + Moq + EF Core InMemory Database for testing
+
+---
 
 ## Project Structure
+
 ```text
 .
-├── supermarket-app/ # Angular Frontend Project
+├── supermarket-app/            # Angular Frontend Project
 │   ├── src/
-│   │   └── app/
-│   │       ├── components/ # Signal-driven UI Components (Products, Cart, Order)
-│   │       ├── models/ # TypeScript Domain Models & Contract Interfaces
-│   │       └── services/ # Cross-component Shared Services & RxJS API Pipes
-│   │       └── ...
-│   └── package.json # Frontend script automation and ecosystem
+│   │   ├── app/
+│   │   │   ├── components/     # Signal-driven UI Components (Products, Cart, Order)
+│   │   │   ├── models/         # TypeScript Domain Models & Contract Interfaces
+│   │   │   └── services/       # Cross-component Shared Services & RxJS API Pipes
+│   │   └── ...
+│   └── package.json            # Frontend script automation and ecosystem
 │
-└── SupermarketMock/ # ASP.NET Core Backend Project
-    ├── Controllers/ # Thin REST Controllers decoupling routes from logic
-    ├── DTOs/ # Data Transfer Objects enforcing clean structural API schemas
-    ├── Models/ # EF Core Data Domain Entities
-    ├── Services/ # Core Business Logic Layer (Fully decoupled)
-    ├── appsettings.json # Application configuration nodes (JWT Keys, DB Connections)
-    └── Program.cs # Global IoC Service Bootstrapper & Middleware Registry
+└── SupermarketMock/            # ASP.NET Core Backend Project
+    ├── Controllers/            # Thin REST Controllers decoupling routes from logic
+    ├── DTOs/                   # Data Transfer Objects enforcing clean structural API schemas
+    ├── Models/                 # EF Core Data Domain Entities
+    ├── Services/               # Core Business Logic Layer (Fully decoupled)
+    ├── appsettings.json        # Application configuration nodes (JWT Keys, DB Connections)
+    └── Program.cs              # Global IoC Service Bootstrapper & Middleware Registry
 ```
+
+---
+
+## Screenshots
+
+**Home Page + Productlist**
+![Product List](screenshots/HomePage.jpg)
+
+**Shopping Cart**
+![Shopping Cart](screenshots/ShoppingCart.jpg)
+
+**Checkout Flow**
+![Checkout Step 1](screenshots/Checkout.jpg)
+![Checkout Step 2](screenshots/OrderSuccess.jpg)
+
+## Architecture Diagram
+
+```mermaid
+C4Context
+    title Supermarket E-Commerce Platform - System Context
+
+    Person(customer, "Customer", "Online shopper")
+    
+    System_Boundary(supermarket, "Supermarket E-Commerce Platform") {
+        Container(frontend, "Web Frontend", "Angular 18+", "SPA with Signals")
+        Container(api, "Backend API", ".NET 8 Web API", "RESTful services")
+        ContainerDb(database, "Database", "Microsoft SQL Server", "Product, Order, User data")
+    }
+
+    Rel(customer, frontend, "Uses", "HTTPS")
+    Rel(frontend, api, "Calls", "JSON/HTTPS")
+    Rel(api, database, "Reads/Writes", "EF Core")
+```
+
 ---
 
 ## Quality Assurance & Test-Driven Standards
 
-To satisfy enterprise compliance and defend data-integrity boundaries, rigorous **Automated Unit Testing** is deeply integrated into the core services layer.
+-ProductService: Pagination, category filtering, autocomplete search
 
-*   **Testing Framework**: xUnit coupled with Moq.
-*   **Database Isolation**: EF Core InMemory Database Provider .
-
-### 1. ProductService Unit Specs (`ProductServiceTests.cs`)
-*   `GetProductsAsync_WhenCategoryIsNull_ShouldReturnPagedAllProducts`: Validates unrestricted server-side database slicing and page calculations.
-*   `GetProductsAsync_WhenCategoryHasValue_ShouldReturnPagedAndFilteredProducts`: Assures category lookup filtering complies with relational conditions.
-*   `GetProductSuggestionsAsync_WhenTriggered_ShouldReturnLimitToMax8DistinctNames`: Validates that the search autocomplete endpoint tightly caps results at 8 entries to maximize thread and network efficiency.
-
-### 2. OrderService Unit Specs (`OrderServiceTests.cs`)
-*   `CreateOrderAsync_BuyXGetYFree_SuccessAndDeductStock`: Tests intricate marketing algorithms ("Buy 2 Get 1 Free") to verify server-side defensive re-pricing and atomic inventory subtraction occur precisely
-*   `CreateOrderAsync_QuantitySpecialPrice_SuccessAndDeductStock`: Tests intricate marketing algorithms ("Buy 3 Get discountValue") to verify server-side defensive re-pricing and atomic inventory subtraction occur precisely
-*   `CreateOrderAsync_WhenStockIsInsufficient_ShouldRollbackAndReturnErrorMessage`: Verifies that if an over-selling condition triggers, the service instantly fails, blocks database commit, throws the appropriate domain error, and strictly leaves the          inventory count uncorrupted.
+-OrderService: Promotion engine (Buy X Get Y), stock deduction, insufficient stock rollback
 
 ---
 
@@ -103,7 +133,7 @@ To satisfy enterprise compliance and defend data-integrity boundaries, rigorous 
       "DefaultConnection": "Server=YOUR_SERVER_NAME;Database=SupermarketDB;Trusted_Connection=True;TrustServerCertificate=True;"
     }
     ```
-3.  Execute the Entity Framework migration command (EF Core will automatically provision and spin up the database schema for you):
+3.  Execute the Entity Framework migration command:
     ```bash
     dotnet ef database update
     ```
@@ -132,7 +162,7 @@ To satisfy enterprise compliance and defend data-integrity boundaries, rigorous 
     ```bash
     ng serve --ssl
     ```
-    The application will deploy at `https://localhost:4200` (SSL is forced to support secure HTTPS handshake agreements with the .NET Core backend).
+    The application will deploy at `https://localhost:4200`.
 
 ### Executing Automated Tests
 
@@ -144,5 +174,8 @@ To satisfy enterprise compliance and defend data-integrity boundaries, rigorous 
    ```bash
    dotnet test
    ```
+
+Developed by Peter Kwok
+Actively looking for Junior .NET Developer opportunities in Hong Kong.
 
 
