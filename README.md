@@ -128,11 +128,21 @@ C4Context
     cd SupermarketMock
     ```
 2.  Restore the required NuGet dependencies and configure your local SQL Server instance in `appsettings.json`:
-    ```json
+ ```json
+  {
     "ConnectionStrings": {
       "DefaultConnection": "Server=YOUR_SERVER_NAME;Database=SupermarketDB;Trusted_Connection=True;TrustServerCertificate=True;"
-    }
-    ```
+    },
+    "Smtp": {
+      "Host": "smtp.gmail.com",
+      "Port": "587",
+      "User": "your-email@gmail.com",
+      "Password": "YOUR_APP_PASSWORD"
+  }
+}
+```
+*(Note: For Gmail, please use an App Password instead of your regular password.)*
+
 3.  Execute the Entity Framework migration command:
     ```bash
     dotnet ef database update
