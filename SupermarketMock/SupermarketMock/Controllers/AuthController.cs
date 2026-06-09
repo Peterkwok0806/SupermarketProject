@@ -49,7 +49,7 @@ namespace SupermarketMock.Controllers
                 return BadRequest(new { message = result.message });
             }
 
-            return Ok(new { message = result.message });
+            return Ok(result);
         }
     
 

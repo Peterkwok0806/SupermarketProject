@@ -129,6 +129,8 @@ export class AuthService {
   async verifyEmail(data: any){
     try {
       const response = await firstValueFrom(this.authApi.verifyEmail(data));
+      
+      console.log(response)
       if (!response.success) {
       throw new Error(response.message || '註冊失敗');
       }

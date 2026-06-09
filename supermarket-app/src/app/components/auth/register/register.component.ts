@@ -98,6 +98,7 @@ export class RegisterComponent implements OnInit,OnDestroy
     }
   }
 
+  //驗證驗證碼
   async verifyCode() {
     if (this.verificationCode.length !== 6) return;
 
@@ -112,7 +113,6 @@ export class RegisterComponent implements OnInit,OnDestroy
       await this.authService.verifyEmail(this.verifyData);
       this.clearTimer();
       this.showModal = true;
-      this.router.navigate(['/login']);
     } catch (error: any) {
       this.errorMessage =error?.message || "Invalid verification code";
     } finally {
