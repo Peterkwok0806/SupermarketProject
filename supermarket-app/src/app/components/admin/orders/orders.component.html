@@ -1,0 +1,44 @@
+<div class="p-8">
+  <div class="flex justify-between items-center mb-8">
+    <h2 class="text-3xl font-bold">訂單管理</h2>
+    <div class="text-sm text-gray-500">
+      共 {{ orders.length }} 筆訂單
+    </div>
+  </div>
+
+  <div class="bg-white rounded-3xl shadow-sm overflow-hidden">
+    <table class="w-full">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="px-6 py-4 text-left">訂單編號</th>
+          <th class="px-6 py-4 text-left">客戶</th>
+          <th class="px-6 py-4 text-left">日期</th>
+          <th class="px-6 py-4 text-right">金額</th>
+          <th class="px-6 py-4 text-center">狀態</th>
+          <th class="px-6 py-4 text-center">操作</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (order of orders; track order.id) {
+          <tr class="border-t hover:bg-gray-50">
+            <td class="px-6 py-5 font-medium">#{{ order.id }}</td>
+            <td class="px-6 py-5">{{ order.fullName }}</td>
+            <td class="px-6 py-5 text-sm text-gray-500">{{ order.createdAt | date:'yyyy-MM-dd HH:mm' }}</td>
+            <td class="px-6 py-5 text-right font-semibold">{{ order.totalAmount | currency:'HKD' }}</td>
+            <td class="px-6 py-5 text-center">
+              <span [class]="getStatusClass(order.status)" class="px-4 py-1 rounded-full text-sm font-medium">
+                {{ order.status | orderstatusName }}
+              </span>
+            </td>
+            <td class="px-6 py-5 text-center">
+              <button (click)="viewOrderDetail(order)" 
+                      class="text-blue-600 hover:text-blue-700 font-medium">
+                詳細
+              </button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

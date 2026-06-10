@@ -26,7 +26,8 @@ ngOnInit() {
 get orders() {
     return this.orderService.orders();
   }
-  getStatusClass(status: OrderStatus): string {
+
+getStatusClass(status: OrderStatus): string {
     switch (status) {
       case OrderStatus.Completed:
         return 'bg-green-100 text-green-800'; // 綠色
