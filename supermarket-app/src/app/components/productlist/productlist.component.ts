@@ -37,7 +37,7 @@ export class ProductlistComponent implements OnInit{
     this.route.queryParams.pipe(
       map(params => {
         const search = params['search'] || '';
-        this.searchService.searchInputValue.set(search); // 💡 關鍵：讓 Header 輸入框與網址字串保持絕對同步！
+        this.searchService.searchInputValue.set(search); //關鍵：讓 Header 輸入框與網址字串保持絕對同步！
         return search;
       })
     ),

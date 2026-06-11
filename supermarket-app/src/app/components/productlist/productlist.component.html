@@ -38,7 +38,7 @@
       }
     </h2>
     
-    <!-- 💡 修正：使用 computed 產生的 totalCount() 訊號，精確顯示全站符合條件的總件數 -->
+    <!-- 使用 computed 產生的 totalCount() 訊號，精確顯示全站符合條件的總件數 -->
     <span class="text-gray-500 font-medium">
       {{ totalCount() }} {{ totalCount() === 1 ? 'item' : 'items' }}
     </span>
@@ -53,7 +53,7 @@
   } @else {
     <!-- 4. Product Grid -->
     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-      <!-- 💡 修正：直接循環讀取唯讀訊號 products() -->
+      <!-- 直接循環讀取唯讀訊號 products() -->
       @for (item of products(); track item.id) {
         <div class="bg-white rounded-2xl shadow-sm hover:shadow-lg transition overflow-hidden group flex flex-col justify-between relative">
           
@@ -119,7 +119,7 @@
       }
     </div>
 
-    <!-- 5. ⚙️ 新增：商業標準分頁控制元件 -->
+    <!-- 5. 新增：商業標準分頁控制元件 -->
     @if (totalPages() > 1) {
       <div class="flex flex-col items-center justify-center space-y-2 mt-12 border-t border-gray-100 pt-6">
         <div class="flex items-center space-x-4">

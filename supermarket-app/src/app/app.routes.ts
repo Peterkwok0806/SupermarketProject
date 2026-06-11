@@ -33,7 +33,7 @@ export const routes: Routes = [
     { path: 'profile', component: ProfileComponent, canActivate: [authGuard] },
     { 
       path: 'admin', 
-      canActivate: [authGuard, adminGuard],
+      //canActivate: [authGuard, adminGuard],
       loadChildren: () => import('./admin.routes').then(m => m.adminRoutes) 
     },
 
@@ -41,4 +41,3 @@ export const routes: Routes = [
 
 ];
 
-// Admin Routes

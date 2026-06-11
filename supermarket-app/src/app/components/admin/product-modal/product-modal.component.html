@@ -1,0 +1,80 @@
+<div class="fixed inset-0 bg-black/60 flex items-center justify-center z-50" (click)="close()">
+  <div class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl mx-4 relative overflow-hidden" (click)="$event.stopPropagation()">
+    
+    <!-- 載入中遮罩 (Loading Spinner) -->
+    @if (isLoading) {
+      <div class="absolute inset-0 bg-white/80 flex flex-col items-center justify-center z-50">
+        <div class="w-12 h-12 border-4 border-purple-200 border-t-purple-700 rounded-full animate-spin"></div>
+        <p class="mt-4 text-purple-700 font-medium">資料載入中...</p>
+      </div>
+    }
+
+    <!-- Header -->
+    <div class="flex justify-between items-center border-b px-8 py-5">
+      <h2 class="text-2xl font-bold">{{ isEditMode ? '編輯商品' : '新增商品' }}</h2>
+      <button type="button" (click)="close()" class="text-3xl text-gray-400 hover:text-gray-600">×</button>
+    </div>
+
+    <!-- Form (加入 #productForm="ngForm" 用於驗證按鈕狀態) -->
+    <form #productForm="ngForm" (ngSubmit)="productForm.form.valid && saveProduct()" class="p-8 space-y-6">
+      <div class="grid grid-cols-2 gap-6">
+        <div class="col-span-2">
+          <label class="block text-sm font-medium mb-2">商品名稱</label>
+          <input [(ngModel)]="productData.name" name="name" required #name="ngModel"
+                 class="w-full px-4 py-3 border rounded-2xl focus:outline-none focus:border-purple-500"
+                 [class.border-red-500]="name.invalid && name.touched">
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-2">分類</label>
+          <select [(ngModel)]="productData.categoryId" name="categoryId" required #cat="ngModel"
+                  class="w-full px-4 py-3 border rounded-2xl focus:outline-none focus:border-purple-500"
+                  [class.border-red-500]="cat.invalid && cat.touched">
+            <!-- 將 [value]="null" 讓它可以與 productData.categoryId = null 完美匹配 -->
+            <option [value]="null" disabled>請選擇分類</option>
+            @for (cat of categories; track cat.id) {
+              <option [value]="cat.id">{{ cat.name }}</option>
+            }
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-2">價格 (HKD)</label>
+          <input type="number" [(ngModel)]="productData.price" name="price" required min="0" step="0.01"
+                 class="w-full px-4 py-3 border rounded-2xl focus:outline-none focus:border-purple-500">
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-2">庫存數量</label>
+          <input type="number" [(ngModel)]="productData.stockQuantity" name="stockQuantity" required min="0"
+                 class="w-full px-4 py-3 border rounded-2xl focus:outline-none focus:border-purple-500">
+        </div>
+
+        <div class="col-span-2">
+          <label class="block text-sm font-medium mb-2">商品照片檔名</label>
+          <input [(ngModel)]="productData.photo" name="photo" placeholder="milk.jpg"
+                 class="w-full px-4 py-3 border rounded-2xl focus:outline-none focus:border-purple-500">
+        </div>
+
+        <div class="col-span-2">
+          <label class="block text-sm font-medium mb-2">描述</label>
+          <textarea [(ngModel)]="productData.description" name="description" rows="4"
+                    class="w-full px-4 py-3 border rounded-2xl focus:outline-none focus:border-purple-500"></textarea>
+        </div>
+      </div>
+
+      <!-- Buttons -->
+      <div class="flex gap-4 pt-6">
+        <button type="button" (click)="close()" 
+                class="flex-1 py-4 border border-gray-300 rounded-2xl font-medium hover:bg-gray-50">
+          取消
+        </button>
+        <!-- 當表單無效或正在載入時，將按鈕禁用 (disabled) -->
+        <button type="submit" [disabled]="productForm.form.invalid || isLoading"
+                class="flex-1 bg-purple-700 hover:bg-purple-800 disabled:bg-purple-300 text-white py-4 rounded-2xl font-semibold transition-colors">
+          {{ isEditMode ? '儲存修改' : '新增商品' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

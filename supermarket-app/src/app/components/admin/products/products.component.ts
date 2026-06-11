@@ -1,28 +1,71 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ProductService } from '../../../services/product.service';
+import { ProductModalComponent } from '../product-modal/product-modal.component';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { switchMap, map } from 'rxjs';
+import { RouterLink, ActivatedRoute, Router} from '@angular/router'; 
 
 @Component({
   selector: 'app-products',
-  imports: [CommonModule],
+  imports: [CommonModule,ProductModalComponent],
   templateUrl: './products.component.html',
   styleUrl: './products.component.css'
 })
-export class AdminProductsComponent implements OnInit{
+export class AdminProductsComponent{
   private productService = inject(ProductService);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
 
-  products: any[] = [];
+  pageSize = signal<number>(10);
 
-  ngOnInit() {
-    this.loadProducts();
+  showModal = false;
+  selectedProductid: any = null;
+
+  currentPage = toSignal(
+    this.route.queryParams.pipe(
+      map(params => {
+        const page = params['page'] ? Number(params['page']) : 1;
+        return page < 1 ? 1 : page; 
+      })
+    ),
+    { initialValue: 1 }
+  );
+
+  private productsResult$ = this.route.queryParams.pipe(
+    switchMap(params => {
+      const page = params['page'] ? Number(params['page']) : 1;
+        return this.productService.getProducts(undefined,page, this.pageSize());
+    })
+  );
+
+  pagedResult = toSignal(this.productsResult$);
+  products = computed(() => this.pagedResult()?.items || []);
+  totalPages = computed(() => this.pagedResult()?.totalPages || 0);
+  
+  navigatePage(pageNumber: number): void {
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { page: pageNumber },
+      queryParamsHandling: 'merge' // 保持現有的 search 或 category 參數不變
+    });
+  }
+  
+  nextPage(): void {
+    if (this.currentPage() < this.totalPages()) {
+      this.navigatePage(this.currentPage() + 1);
+    }
   }
 
-  loadProducts() {
-    
+  prevPage(): void {
+    if (this.currentPage() > 1) {
+       this.navigatePage(this.currentPage() - 1);
+    }
   }
 
-  editProduct(product: any) {
-    alert(`編輯商品: ${product.name} (功能開發中)`);
+  editProduct(prodcutid: number) {
+    this.selectedProductid = prodcutid;
+    this.showModal = true;
   }
 
   toggleAvailability(product: any) {
@@ -30,6 +73,15 @@ export class AdminProductsComponent implements OnInit{
   }
 
   openAddProductModal() {
-    alert("新增商品功能開發中...");
+    this.selectedProductid = null;
+    this.showModal = true;
+  }
+
+  onModalSaved() {
+    this.showModal = false;
+  }
+
+  onModalClosed() {
+    this.showModal = false;
   }
 }
