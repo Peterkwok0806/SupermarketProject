@@ -1,0 +1,20 @@
+.snackbar-content {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+    }
+.message {
+      flex: 1;
+    }
+.icon {
+      font-size: 26px;
+      width: 26px;
+      height: 26px;
+    }
+.close-btn {
+      color: #ffffff !important;
+      font-weight: 500;
+      min-width: auto;
+      padding: 0 8px;
+    }

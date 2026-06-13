@@ -59,8 +59,9 @@ export class HeaderComponent {
   hasSuggestions = computed(() => this.suggestions()?.length > 0);
 
   // 當使用者在 input 打字時觸發
+  //由 Service 統一廣播
   onSearchInput(term: string): void {
-    this.searchService.triggerInput(term); // 💡 改由 Service 統一廣播
+    this.searchService.triggerInput(term); 
   }
 
   // 點擊建議選單中的某一項
@@ -72,7 +73,7 @@ export class HeaderComponent {
 
   // 按下 Enter 或點擊建議後的搜尋跳轉
   onSearch() {
-  this.performSearch();
+    this.performSearch();
   }
 
   private performSearch(): void {

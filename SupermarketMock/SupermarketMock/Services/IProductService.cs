@@ -15,5 +15,9 @@ namespace SupermarketMock.Services
         Task<PagedResultDto<ProductDto>> GetProductByKeywordAsync(string keyword, int pageNumber = 1, int pageSize = 10);
 
         Task<IEnumerable<string>> GetProductSuggestionsAsync(string query);
+
+        Task<ApiResult> CreateProductAsync(CreateProductDto createProductDto);
+
+        Task<ApiResult> UpdateProductAsync(int id, CreateProductDto createProductDto);
     }
 }

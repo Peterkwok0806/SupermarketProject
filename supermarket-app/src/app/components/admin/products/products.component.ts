@@ -1,10 +1,11 @@
-import { Component, OnInit, inject, signal, computed, } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, resource} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ProductService } from '../../../services/product.service';
 import { ProductModalComponent } from '../product-modal/product-modal.component';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { switchMap, map } from 'rxjs';
+import { toSignal, } from '@angular/core/rxjs-interop';
+import { map,firstValueFrom} from 'rxjs';
 import { RouterLink, ActivatedRoute, Router} from '@angular/router'; 
+
 
 @Component({
   selector: 'app-products',
@@ -19,6 +20,7 @@ export class AdminProductsComponent{
 
   pageSize = signal<number>(10);
 
+
   showModal = false;
   selectedProductid: any = null;
 
@@ -32,22 +34,47 @@ export class AdminProductsComponent{
     { initialValue: 1 }
   );
 
-  private productsResult$ = this.route.queryParams.pipe(
-    switchMap(params => {
-      const page = params['page'] ? Number(params['page']) : 1;
-        return this.productService.getProducts(undefined,page, this.pageSize());
-    })
-  );
 
-  pagedResult = toSignal(this.productsResult$);
-  products = computed(() => this.pagedResult()?.items || []);
-  totalPages = computed(() => this.pagedResult()?.totalPages || 0);
+  /*
+  private productsResult$ = combineLatest([
+    this.route.queryParams,
+    toObservable(this.refreshTrigger)
+    ]).pipe(
+        switchMap(([params, triggerValue])=>{
+
+        const page = params['page'] ? Number(params['page']) : 1;
+        return this.productService.getProducts(undefined, page, this.pageSize())
+      })
+    )
+ */
+
+  productResource = resource({
+    // 只要這裡定義的變數（Signal）改變，就會自動觸發下面的 loader
+    request: () => ({
+      page: this.currentPage(),
+      size: this.pageSize()
+    }),
+    // 執行異步請求（底層必須回傳 Promise，所以用 firstValueFrom 轉換，或改用 http.get 的 Promise 版本）
+    loader: async ({ request }) => {
+     
+      const result = await firstValueFrom(
+        this.productService.getProducts(undefined, request.page, request.size)
+      );
+      return result || { items: [], totalPages: 0 };
+    }
+  });
+
+
+
+
+  products = computed(() => this.productResource.value()?.items || []);
+  totalPages = computed(() => this.productResource.value()?.totalPages|| 0);
   
   navigatePage(pageNumber: number): void {
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: { page: pageNumber },
-      queryParamsHandling: 'merge' // 保持現有的 search 或 category 參數不變
+      queryParamsHandling: 'merge' 
     });
   }
   
@@ -79,6 +106,7 @@ export class AdminProductsComponent{
 
   onModalSaved() {
     this.showModal = false;
+    this.productResource.reload();
   }
 
   onModalClosed() {

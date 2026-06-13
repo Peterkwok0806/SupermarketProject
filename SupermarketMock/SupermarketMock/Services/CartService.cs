@@ -172,7 +172,7 @@ namespace SupermarketMock.Services
             return await _context.Carts
                 .Include(c => c.CartItems)
                     .ThenInclude(ci => ci.Product)
-                        // 💡 核心優化：在 SQL 層級直接過濾時間、並依 Priority 降冪排序（最高權重在第一個）
+                        //SQL 層級直接過濾時間、並依 Priority 降冪排序（最高權重在第一個）
                         .ThenInclude(p => p.ProductPromotions
                             .Where(pp => (pp.OverrideStartDate ?? pp.Promotion.StartDate) <= now
                                       && (pp.OverrideEndDate ?? pp.Promotion.EndDate) >= now)

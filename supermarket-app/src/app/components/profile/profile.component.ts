@@ -91,8 +91,8 @@ ngOnInit() {
   private showSnackBar(message: string, cssClass: 'success-snackbar' | 'error-snackbar') {
     this.snackBar.open(message, '關閉', {
       duration: 3500,           // 顯示 3.5 秒
-      horizontalPosition: 'end', // 靠右
-      verticalPosition: 'top',   // 靠上
+      horizontalPosition: 'center', // 置中
+      verticalPosition: 'bottom',   // 靠下
       panelClass: [cssClass]     // 帶入自訂樣式名稱
     });
   }

@@ -3,23 +3,27 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ProductService } from '../../../services/product.service';
 import { Product} from '../../../models/product';
-import { Subscription,lastValueFrom } from 'rxjs';
+import { lastValueFrom } from 'rxjs';
+import { firstValueFrom } from 'rxjs';
+import { NotificationService } from '../../../services/notification.service';
 
 @Component({
   selector: 'app-product-modal',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ],
   templateUrl: './product-modal.component.html',
   styleUrl: './product-modal.component.css'
 })
 export class ProductModalComponent {
   private productService = inject(ProductService);
+  private notification = inject(NotificationService);
+
+  product:Product |null = null;
 
   // 1. 接收 ID
   @Input() productId: number | null = null; 
   @Output() closeModal = new EventEmitter<void>();
   @Output() saved = new EventEmitter<void>();
 
-  product: Product | null = null;
   isEditMode = false;
   categories: any[] = [];
   isLoading = false;
@@ -72,19 +76,31 @@ export class ProductModalComponent {
     }
   }
 
-  saveProduct() {
-    if (this.isEditMode) {
-      // TODO: 呼叫更新 API
-      console.log('更新商品', this.productData);
+  async saveProduct() {
+    if (!this.productData.name || !this.productData.categoryId || this.productData.price <= 0) {
+      this.notification.error('請填寫必要欄位');
+      return;
+    }
+    try{
+      if (this.isEditMode && this.product) {
+      const response = await firstValueFrom(this.productService.updateProduct(this.product.id, this.productData))
+      console.log(response);
+      this.notification.success('商品更新成功');
+      
     } else {
-      // TODO: 呼叫新增 API
-      console.log('新增商品', this.productData);
+      const response = await firstValueFrom (this.productService.createProduct(this.productData))
+      console.log(response);
+      this.notification.success('新增商品成功');
     }
     this.saved.emit();
     this.close();
+    }catch (error) {
+      this.notification.error('儲存失敗，請稍後再試');
+    }
   }
 
   close() {
     this.closeModal.emit();
   }
+
 }

@@ -1,10 +1,10 @@
 import { Component, OnInit, inject, signal, computed, } from '@angular/core';
-import { Product, ProductCategory, ProductDto } from '../../models/product';
+import { ProductCategory } from '../../models/product';
 import { ProductService } from '../../services/product.service';
 import { SearchService } from '../../services/search.service';
 import { CartService } from '../../services/cart.service';
+import { NotificationService } from '../../services/notification.service';
 import { CommonModule } from '@angular/common';
-import { Observable } from 'rxjs';
 import { lastValueFrom } from 'rxjs';
 import { RouterLink, ActivatedRoute, Router} from '@angular/router'; 
 import { switchMap, map } from 'rxjs';
@@ -25,6 +25,7 @@ export class ProductlistComponent implements OnInit{
   private productService = inject(ProductService);
   private cartService = inject(CartService);
   private searchService = inject(SearchService);
+  private notificationService = inject(NotificationService )
   private route = inject(ActivatedRoute);
   private router = inject(Router);
 
@@ -120,11 +121,11 @@ export class ProductlistComponent implements OnInit{
     try {
       await this.cartService.addToCart(prodcutid, quantity);
 
-      alert(`已成功加入購物車！ 🛒`);
+      this.notificationService.success(`已成功加入購物車!`);
       
     } catch (error) {
       console.error(error);
-      alert('加入購物車失敗，請稍後再試');
+      this.notificationService.error('加入購物車失敗，請稍後再試');
     }
   }
 

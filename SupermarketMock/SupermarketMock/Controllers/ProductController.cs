@@ -61,5 +61,21 @@ namespace SupermarketMock.Controllers
                 var result = await _productService.GetProductSuggestionsAsync(q);
                 return Ok(result);
         }
-    }
-}
+
+        [HttpPost]
+        public async Task<ActionResult<ApiResult>> CreateProduct([FromBody] CreateProductDto dto)
+        {
+            var result = await _productService.CreateProductAsync(dto);
+
+            return result.Success ? Ok(result) : BadRequest(result);
+        }
+
+        [HttpPut("{productId}")]
+        public async Task<ActionResult<ApiResult>> UpdateProduct([FromRoute] int productId, [FromBody] CreateProductDto dto)
+        {
+            var result = await _productService.UpdateProductAsync(productId, dto);
+
+            return result.Success ? Ok(result) : BadRequest(result);
+        }
+    }   
+} 

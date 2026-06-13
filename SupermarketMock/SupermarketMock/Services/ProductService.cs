@@ -218,7 +218,68 @@ namespace SupermarketMock.Services
                 .ToList();
         }
 
-       
+        public async Task<ApiResult> CreateProductAsync(CreateProductDto dto)
+        {
+            if (await _context.Products.AnyAsync(p => p.Name == dto.Name))
+            {
+                return new ApiResult { Success = false, Message = "已有相同名稱貨品" };
+            }
+
+            var product = new Product
+            {
+                Name = dto.Name,
+                Description = dto.Description,
+                Price = dto.Price,
+                CategoryId = dto.CategoryId,
+                Photo = dto.Photo,
+                StockQuantity = dto.StockQuantity,
+                IsAvailable = true,
+                Brand = dto.Brand
+            };
+
+            _context.Products.Add(product);
+            await _context.SaveChangesAsync();
+
+            return new ApiResult { Success = true, Message = "已新增貨品" };
+
+        }
+
+        public async Task<ApiResult> UpdateProductAsync(int id, CreateProductDto dto)
+        {
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                
+                var product = await _context.Products
+                    .FromSql($"SELECT * FROM Products WITH (UPDLOCK, ROWLOCK) WHERE Id = {id}")
+                    .FirstOrDefaultAsync();
+
+                if (product == null)
+                {
+                    return new ApiResult { Success = false, Message = "找不到貨品" };
+                }
+
+                product.Name = dto.Name;
+                product.Description = dto.Description;
+                product.Price = dto.Price;
+                product.CategoryId = dto.CategoryId;
+                product.Photo = dto.Photo;
+                product.StockQuantity = dto.StockQuantity;
+                product.Brand = dto.Brand;
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return new ApiResult { Success = true, Message = "已更新貨品" };
+
+            }
+            catch (Exception ex) {
+                return new ApiResult { Success = false, Message = "更新貨品失敗：" + ex.Message };
+            }
+        }
+
+
+
 
     }
 }

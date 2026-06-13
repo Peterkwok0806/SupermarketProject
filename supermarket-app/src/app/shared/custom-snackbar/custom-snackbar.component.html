@@ -1,0 +1,11 @@
+<div class="snackbar-content">
+      <mat-icon *ngIf="data.type === 'success'" class="icon">check_circle</mat-icon>
+      <mat-icon *ngIf="data.type === 'error'" class="icon">error</mat-icon>
+      
+      <span class="message">{{ data.message }}</span>
+      
+      <!-- 關閉按鈕 -->
+      <button mat-button (click)="close()" class="close-btn">
+        close
+      </button>
+    </div>

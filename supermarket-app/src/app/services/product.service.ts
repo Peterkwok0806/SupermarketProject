@@ -33,7 +33,7 @@ export class ProductService {
 
   getProductById(id: number): Observable<Product> {
   return this.http.get<Product>(`${this.apiUrl}/${id}`);
-}
+  }
 
   searchProducts(keyword: string, page: number = 1, pageSize: number = 10): Observable<PagedResult<ProductDto>> {
     let params = new HttpParams()
@@ -45,9 +45,19 @@ export class ProductService {
 
   getSearchSuggestions(term: string): Observable<string[]> {
     if (!term || !term.trim()) {
-    return of([]);
+      return of([]);
+    }
+
+    const params = new HttpParams().set('q', term.trim());
+    return this.http.get<string[]>(`${this.apiUrl}/suggestions?`, { params });
   }
-    return this.http.get<string[]>(`${this.apiUrl}/suggestions?q=${term}`);
+
+  createProduct(data:any):Observable<any>{
+      return this.http.post<any>(this.apiUrl, data);
+  }
+
+  updateProduct(id: number, dto:any):Observable<any>{
+    return this.http.put<any>(`${this.apiUrl}/${id}`, dto)
   }
 
 }
