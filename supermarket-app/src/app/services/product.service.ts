@@ -2,6 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { Product, ProductCategory, ProductDto,PagedResult } from '../models/product';
+import { environment } from '../../environments/environment';
 
 
 
@@ -11,7 +12,7 @@ import { Product, ProductCategory, ProductDto,PagedResult } from '../models/prod
 export class ProductService {
 
   private http = inject(HttpClient);
-  private apiUrl = 'https://localhost:7154/api/Product';
+  private apiUrl = `${environment.apiUrl}api/product`;
 
   
 
@@ -52,12 +53,12 @@ export class ProductService {
     return this.http.get<string[]>(`${this.apiUrl}/suggestions?`, { params });
   }
 
-  createProduct(data:any):Observable<any>{
-      return this.http.post<any>(this.apiUrl, data);
+  createProduct(formData: FormData):Observable<any>{
+      return this.http.post<any>(this.apiUrl, formData);
   }
 
-  updateProduct(id: number, dto:any):Observable<any>{
-    return this.http.put<any>(`${this.apiUrl}/${id}`, dto)
+  updateProduct(id: number, formData: FormData):Observable<any>{
+    return this.http.put<any>(`${this.apiUrl}/${id}`, formData)
   }
 
 }

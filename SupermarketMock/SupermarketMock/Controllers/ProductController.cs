@@ -11,10 +11,12 @@ namespace SupermarketMock.Controllers
     public class ProductController : ControllerBase
     {
         private readonly IProductService _productService;
+        
 
         public ProductController(IProductService productService)
         {
             _productService = productService;
+           
         }
 
         [HttpGet]
@@ -63,15 +65,16 @@ namespace SupermarketMock.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<ApiResult>> CreateProduct([FromBody] CreateProductDto dto)
+        public async Task<ActionResult<ApiResult>> CreateProduct([FromForm] CreateProductDto dto)
         {
             var result = await _productService.CreateProductAsync(dto);
 
             return result.Success ? Ok(result) : BadRequest(result);
         }
 
+
         [HttpPut("{productId}")]
-        public async Task<ActionResult<ApiResult>> UpdateProduct([FromRoute] int productId, [FromBody] CreateProductDto dto)
+        public async Task<ActionResult<ApiResult>> UpdateProduct([FromRoute] int productId, [FromForm] CreateProductDto dto)
         {
             var result = await _productService.UpdateProductAsync(productId, dto);
 
@@ -79,3 +82,4 @@ namespace SupermarketMock.Controllers
         }
     }   
 } 
+ 

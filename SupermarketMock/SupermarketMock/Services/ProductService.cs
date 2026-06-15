@@ -8,10 +8,12 @@ namespace SupermarketMock.Services
     public class ProductService : IProductService
     {
         private readonly SupermarketContext _context;
+        private readonly IFileUploadService _fileUploadService;
 
-        public ProductService(SupermarketContext context)
+        public ProductService(SupermarketContext context, IFileUploadService fileUploadService)
         {
             _context = context;
+            _fileUploadService = fileUploadService;
         }
 
 
@@ -220,10 +222,35 @@ namespace SupermarketMock.Services
 
         public async Task<ApiResult> CreateProductAsync(CreateProductDto dto)
         {
+            // 1. 檢查名稱是否重複
             if (await _context.Products.AnyAsync(p => p.Name == dto.Name))
             {
                 return new ApiResult { Success = false, Message = "已有相同名稱貨品" };
             }
+
+            // 2. 處理圖片上傳邏輯
+            string? savedPhotoPath = null;
+            if (dto.Photofile != null && dto.Photofile.Length > 0)
+            {
+                var subFolder = Path.Combine("images", "products");
+
+                // 呼叫圖片服務執行驗證與儲存，成功會回傳新檔名（例如: "abc-123.jpg"）
+
+                var fileName = await _fileUploadService.UploadImageAsync(dto.Photofile, subFolder);
+
+                if (fileName == null)
+                {
+                    return new ApiResult { Success = false, Message = "圖片上傳失敗，只支援 JPG, PNG, WEBP 格式" };
+                }
+
+                savedPhotoPath = $"/images/products/{fileName}";
+            }
+            else
+            {
+                // 如果管理員沒上傳圖片，可以給一個前端 public 資料夾內的預設圖路徑
+                savedPhotoPath = "/images/products/default-product.jpg";
+            }
+
 
             var product = new Product
             {
@@ -231,7 +258,7 @@ namespace SupermarketMock.Services
                 Description = dto.Description,
                 Price = dto.Price,
                 CategoryId = dto.CategoryId,
-                Photo = dto.Photo,
+                Photo = savedPhotoPath,
                 StockQuantity = dto.StockQuantity,
                 IsAvailable = true,
                 Brand = dto.Brand
@@ -249,7 +276,7 @@ namespace SupermarketMock.Services
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-                
+
                 var product = await _context.Products
                     .FromSql($"SELECT * FROM Products WITH (UPDLOCK, ROWLOCK) WHERE Id = {id}")
                     .FirstOrDefaultAsync();
@@ -259,11 +286,38 @@ namespace SupermarketMock.Services
                     return new ApiResult { Success = false, Message = "找不到貨品" };
                 }
 
+                string savePath = product.Photo;
+
+                if (dto.Photofile != null && dto.Photofile.Length > 0)
+                {
+
+                    var subFolder = Path.Combine("images", "products");
+
+                    var fileName = await _fileUploadService.UploadImageAsync(dto.Photofile, subFolder);
+
+                    if (fileName == null)
+                    {
+                        return new ApiResult { Success = false, Message = "圖片上傳失敗，只支援 JPG, PNG, WEBP 格式" };
+                    }
+
+                    if (!string.IsNullOrEmpty(product.Photo) && !product.Photo.Contains("default-product.jpg"))
+                    {
+                        var oldFilePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", product.Photo.TrimStart('/'));
+                        if (File.Exists(oldFilePath))
+                        {
+                            File.Delete(oldFilePath);
+                        }
+                    }
+
+                    savePath = $"/images/products/{fileName}";
+
+                }
+
                 product.Name = dto.Name;
                 product.Description = dto.Description;
                 product.Price = dto.Price;
                 product.CategoryId = dto.CategoryId;
-                product.Photo = dto.Photo;
+                product.Photo = savePath;
                 product.StockQuantity = dto.StockQuantity;
                 product.Brand = dto.Brand;
 
@@ -274,6 +328,7 @@ namespace SupermarketMock.Services
 
             }
             catch (Exception ex) {
+                await transaction.RollbackAsync();
                 return new ApiResult { Success = false, Message = "更新貨品失敗：" + ex.Message };
             }
         }

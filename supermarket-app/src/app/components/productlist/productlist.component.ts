@@ -9,14 +9,15 @@ import { lastValueFrom } from 'rxjs';
 import { RouterLink, ActivatedRoute, Router} from '@angular/router'; 
 import { switchMap, map } from 'rxjs';
 import { toSignal } from '@angular/core/rxjs-interop';
-
+import { environment } from '../../../environments/environment';
+import { BackendImagePipe } from '../../pipes/backend-image.pipe';
 
 
 
 
 @Component({
   selector: 'app-productlist',
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink,BackendImagePipe],
   templateUrl: './productlist.component.html',
   styleUrl: './productlist.component.css'
 })
@@ -28,6 +29,7 @@ export class ProductlistComponent implements OnInit{
   private notificationService = inject(NotificationService )
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  backendUrl = environment.apiUrl;
 
   categories: ProductCategory[] = [];
 

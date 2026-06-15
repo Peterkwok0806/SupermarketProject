@@ -62,7 +62,7 @@
               <!-- Image Container -->
               <div class="aspect-square bg-gray-100 relative overflow-hidden">
                 <img 
-                  [src]="'/images/products/' + item.photo"
+                  [src]="item.photo | backendImage"
                   [alt]="item.name"
                   class="w-full h-full object-cover group-hover:scale-105 transition duration-300"
                   onerror="this.src='https://picsum.photos'; this.onerror=null;">

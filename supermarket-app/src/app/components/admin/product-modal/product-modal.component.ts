@@ -27,6 +27,8 @@ export class ProductModalComponent {
   isEditMode = false;
   categories: any[] = [];
   isLoading = false;
+  previewUrl: string | null = null;
+  selectedFile: File | null = null;
 
   productData = {
     name: '',
@@ -81,14 +83,27 @@ export class ProductModalComponent {
       this.notification.error('請填寫必要欄位');
       return;
     }
+      // 建立 FormData 物件
+    const formData = new FormData();
+    formData.append('name', this.productData.name);
+    formData.append('description', this.productData.description);
+    formData.append('price', this.productData.price.toString());
+    formData.append('categoryId', this.productData.categoryId.toString());
+    formData.append('stockQuantity', this.productData.stockQuantity.toString());
+  
+      // 2. 把圖片實體塞進去（注意：這裡的 key 'Photo' 必須對應後端 CreateProductDto 的屬性名稱）
+    if (this.selectedFile) {
+      formData.append('photofile', this.selectedFile);
+    }
+
     try{
-      if (this.isEditMode && this.product) {
-      const response = await firstValueFrom(this.productService.updateProduct(this.product.id, this.productData))
+    if (this.isEditMode && this.product) {
+      const response = await firstValueFrom(this.productService.updateProduct(this.product.id,formData))
       console.log(response);
       this.notification.success('商品更新成功');
-      
-    } else {
-      const response = await firstValueFrom (this.productService.createProduct(this.productData))
+     } 
+    else {
+      const response = await firstValueFrom (this.productService.createProduct(formData))
       console.log(response);
       this.notification.success('新增商品成功');
     }
@@ -98,6 +113,15 @@ export class ProductModalComponent {
       this.notification.error('儲存失敗，請稍後再試');
     }
   }
+
+  onFileSelected(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      this.selectedFile = file;
+      this.previewUrl = URL.createObjectURL(file);
+    }
+  }
+
 
   close() {
     this.closeModal.emit();

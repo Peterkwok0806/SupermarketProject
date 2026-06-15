@@ -17,6 +17,26 @@
 
     <!-- Form (加入 #productForm="ngForm" 用於驗證按鈕狀態) -->
     <form #productForm="ngForm" (ngSubmit)="productForm.form.valid && saveProduct()" class="p-8 space-y-6">
+      <!-- Image Upload -->
+      <div>
+        <label class="block text-sm font-medium mb-3">商品圖片</label>
+        <div class="border-2 border-dashed border-gray-300 rounded-2xl p-8 text-center hover:border-purple-300 transition">
+          <input type="file" #fileInput accept="image/*" (change)="onFileSelected($event)" class="hidden">
+          
+          @if (previewUrl) {
+            <img [src]="previewUrl" class="mx-auto max-h-48 rounded-lg mb-4">
+          } @else {
+            <span class="text-5xl mb-4 block">📸</span>
+          }
+          
+          <button type="button" (click)="fileInput.click()" 
+                  class="bg-gray-100 hover:bg-gray-200 px-6 py-3 rounded-2xl text-sm font-medium">
+            {{ previewUrl ? '更換圖片' : '上傳圖片' }}
+          </button>
+          <p class="text-xs text-gray-500 mt-2">支援 JPG, PNG 格式</p>
+        </div>
+      </div>
+
       <div class="grid grid-cols-2 gap-6">
         <div class="col-span-2">
           <label class="block text-sm font-medium mb-2">商品名稱</label>

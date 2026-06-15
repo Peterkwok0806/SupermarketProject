@@ -5,10 +5,11 @@ import { ProductService } from '../../services/product.service';
 import { CartService } from '../../services/cart.service';
 import { Product, ProductDto } from '../../models/product';
 import { Subscription,lastValueFrom } from 'rxjs';
+import { BackendImagePipe } from '../../pipes/backend-image.pipe';
 
 @Component({
   selector: 'app-product-detail',
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink,BackendImagePipe],
   templateUrl: './product-detail.component.html',
   styleUrl: './product-detail.component.css'
 })

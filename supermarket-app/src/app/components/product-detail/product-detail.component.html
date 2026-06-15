@@ -7,7 +7,7 @@
     
     <!-- Image -->
     <div class="bg-gray-100 rounded-3xl overflow-hidden aspect-square max-h-[600px] shadow-inner relative">
-      <img [src]="'/images/products/' + product.photo" 
+      <img [src]="product.photo| backendImage" 
            [alt]="product.name"
            class="w-full h-full object-cover">
     </div>
@@ -96,7 +96,7 @@
         <div class="bg-white rounded-2xl shadow-sm hover:shadow-lg transition overflow-hidden group flex flex-col justify-between">
           <div [routerLink]="['/product', related.id]" class="cursor-pointer">
             <div class="aspect-square bg-gray-100 overflow-hidden relative">
-              <img [src]="'/images/products/' + related.photo" 
+              <img [src]="related.photo | backendImage" 
                    [alt]="related.name"
                    class="w-full h-full object-cover group-hover:scale-105 transition duration-300"
                    onerror="this.src='https://picsum.photos'; this.onerror=null;">
