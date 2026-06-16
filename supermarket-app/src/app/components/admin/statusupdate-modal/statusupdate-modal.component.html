@@ -1,0 +1,62 @@
+@if (order) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+    <div class="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl border border-gray-100">
+      
+      <!-- 標頭 -->
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="text-xl font-bold text-gray-900">更新訂單狀態</h3>
+        <button (click)="onCancel()" [disabled]="isSubmitting" class="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 disabled:opacity-30">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+
+      <!-- 資訊卡 -->
+      <div class="space-y-4 mb-6">
+        <div class="bg-gray-50 p-4 rounded-2xl text-sm space-y-1">
+          <div class="flex justify-between"><span class="text-gray-500">訂單編號:</span><span class="font-medium">#{{ order.id }}</span></div>
+          <div class="flex justify-between"><span class="text-gray-500">客戶姓名:</span><span class="font-medium">{{ order.fullName }}</span></div>
+        </div>
+
+        <!-- 動態產生的 SELECT 選單 -->
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-2">選擇新狀態</label>
+          <div class="relative">
+            <!-- ⚠️ [ngModel] 綁定要加上 [value] 數字轉型確認，用 [ngValue] 最穩健 -->
+            <select [(ngModel)]="tempStatus" 
+                    [disabled]="isSubmitting"
+                    class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl appearance-none focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 font-medium text-gray-800 transition-all disabled:opacity-60">
+              @for (status of statusOptions; track status) {
+                <option [ngValue]="status">
+                  {{ order.status | orderstatusName }}
+                </option>
+              }
+            </select>
+            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 按鈕區 -->
+      <div class="flex gap-3">
+        <button (click)="onCancel()" [disabled]="isSubmitting" class="flex-1 py-3 border border-gray-200 hover:bg-gray-50 text-gray-700 font-semibold rounded-2xl transition-colors">
+          取消
+        </button>
+        <!-- ⚠️ 比對條件改為直接比對數字 (tempStatus === order.status) -->
+        <button (click)="onConfirm()" 
+                [disabled]="tempStatus === order.status || isSubmitting"
+                class="flex-1 py-3 bg-amber-500 hover:bg-amber-600 disabled:bg-gray-200 disabled:text-gray-400 text-white font-semibold rounded-2xl shadow-md transition-all flex items-center justify-center gap-2">
+          @if (isSubmitting) {
+            <svg class="animate-spin h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+            儲存中...
+          } @else {
+            儲存變更
+          }
+        </button>
+      </div>
+
+    </div>
+  </div>
+}
+

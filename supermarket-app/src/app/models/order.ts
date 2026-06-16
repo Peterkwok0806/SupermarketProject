@@ -33,3 +33,10 @@ export enum OrderStatus {
   Completed = 4,
   Cancelled = 5
 }
+
+export interface searchOrderRequest{
+  orderId?:string 
+  userName?:string 
+  endDate? :Date;
+  startDate?: Date ;
+}

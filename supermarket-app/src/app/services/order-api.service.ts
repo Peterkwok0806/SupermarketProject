@@ -1,6 +1,9 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient} from '@angular/common/http';
+import { HttpClient,HttpParams} from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { ApiResultPagination} from '../models/api-result';
+import { OrderEntity,searchOrderRequest } from '../models/order';
+
 
 @Injectable({
   providedIn: 'root'
@@ -25,5 +28,21 @@ export class OrderApiService {
   /** 取得我的所有訂單 */
   getMyOrders(): Observable<any[]> {
     return this.http.get<any[]>(this.apiUrl);
+  }
+
+  searchOrders(req?: searchOrderRequest, page: number = 1, pageSize: number = 10): Observable<ApiResultPagination<OrderEntity>> {
+    let params = new HttpParams()
+    .set('page', page.toString())
+    .set('pageSize', pageSize.toString());
+
+    // 動態加入可選的查詢條件
+    if(req!=null){
+      if (req.orderId) params = params.set('snowflakeId', req.orderId.toString());
+      if (req.userName) params = params.set('userName', req.userName.toString());
+      if (req.startDate) params = params.set('startDate', req.startDate.toISOString().split('T')[0]);
+      if (req.endDate) params = params.set('endDate', req.endDate.toISOString().split('T')[0]);
+    }
+    
+    return this.http.get<ApiResultPagination<OrderEntity>>(`${this.apiUrl}/search`, {params});
   }
 }

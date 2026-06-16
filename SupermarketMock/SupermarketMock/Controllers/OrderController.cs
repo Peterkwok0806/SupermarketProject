@@ -44,5 +44,18 @@ namespace SupermarketMock.Controllers
             var orders = await _orderService.GetOrdersByUserIdAsync(userId);
             return Ok(orders);
         }
+
+        [HttpGet("search")]
+        public async Task<ActionResult<ApiResultPagination<OrderDto>>> SearchOrder(
+            [FromQuery] string? snowflakeId,
+            [FromQuery] string? userName,
+            [FromQuery] string? startDate,
+            [FromQuery] string? endDate,
+            [FromQuery] int pageNumber,
+            [FromQuery] int pageSize)
+        {
+            var result = await _orderService.SearchOrderAsync(snowflakeId, userName, startDate, endDate, pageNumber, pageSize);
+            return result.Success ? Ok(result) : BadRequest(result);
+        }
     }
 }

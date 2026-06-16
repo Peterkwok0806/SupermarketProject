@@ -259,6 +259,73 @@ namespace SupermarketMock.Services
 
         }
 
+        public async Task<ApiResultPagination<OrderDto>> SearchOrderAsync(string? snowflakeId, string? userName, string? startDate, string? endDate, int pageNumber, int pageSize) 
+        {
+            pageNumber = pageNumber < 1 ? 1 : pageNumber;
+            pageSize = pageSize < 1 ? 10 : pageSize;
+
+            var query = _context.Orders.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(snowflakeId))
+            {
+                if (long.TryParse(snowflakeId, out long snowflakeIdLong))
+                {
+                    query = query.Where(o => o.SnowflakeId == snowflakeIdLong);
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(userName))
+            {
+                // 假設你的訂單資料表上有 FullName 或 UserName 欄位
+                query = query.Where(o => o.FullName.Contains(userName));
+            }
+
+            if (!string.IsNullOrWhiteSpace(startDate))
+            {
+                if (DateTime.TryParse(startDate, out DateTime parsedStartDate))
+                {
+                    query = query.Where(o => o.CreatedAt >= parsedStartDate);
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(endDate))
+            {
+                if (DateTime.TryParse(endDate, out DateTime parsedEndDate))
+                {
+                    // 將時間推至當天最後一刻，確保涵蓋該日期的所有訂單
+                    var endOfDay = parsedEndDate.Date.AddDays(1).AddTicks(-1);
+                    query = query.Where(o => o.CreatedAt <= endOfDay);
+                }
+            }
+
+
+
+            int totalCount = await query.CountAsync();
+
+            var orders = await query
+                        .OrderByDescending(o => o.CreatedAt)
+                        .Skip((pageNumber - 1) * pageSize)
+                        .Take(pageSize)
+                        .ToListAsync();
+
+
+
+            var items = orders.Select(MapToOrderDto).ToList();
+
+
+            return new ApiResultPagination<OrderDto>
+            {
+                Success = true,
+                Message = orders.Count == 0 ? "沒有找到符合條件的訂單" : "搜尋成功",
+                Items = items,
+                TotalCount = totalCount,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
+
+
+        }
+
         public async Task<List<OrderDto>> GetOrdersByUserIdAsync(int userId)
         {
             var orders = await _context.Orders
