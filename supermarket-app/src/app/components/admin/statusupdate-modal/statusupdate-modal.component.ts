@@ -39,7 +39,7 @@ export class StatusupdateModalComponent {
 
   onConfirm(): void {
     // 只有在狀態有變更，且非傳送中時才觸發
-    if (this.tempStatus && this.tempStatus !== this.order?.status && !this.isSubmitting) {
+    if (this.tempStatus !== undefined && this.tempStatus !== this.order?.status && !this.isSubmitting) {
       this.save.emit(this.tempStatus);
     }
   }

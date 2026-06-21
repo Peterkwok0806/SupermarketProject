@@ -8,12 +8,12 @@ import { OrderstatusNamePipe } from '../../../pipes/orderstatus-name.pipe';
 import { RouterLink, ActivatedRoute, Router} from '@angular/router'; 
 import { map,firstValueFrom} from 'rxjs';
 import {searchOrderRequest} from '../../../models/order';
-
+import { StatusupdateModalComponent } from '../statusupdate-modal/statusupdate-modal.component'
 
 
 @Component({
   selector: 'app-orders',
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, OrderstatusNamePipe],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, OrderstatusNamePipe,StatusupdateModalComponent ],
   templateUrl: './orders.component.html',
   styleUrl: './orders.component.css'
 })
@@ -125,6 +125,28 @@ export class AdminOrdersComponent {
     return today.toISOString().split('T')[0]; // 回傳格式如 "2026-06-16"
   }
 
+  updateOrderStatus(order: any): void {
+    this.editingOrder = order;
+  }
+
+  handleStatusSave(newStatus: OrderStatus): void{
+    if (!this.editingOrder) return;
+
+    this.isModalLoading = true;
+
+    // 注意：這裡假設你的訂單唯一識別碼是 snowflakeId
+    const orderId = this.editingOrder.snowflakeId;
+  }
+
+
+
+
+
+
+
+
+
+
   private dateRangeValidator(): ValidatorFn {
     return (group: AbstractControl): { [key: string]: any } | null => {
       const form = group as FormGroup;
@@ -166,6 +188,8 @@ export class AdminOrdersComponent {
       return hasError ? { dateRangeInvalid: true } : null;
     };
   }
+
+  
 
   
 

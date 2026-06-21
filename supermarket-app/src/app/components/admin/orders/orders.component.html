@@ -84,6 +84,10 @@
                       class="text-blue-600 hover:text-blue-700 font-medium">
                 詳細
               </button>
+              <button (click)="updateOrderStatus(order)" 
+                        class="text-amber-600 hover:text-amber-700 font-semibold text-sm transition-colors">
+                  更新狀態
+              </button>
             </td>
           </tr>
         } @empty {
@@ -115,3 +119,10 @@
     </div>
   </div>
 </div>
+
+<app-statusupdate-modal
+ [order]="editingOrder"
+  [isSubmitting]="isModalLoading"
+  (close)="editingOrder = null"
+  (save)="handleStatusSave($event)">
+</app-statusupdate-modal>
