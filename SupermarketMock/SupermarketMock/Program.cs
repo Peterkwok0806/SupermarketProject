@@ -7,6 +7,7 @@ using SupermarketMock.Services;
 using System.Text;
 using IdGen;
 using Hangfire;
+using SupermarketMock.IServices;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -52,6 +53,7 @@ builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IFileUploadService, FileUploadService>();
+builder.Services.AddScoped<IDashboardService, DashboardService>();
 
 // 綁定 appsettings.json 中的 "Jwt" 區段到 JwtSetting 類別
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
