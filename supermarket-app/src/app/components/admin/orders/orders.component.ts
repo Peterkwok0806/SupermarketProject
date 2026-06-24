@@ -9,6 +9,7 @@ import { RouterLink, ActivatedRoute, Router} from '@angular/router';
 import { map,firstValueFrom} from 'rxjs';
 import {searchOrderRequest} from '../../../models/order';
 import { StatusupdateModalComponent } from '../statusupdate-modal/statusupdate-modal.component'
+import { lastValueFrom } from 'rxjs';
 
 
 @Component({
@@ -129,15 +130,24 @@ export class AdminOrdersComponent {
     this.editingOrder = order;
   }
 
-  handleStatusSave(newStatus: OrderStatus): void{
+  async handleStatusSave(newStatus: OrderStatus){
     if (!this.editingOrder) return;
 
     this.isModalLoading = true;
 
-    // 注意：這裡假設你的訂單唯一識別碼是 snowflakeId
     const orderId = this.editingOrder.snowflakeId;
+    try{
+      const respones = await lastValueFrom(this.orderApi.updateStatus(orderId,newStatus));
+      console.log(respones)
+      if(respones.success){
+        this.editingOrder = null;
+        this.OrderResource.reload();}
+    }catch(err:any){
+      console.error(err)
+    }finally{
+      this.isModalLoading = false;
+    }
   }
-
 
 
 

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using SupermarketMock.Services;
 using System.Security.Claims;
 using SupermarketMock.DTOs;
+using SupermarketMock.Models;
 
 namespace SupermarketMock.Controllers
 {
@@ -56,6 +57,13 @@ namespace SupermarketMock.Controllers
         {
             var result = await _orderService.SearchOrderAsync(snowflakeId, userName, startDate, endDate, pageNumber, pageSize);
             return result.Success ? Ok(result) : BadRequest(result);
+        }
+
+        [HttpPut("{ordersnowflakeId}/status")]
+        public async Task<ActionResult<ApiResult>> UpdateOrderStatus(string orderSnowflakeId, [FromBody] OrderStatus newStatus)
+        {
+            var result = await _orderService.UpdateOrderStatusAsync(orderSnowflakeId, newStatus);
+            return result.Success ? Ok(result):BadRequest(result);  
         }
     }
 }

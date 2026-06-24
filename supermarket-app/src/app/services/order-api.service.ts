@@ -1,8 +1,8 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient,HttpParams} from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { ApiResultPagination} from '../models/api-result';
-import { OrderEntity,searchOrderRequest } from '../models/order';
+import { ApiResult,ApiResultPagination} from '../models/api-result';
+import { OrderEntity,OrderStatus,searchOrderRequest } from '../models/order';
 
 
 @Injectable({
@@ -45,4 +45,9 @@ export class OrderApiService {
     
     return this.http.get<ApiResultPagination<OrderEntity>>(`${this.apiUrl}/search`, {params});
   }
+
+  updateStatus(ordersnowflakeId: string,newStatus: OrderStatus):Observable<ApiResult>{
+    return this.http.put<ApiResult>(`${this.apiUrl}/${ordersnowflakeId}/status`, newStatus)
+  }
+
 }

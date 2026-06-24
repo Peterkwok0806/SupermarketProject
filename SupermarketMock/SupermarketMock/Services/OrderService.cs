@@ -338,6 +338,36 @@ namespace SupermarketMock.Services
             return orders.Select(MapToOrderDto).ToList();
         }
 
+        public async Task<ApiResult> UpdateOrderStatusAsync(string orderSnowflakeId, OrderStatus newStatus)
+        {
+            if (!long.TryParse(orderSnowflakeId, out long snowflakeIdLong))
+            {
+                return  new ApiResult() { Success = false};
+            }
+            var order = await _context.Orders
+                        .Include(o => o.OrderItems)
+                        .FirstOrDefaultAsync(o => o.SnowflakeId == snowflakeIdLong);
+
+            if (order == null)
+            {
+                return new ApiResult() { Success = false, Message = "訂單不存在" };
+            }
+
+            // 如果是取消訂單，可以選擇是否恢復庫存（這裡先不恢復，之後可擴展）
+            if (newStatus == OrderStatus.Cancelled && order.Status != OrderStatus.Cancelled)
+            {
+                // TODO: 未來可加入恢復庫存的邏輯 
+            }
+
+            order.Status = newStatus;
+            order.UpdatedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            return new ApiResult() { Success = true, Message = "訂單狀態更新成功" };
+        }
+         
+
 
     }
 }
