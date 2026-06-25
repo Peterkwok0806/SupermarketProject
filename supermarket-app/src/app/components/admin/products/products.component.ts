@@ -35,6 +35,9 @@ export class AdminProductsComponent {
   // 載入分類清單
   categories = signal<ProductCategory[]>([]);
 
+  // 哪個商品正在切換上下架，避免重複點擊
+  togglingId: number | null = null;
+
   currentPage = toSignal(
     this.route.queryParams.pipe(
       map(params => {
@@ -109,7 +112,27 @@ export class AdminProductsComponent {
   }
 
   toggleAvailability(product: any) {
-    alert(`切換 ${product.name} 上下架狀態 (功能開發中)`);
+    if (!confirm(`確認要切換「${product.name}」的上下架狀態？`)) {
+      return;
+    }
+
+    this.togglingId = product.id;
+    this.productService.toggleAvailability(product.id).subscribe({
+      next: (res) => {
+        this.togglingId = null;
+        if (res?.success) {
+          alert(res.message || '切換成功');
+          this.productResource.reload();
+        } else {
+          alert(res?.message || '切換失敗');
+        }
+      },
+      error: (err) => {
+        this.togglingId = null;
+        console.error('切換上下架失敗', err);
+        alert('切換上下架失敗：' + (err?.error?.message || err?.message || '未知錯誤'));
+      }
+    });
   }
 
   openAddProductModal() {

@@ -14,7 +14,7 @@ export class ProductService {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}api/product`;
 
-  
+
 
   getProducts(categoryId?: number, keyword?: string, sortBy?: string, page: number = 1, pageSize: number = 10): Observable<PagedResult<ProductDto>> {
     let params = new HttpParams()
@@ -67,6 +67,13 @@ export class ProductService {
 
   updateProduct(id: number, formData: FormData):Observable<any>{
     return this.http.put<any>(`${this.apiUrl}/${id}`, formData)
+  }
+
+  toggleAvailability(id: number): Observable<{ success: boolean; message: string }> {
+    return this.http.patch<{ success: boolean; message: string }>(
+      `${this.apiUrl}/${id}/availability`,
+      {}
+    );
   }
 
 }

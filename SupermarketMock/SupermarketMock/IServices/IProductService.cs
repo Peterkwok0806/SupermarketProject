@@ -19,5 +19,7 @@ namespace SupermarketMock.Services
         Task<ApiResult> CreateProductAsync(CreateProductDto createProductDto);
 
         Task<ApiResult> UpdateProductAsync(int id, CreateProductDto createProductDto);
+
+        Task<ApiResult> ToggleAvailabilityAsync(int id);
     }
 }

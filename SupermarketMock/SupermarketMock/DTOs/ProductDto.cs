@@ -9,8 +9,10 @@ namespace SupermarketMock.DTOs
         public string name { get; set; } = string.Empty;
         public decimal price { get; set; }
         public string photo { get; set; } = string.Empty;
+        public bool isAvailable { get; set; } = true;        // 是否上架
+        public int stockQuantity { get; set; }               // 庫存
 
-        // === 新增折扣相關欄位 ===
+        // === 折扣相關欄位 ===
         public bool isOnSale { get; set; }          // 是否正在特價
         public decimal? originalPrice { get; set; }  // 原價（特價時才顯示，平時為 null）
         public List<string> promotionNames { get; set; } = new();    // 命中哪一個活動名稱

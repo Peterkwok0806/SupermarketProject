@@ -73,6 +73,7 @@
           <th class="px-6 py-4 text-left">商品</th>
           <th class="px-6 py-4 text-right">價格</th>
           <th class="px-6 py-4 text-center">庫存</th>
+          <th class="px-6 py-4 text-center">狀態</th>
           <th class="px-6 py-4 text-center">操作</th>
         </tr>
       </thead>
@@ -88,16 +89,37 @@
               </div>
             </td>
             <td class="px-6 py-4 text-right font-semibold">{{ product.price | currency:'HKD' }}</td>
+            <td class="px-6 py-4 text-center">{{ product.stockQuantity }}</td>
             <td class="px-6 py-4 text-center">
+              @if (product.isAvailable) {
+                <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                  ● 已上架
+                </span>
+              } @else {
+                <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-gray-200 text-gray-600">
+                  ● 已下架
+                </span>
+              }
             </td>
             <td class="px-6 py-4 text-center">
               <button (click)="editProduct(product.id)" class="text-blue-600 hover:text-blue-700 mr-4">編輯</button>
-              <button (click)="toggleAvailability(product)" class="text-amber-600 hover:text-amber-700">上下架</button>
+              @if (togglingId === product.id) {
+                <span class="text-gray-400">處理中...</span>
+              } @else {
+                <button
+                  (click)="toggleAvailability(product)"
+                  [class.text-amber-600]="product.isAvailable"
+                  [class.hover:text-amber-700]="product.isAvailable"
+                  [class.text-green-600]="!product.isAvailable"
+                  [class.hover:text-green-700]="!product.isAvailable">
+                  {{ product.isAvailable ? '下架' : '上架' }}
+                </button>
+              }
             </td>
           </tr>
         } @empty {
           <tr>
-            <td colspan="4" class="px-6 py-12 text-center text-gray-400">
+            <td colspan="5" class="px-6 py-12 text-center text-gray-400">
               沒有找到符合條件的商品
             </td>
           </tr>

@@ -1,8 +1,8 @@
 export interface ProductCategory {
   id: number;
-  name: string;        
-  description: string; 
-  icon: string;        
+  name: string;
+  description: string;
+  icon: string;
   displayOrder: number;
 }
 
@@ -21,6 +21,7 @@ export interface Product {
   weight?: number;
   unit?: string;
   isOnSale?: boolean;
+  isAvailable?: boolean;
   promotionNames?: string[];
 
 }
@@ -32,6 +33,8 @@ export interface ProductDto{
   price: number;
   photo: string;
   isOnSale: boolean;
+  isAvailable: boolean;
+  stockQuantity: number;
   originalPrice?: number;
   promotionNames?: string[];
 }
@@ -43,4 +46,3 @@ export interface PagedResult<T> {
   pageSize: number;
   totalPages: number;
 }
-

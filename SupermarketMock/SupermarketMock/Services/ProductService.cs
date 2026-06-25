@@ -185,6 +185,8 @@ namespace SupermarketMock.Services
                 snowflakeId = product.SnowflakeId.ToString(),
                 name = product.Name,
                 photo = product.Photo,
+                isAvailable = product.IsAvailable,
+                stockQuantity = product.StockQuantity,
                 isOnSale = promotions.Any(), // 只要有命中活動就是特價中
                 originalPrice = promotions.Any(promotion => promotion.Type == PromotionType.PercentageOff || promotion.Type == PromotionType.FixedDiscount) ? product.Price : null,
                 promotionNames = promotions.Select(promotion => promotion.Name).ToList(),
@@ -286,6 +288,39 @@ namespace SupermarketMock.Services
 
             return new ApiResult { Success = true, Message = "已新增貨品" };
 
+        }
+
+        public async Task<ApiResult> ToggleAvailabilityAsync(int id)
+        {
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                var product = await _context.Products
+                    .FromSql($"SELECT * FROM Products WITH (UPDLOCK, ROWLOCK) WHERE Id = {id}")
+                    .FirstOrDefaultAsync();
+
+                if (product == null)
+                {
+                    return new ApiResult { Success = false, Message = "找不到貨品" };
+                }
+
+                // 切換上架狀態
+                product.IsAvailable = !product.IsAvailable;
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return new ApiResult
+                {
+                    Success = true,
+                    Message = product.IsAvailable ? "已上架" : "已下架"
+                };
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return new ApiResult { Success = false, Message = "切換上下架失敗：" + ex.Message };
+            }
         }
 
         public async Task<ApiResult> UpdateProductAsync(int id, CreateProductDto dto)

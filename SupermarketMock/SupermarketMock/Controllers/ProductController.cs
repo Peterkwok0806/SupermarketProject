@@ -11,12 +11,12 @@ namespace SupermarketMock.Controllers
     public class ProductController : ControllerBase
     {
         private readonly IProductService _productService;
-        
+
 
         public ProductController(IProductService productService)
         {
             _productService = productService;
-           
+
         }
 
         [HttpGet]
@@ -44,7 +44,7 @@ namespace SupermarketMock.Controllers
         {
             var product = await _productService.GetProductByIdAsync(productId);
             return product != null ? Ok(product) : NotFound();
-            
+
         }
 
         [HttpGet("search")]
@@ -54,7 +54,7 @@ namespace SupermarketMock.Controllers
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 10)
         {
-            var result = await _productService.GetProductByKeywordAsync(keyword,page,pageSize);
+            var result = await _productService.GetProductByKeywordAsync(keyword, page, pageSize);
 
             return Ok(result);
         }
@@ -62,8 +62,8 @@ namespace SupermarketMock.Controllers
         [HttpGet("suggestions")]
         public async Task<ActionResult<IEnumerable<string>>> GetSuggestions([FromQuery] string q)
         {
-                var result = await _productService.GetProductSuggestionsAsync(q);
-                return Ok(result);
+            var result = await _productService.GetProductSuggestionsAsync(q);
+            return Ok(result);
         }
 
         [HttpPost]
@@ -82,6 +82,13 @@ namespace SupermarketMock.Controllers
 
             return result.Success ? Ok(result) : BadRequest(result);
         }
-    }   
-} 
- 
+
+        [HttpPatch("{productId}/availability")]
+        public async Task<ActionResult<ApiResult>> ToggleAvailability([FromRoute] int productId)
+        {
+            var result = await _productService.ToggleAvailabilityAsync(productId);
+
+            return result.Success ? Ok(result) : BadRequest(result);
+        }
+    }
+}
