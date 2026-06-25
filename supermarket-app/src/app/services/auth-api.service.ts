@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { RegisterRequest, AuthResponse, LoginRequest, updateProfileRequest,VerifyRequest } from '../models/auth';
+import { RegisterRequest, AuthResponse, LoginRequest, updateProfileRequest, VerifyRequest } from '../models/auth';
 
 @Injectable({
   providedIn: 'root'
@@ -17,38 +17,46 @@ export class AuthApiService {
     return this.http.post<AuthResponse>(`${this.apiUrl}/register`, data);
   }
 
-  verifyEmail(data:VerifyRequest): Observable<AuthResponse>{
-    return this.http.post<AuthResponse>(`${this.apiUrl}/verify`, data)
+  verifyEmail(data: VerifyRequest): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.apiUrl}/verify`, data);
   }
 
   login(data: LoginRequest): Observable<AuthResponse> {
-  return this.http.post<AuthResponse>(`${this.apiUrl}/login`, data, {
-    withCredentials: true // 關鍵：強迫瀏覽器接收並儲存後端發回的 HttpOnly Cookie
-  });
-}
+    return this.http.post<AuthResponse>(`${this.apiUrl}/login`, data, {
+      withCredentials: true // 關鍵：強迫瀏覽器接收並儲存後端發回的 HttpOnly Cookie
+    });
+  }
 
   refreshToken(skipInterceptor: boolean = false): Observable<AuthResponse> {
     let headers: any = {};
     if (skipInterceptor) {
-    headers['X-Skip-Interceptor'] = 'true';
-  }
+      headers['X-Skip-Interceptor'] = 'true';
+    }
     return this.http.post<AuthResponse>(`${this.apiUrl}/refresh-token`, {}, {
       headers,
       withCredentials: true // 關鍵：強制瀏覽器在背景自動帶上名稱為 refreshToken 的 Cookie
     });
   }
 
+  /**
+   * 登出 API
+   *
+   * 修正重點：加上 X-Skip-Interceptor header，
+   * 避免在 access token 過期時，登出請求本身又 401 並進入 token 刷新流程。
+   * 登出屬於「不需 token 也能成功」的請求，token 是否有效已無關緊要。
+   */
   logout(): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/logout`, {}, {
+      headers: { 'X-Skip-Interceptor': 'true' },
       withCredentials: true // 關鍵：讓後端有權限對這個跨網域請求覆蓋空 Cookie
     });
   }
 
-  updateProfile(data:updateProfileRequest):Observable<AuthResponse>{
+  updateProfile(data: updateProfileRequest): Observable<AuthResponse> {
     return this.http.put<AuthResponse>(`${this.apiUrl}/profile`, data);
   }
 
   changePassword(data: any): Observable<AuthResponse> {
-  return this.http.put<any>(`${this.apiUrl}/change-password`, data);
-}
+    return this.http.put<any>(`${this.apiUrl}/change-password`, data);
+  }
 }
