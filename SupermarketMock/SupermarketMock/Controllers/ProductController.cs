@@ -22,10 +22,12 @@ namespace SupermarketMock.Controllers
         [HttpGet]
         public async Task<ActionResult<PagedResultDto<ProductDto>>> GetProducts(
             [FromQuery] int? category,
+            [FromQuery] string? keyword,
+            [FromQuery] string? sortBy,
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 10)
         {
-            var result = await _productService.GetProductsAsync(category, page, pageSize);
+            var result = await _productService.GetProductsAsync(category, keyword, sortBy, page, pageSize);
             return Ok(result);
         }
 

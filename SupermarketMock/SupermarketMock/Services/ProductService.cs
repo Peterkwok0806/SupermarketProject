@@ -17,7 +17,7 @@ namespace SupermarketMock.Services
         }
 
 
-        public async Task<PagedResultDto<ProductDto>> GetProductsAsync(int? category = null, int pageNumber = 1, int pageSize = 10)
+        public async Task<PagedResultDto<ProductDto>> GetProductsAsync(int? category = null, string? keyword = null, string? sortBy = null, int pageNumber = 1, int pageSize = 10)
         {
             pageNumber = pageNumber < 1 ? 1 : pageNumber;
             pageSize = pageSize < 1 ? 10: pageSize;
@@ -29,10 +29,27 @@ namespace SupermarketMock.Services
                 query = query.Where(p => p.CategoryId == category.Value);
             }
 
+            // 搜尋邏輯：根據名稱 / 描述 / 品牌 進行模糊比對
+            if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                var kw = keyword.Trim();
+                query = query.Where(p => p.Name.Contains(kw) ||
+                                         (p.Description != null && p.Description.Contains(kw)) ||
+                                         (p.Brand != null && p.Brand.Contains(kw)));
+            }
+
             int totalCount = await query.CountAsync();
 
-            var pagedQuery = query
-                .OrderBy(p => p.Name) // 分頁前必須排序，否則分頁順序會錯亂
+            // 排序邏輯：支援價格升降冪、名稱升降冪
+            IOrderedQueryable<Product> orderedQuery = (sortBy ?? "name_asc").ToLower() switch
+            {
+                "price_asc" => query.OrderBy(p => p.Price),
+                "price_desc" => query.OrderByDescending(p => p.Price),
+                "name_desc" => query.OrderByDescending(p => p.Name),
+                _ => query.OrderBy(p => p.Name)
+            };
+
+            var pagedQuery = orderedQuery
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize);
 

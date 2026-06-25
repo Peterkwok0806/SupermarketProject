@@ -16,7 +16,7 @@ export class ProductService {
 
   
 
-  getProducts(categoryId?: number, page: number = 1, pageSize: number = 10): Observable<PagedResult<ProductDto>> {
+  getProducts(categoryId?: number, keyword?: string, sortBy?: string, page: number = 1, pageSize: number = 10): Observable<PagedResult<ProductDto>> {
     let params = new HttpParams()
       .set('page', page.toString())
       .set('pageSize', pageSize.toString());
@@ -24,7 +24,15 @@ export class ProductService {
        if (categoryId){
           params = params.set('category', categoryId.toString());
        }
-       
+
+       if (keyword && keyword.trim()){
+          params = params.set('keyword', keyword.trim());
+       }
+
+       if (sortBy && sortBy.trim()){
+          params = params.set('sortBy', sortBy.trim());
+       }
+
        return this.http.get<PagedResult<ProductDto>>(this.apiUrl, { params });
   }
 

@@ -67,7 +67,7 @@ export class ProductlistComponent implements OnInit{
         this.selectedCategory.set(null); // 清空分類
         return this.productService.searchProducts(search.trim(), page, this.pageSize());
       } else {
-        return this.productService.getProducts(catId ?? undefined, page, this.pageSize());
+        return this.productService.getProducts(catId ?? undefined, undefined, undefined, page, this.pageSize());
       }
     })
   );

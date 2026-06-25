@@ -6,7 +6,7 @@ namespace SupermarketMock.Services
     public interface IProductService
     {
 
-        Task<PagedResultDto<ProductDto>> GetProductsAsync(int? category = null, int pageNumber = 1, int pageSize = 10);
+        Task<PagedResultDto<ProductDto>> GetProductsAsync(int? category = null, string? keyword = null, string? sortBy = null, int pageNumber = 1, int pageSize = 10);
 
         Task<IEnumerable<ProductCategory>> GetCategoriesAsync();
 
