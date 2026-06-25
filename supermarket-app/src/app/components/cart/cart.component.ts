@@ -2,10 +2,11 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { CartService } from '../../services/cart.service';
+import { BackendImagePipe } from '../../pipes/backend-image.pipe';
 
 @Component({
   selector: 'app-cart',
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink,BackendImagePipe],
   templateUrl: './cart.component.html',
   styleUrl: './cart.component.css'
 })

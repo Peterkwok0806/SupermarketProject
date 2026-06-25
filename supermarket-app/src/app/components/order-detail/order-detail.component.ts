@@ -6,10 +6,11 @@ import { OrderEntity } from '../../models/order';
 import { lastValueFrom } from 'rxjs';
 import { OrderstatusNamePipe } from '../../pipes/orderstatus-name.pipe';
 import { OrderStatus } from '../../models/order';
+import { BackendImagePipe } from '../../pipes/backend-image.pipe';
 
 @Component({
   selector: 'app-order-detail',
-  imports: [CommonModule, RouterLink, OrderstatusNamePipe ],
+  imports: [CommonModule, RouterLink, OrderstatusNamePipe, BackendImagePipe ],
   templateUrl: './order-detail.component.html',
   styleUrl: './order-detail.component.css'
 })

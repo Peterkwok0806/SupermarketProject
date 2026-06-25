@@ -41,7 +41,7 @@
         <div class="space-y-6">
         @for (item of orderData.orderItems; track item.productId) {
             <div class="flex gap-6 border-b pb-6 last:border-none last:pb-0">
-            <img [src]="'/images/products/' + item.productPhoto" 
+            <img [src]="item.productPhoto | backendImage" 
                 class="w-24 h-24 object-cover rounded-2xl">
             <div class="flex-1">
                 <h4 class="font-semibold">{{ item.productName }}</h4>

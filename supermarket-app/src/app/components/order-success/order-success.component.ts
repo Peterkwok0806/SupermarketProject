@@ -2,12 +2,13 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, Router, ActivatedRoute } from '@angular/router';
 import { OrderService } from '../../services/order.service';
+import { BackendImagePipe } from '../../pipes/backend-image.pipe';
 
 
 
 @Component({
   selector: 'app-order-success',
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink,BackendImagePipe],
   templateUrl: './order-success.component.html',
   styleUrl: './order-success.component.css'
 })

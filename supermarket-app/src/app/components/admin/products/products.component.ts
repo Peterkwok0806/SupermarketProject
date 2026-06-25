@@ -2,14 +2,15 @@ import { Component, OnInit, inject, signal, computed, resource} from '@angular/c
 import { CommonModule } from '@angular/common';
 import { ProductService } from '../../../services/product.service';
 import { ProductModalComponent } from '../product-modal/product-modal.component';
+import { BackendImagePipe } from '../../../pipes/backend-image.pipe';
 import { toSignal, } from '@angular/core/rxjs-interop';
 import { map,firstValueFrom} from 'rxjs';
-import { RouterLink, ActivatedRoute, Router} from '@angular/router'; 
+import { RouterLink, ActivatedRoute, Router} from '@angular/router';
 
 
 @Component({
   selector: 'app-products',
-  imports: [CommonModule,ProductModalComponent],
+  imports: [CommonModule, ProductModalComponent, BackendImagePipe],
   templateUrl: './products.component.html',
   styleUrl: './products.component.css'
 })

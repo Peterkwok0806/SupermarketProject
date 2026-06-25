@@ -4,10 +4,11 @@ import { FormsModule } from '@angular/forms';
 import { CartService } from '../../services/cart.service';
 import { OrderService } from '../../services/order.service';
 import { Router } from '@angular/router';
+import { BackendImagePipe } from '../../pipes/backend-image.pipe';
 
 @Component({
   selector: 'app-checkout',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule,BackendImagePipe],
   templateUrl: './checkout.component.html',
   styleUrl: './checkout.component.css'
 })

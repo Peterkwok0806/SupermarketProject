@@ -1,29 +1,42 @@
 <div class="flex h-screen bg-gray-100">
   <!-- Sidebar -->
-  <div class="w-64 bg-purple-800 text-white">
+  <div class="w-64 bg-purple-800 text-white flex flex-col">
     <div class="p-6 border-b border-purple-700">
       <h1 class="text-2xl font-bold">🛠️ Admin Panel</h1>
     </div>
     
-    <nav class="mt-6">
-        <a routerLink="/admin/dashboard"
+    <nav class="mt-6 flex-1">
+      <a routerLink="/admin/dashboard" routerLinkActive="bg-purple-700"
         class="flex items-center gap-3 px-6 py-4 hover:bg-purple-700 transition">
-          Dashboard
-        </a>
+        <mat-icon class="text-white">dashboard</mat-icon>
+        <span>Dashboard</span>
+      </a>
 
-      <a routerLink="/admin/products" 
+      <a routerLink="/admin/products" routerLinkActive="bg-purple-700"
          class="flex items-center gap-3 px-6 py-4 hover:bg-purple-700 transition">
-        Products
+        <mat-icon class="text-white">inventory_2</mat-icon>
+        <span>Products</span>
       </a>
-      <a routerLink="/admin/orders" 
+
+      <a routerLink="/admin/orders" routerLinkActive="bg-purple-700"
          class="flex items-center gap-3 px-6 py-4 hover:bg-purple-700 transition">
-        Orders
+        <mat-icon class="text-white">receipt_long</mat-icon>
+        <span>Orders</span>
       </a>
-      <a routerLink="/admin/users" 
+
+      <a routerLink="/admin/users" routerLinkActive="bg-purple-700"
          class="flex items-center gap-3 px-6 py-4 hover:bg-purple-700 transition">
-        Users
+        <mat-icon class="text-white">groups</mat-icon>
+        <span>Users</span>
       </a>
     </nav>
+
+    <div class="p-4 border-t border-purple-700">
+      <a routerLink="/" class="flex items-center gap-2 text-purple-300 hover:text-white transition text-sm">
+        <mat-icon class="text-sm">arrow_back</mat-icon>
+        <span>Back to Store</span>
+      </a>
+    </div>
   </div>
 
   <!-- Main Content -->

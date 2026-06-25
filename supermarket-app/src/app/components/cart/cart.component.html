@@ -19,7 +19,7 @@
             
             <!-- Image -->
             <div class="w-32 h-32 bg-gray-100 rounded-xl overflow-hidden flex-shrink-0">
-              <img [src]="'/images/products/' + item.product.photo" 
+              <img [src]="item.product.photo | backendImage" 
                    [alt]="item.product.name"
                    class="w-full h-full object-cover">
             </div>

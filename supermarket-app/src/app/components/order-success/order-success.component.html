@@ -59,7 +59,7 @@
               <div class="flex items-center space-x-4">
                 <!-- 商品圖片與防錯破圖處理 -->
                 <div class="w-12 h-12 rounded-xl bg-gray-100 border overflow-hidden flex-shrink-0">
-                  <img [src]="'/images/products/' + item.productPhoto" 
+                  <img [src]="item.productPhoto | backendImage" 
                        [alt]="item.productName"
                        class="w-full h-full object-cover"
                        onerror=" ">
