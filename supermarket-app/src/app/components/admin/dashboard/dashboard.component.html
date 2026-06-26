@@ -76,6 +76,123 @@
       </a>
     </div>
 
+    <!-- =========================================================== -->
+    <!-- Sales Trend Section (Sales Amount over time)                -->
+    <!-- =========================================================== -->
+    <div class="bg-white rounded-3xl shadow-sm p-8 mb-10">
+      <!-- Header: Title + Period Toggle -->
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+        <div>
+          <h2 class="text-xl font-semibold text-gray-800">Sales Trend</h2>
+          @if (salesTrend(); as t) {
+            <p class="text-sm text-gray-500 mt-1">
+              {{ t.startDate }} ~ {{ t.endDate }}
+              <span class="mx-1 text-gray-300">|</span>
+              共 {{ t.days }} 天
+            </p>
+          } @else {
+            <p class="text-sm text-gray-400 mt-1">Loading sales trend...</p>
+          }
+        </div>
+
+        <!-- Period toggle (7 / 14 / 30) -->
+        <div class="inline-flex bg-gray-100 rounded-full p-1 self-start sm:self-auto" role="group" aria-label="Sales trend time period">
+          @for (p of trendPeriods; track p) {
+            <button
+              type="button"
+              (click)="changePeriod(p)"
+              [class.bg-white]="trendPeriod() === p"
+              [class.shadow-sm]="trendPeriod() === p"
+              [class.text-purple-700]="trendPeriod() === p"
+              [class.font-semibold]="trendPeriod() === p"
+              [class.text-gray-500]="trendPeriod() !== p"
+              [class.hover:text-gray-700]="trendPeriod() !== p"
+              class="px-4 py-1.5 text-sm rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-purple-300"
+              [attr.aria-pressed]="trendPeriod() === p">
+              Last {{ p }} days
+            </button>
+          }
+        </div>
+      </div>
+
+      <!-- Summary cards: Total Sales + Total Orders (this period) -->
+      @if (salesTrend(); as t) {
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+          <!-- Total Sales -->
+          <div class="relative overflow-hidden rounded-2xl p-5 bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-100">
+            <div class="flex items-center justify-between mb-2">
+              <p class="text-sm font-medium text-purple-700">Total Sales</p>
+              <div class="w-9 h-9 rounded-xl bg-purple-200/60 flex items-center justify-center">
+                <mat-icon class="text-purple-700">payments</mat-icon>
+              </div>
+            </div>
+            <p class="text-3xl font-bold text-purple-900">
+              {{ periodTotalSales() | currency:'HKD':'symbol':'1.2-2' }}
+            </p>
+            <p class="text-xs text-purple-600 mt-1">過去 {{ t.days }} 天累計</p>
+          </div>
+
+          <!-- Total Orders -->
+          <div class="relative overflow-hidden rounded-2xl p-5 bg-gradient-to-br from-indigo-50 to-indigo-100 border border-indigo-100">
+            <div class="flex items-center justify-between mb-2">
+              <p class="text-sm font-medium text-indigo-700">Total Orders</p>
+              <div class="w-9 h-9 rounded-xl bg-indigo-200/60 flex items-center justify-center">
+                <mat-icon class="text-indigo-700">receipt_long</mat-icon>
+              </div>
+            </div>
+            <p class="text-3xl font-bold text-indigo-900">
+              {{ periodTotalOrders() }}
+            </p>
+            <p class="text-xs text-indigo-600 mt-1">已扣除取消訂單</p>
+          </div>
+
+          <!-- Average Daily Sales -->
+          <div class="relative overflow-hidden rounded-2xl p-5 bg-gradient-to-br from-emerald-50 to-emerald-100 border border-emerald-100">
+            <div class="flex items-center justify-between mb-2">
+              <p class="text-sm font-medium text-emerald-700">Avg. Daily Sales</p>
+              <div class="w-9 h-9 rounded-xl bg-emerald-200/60 flex items-center justify-center">
+                <mat-icon class="text-emerald-700">trending_up</mat-icon>
+              </div>
+            </div>
+            <p class="text-3xl font-bold text-emerald-900">
+              {{ periodAverageSales() | currency:'HKD':'symbol':'1.2-2' }}
+            </p>
+            <p class="text-xs text-emerald-600 mt-1">日均銷售額</p>
+          </div>
+        </div>
+      }
+
+      <!-- Chart area: loading / error / chart -->
+      @if (isTrendLoading() && !salesTrend()) {
+        <div class="flex items-center justify-center" style="height: 320px;">
+          <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-purple-600"></div>
+        </div>
+      } @else if (trendError() && !salesTrend()) {
+        <div class="flex flex-col items-center justify-center text-center" style="height: 320px;">
+          <mat-icon class="text-red-400 text-5xl mb-2">error_outline</mat-icon>
+          <p class="text-red-500 font-medium">{{ trendError() }}</p>
+          <button (click)="loadSalesTrend(trendPeriod())"
+            class="mt-3 px-4 py-2 bg-red-100 text-red-700 rounded-xl hover:bg-red-200 transition text-sm font-medium">
+            <mat-icon class="text-sm align-middle mr-1">refresh</mat-icon>
+            Retry
+          </button>
+        </div>
+      } @else {
+        <div class="relative" style="height: 320px;">
+          @if (isTrendLoading()) {
+            <div class="absolute inset-0 bg-white/60 flex items-center justify-center z-10 rounded-2xl">
+              <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+            </div>
+          }
+          <canvas baseChart
+            [type]="'line'"
+            [data]="trendChartData()"
+            [options]="trendChartOptions">
+          </canvas>
+        </div>
+      }
+    </div>
+
     <!-- Low Stock Alert -->
     @if (lowStockAlert(); as alert) {
       @if (alert.totalLowStockCount > 0) {

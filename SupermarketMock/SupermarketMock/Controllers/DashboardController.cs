@@ -26,6 +26,17 @@ namespace SupermarketMock.Controllers
             return Ok(stats);
         }
 
-
+        /// <summary>
+        /// 取得最近 N 天的每日銷售趨勢（用於 Dashboard 折線圖，僅限 Admin）
+        /// </summary>
+        /// <param name="days">查詢天數，預設 7，範圍 1..90</param>
+        /// <returns>銷售趨勢 DTO（含零銷量日補齊）</returns>
+        [HttpGet("sales-trend")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<ApiResult<SalesTrendDto>>> GetSalesTrend([FromQuery] int days = 7)
+        {
+            var result = await _dashboardService.GetSalesTrendAsync(days);
+            return Ok(result);
+        }
     }
 }

@@ -96,3 +96,78 @@ Check for:
 Suggest improvements.
 
 
+You are an expert full-stack .NET 8 + Angular 18+ developer.
+
+**Project Context:**
+- Clean Architecture (.NET 8 Web API + EF Core)
+- Order entity exists (assume it has: Id, OrderDate, TotalAmount, Status)
+- Dashboard uses Angular Signals + Tailwind
+- We prefer ng2-charts or Chart.js for frontend charting
+
+**Task: Implement Sales Trend Chart on Admin Dashboard**
+
+**Backend Requirements:**
+. Create a new method in IOrderService (or IProductService if more suitable)
+
+2. Implement in Service:
+- Return daily sales amount for the last N days
+ - Efficient query (group by date)
+
+3. Add endpoint in OrderController (or ProductController):
+
+**Frontend Requirements (ng2-charts):**
+1. Install ng2-charts and chart.js if not already installed (assume they are available)
+
+2.In AdminDashboardComponent:
+Add signal for sales trend data
+Call API on init
+Display a Line Chart (Sales Amount over time)
+Add summary cards: Total Sales + Total Orders this period
+
+3. Nice-to-have: Toggle between Last 7 / 14 / 30 days
+
+**Output:**
+Provide complete code for:
+
+Backend: DTOs, IOrderService (or appropriate service), Service implementation, Controller endpoint
+Frontend: Dashboard component .ts + .html (chart + summary cards)
+
+Use modern Angular Signals. Make the chart visually appealing with Tailwind.
+
+
+Please review the Sales Trend Chart implementation (Backend + Frontend).
+
+**Check the following items carefully:**
+
+### 1. Backend Review
+- Is the query efficient? (Grouping by date, proper indexing consideration)
+- Correct use of EF Core (AsNoTracking, Date handling, timezone awareness)
+- DTO design is clean and useful? 
+- Error handling and edge cases (no orders, future dates, etc.)
+- Endpoint follows existing style and security (Admin only?)
+
+### 2. Frontend Review (Angular + Chart)
+- Correct use of modern Signals (`signal`, `computed`, `effect` if used)
+- Chart configuration (ng2-charts or Chart.js) is proper
+- Data transformation from API to chart format is correct
+- Responsive design and Tailwind styling consistency with Dashboard
+- Loading state and error handling implemented?
+- Performance (no memory leak, proper cleanup)
+
+### 3. Overall Quality
+- UX: Chart is visually clear and informative?
+- Code cleanliness and best practices
+- Consistency with existing codebase (naming, structure, error messages)
+- Accessibility (labels, colors, contrast)
+- Any potential bugs or improvements
+
+**Output Format:**
+- **Strengths**
+- **Issues** (Critical / Important / Minor)
+- **Specific Code Suggestions**
+- **Overall Score** (/10)
+- **Recommended Fixes** (if any)
+
+Be detailed and honest.
+
+
