@@ -1,0 +1,282 @@
+<div class="mt-16 border-t border-gray-200 pt-12">
+  <h2 class="text-3xl font-black text-gray-900 mb-8">Customer Reviews</h2>
+
+  @if (isLoading) {
+    <div class="flex justify-center py-12">
+      <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-purple-700"></div>
+    </div>
+  } @else {
+    <!-- Stats Overview -->
+    @if (stats) {
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <!-- Average Rating -->
+          <div class="text-center md:text-left">
+            <div class="text-6xl font-black text-purple-700">{{ averageRating | number:'1.1-1' }}</div>
+            <div class="flex items-center gap-1 mt-2 justify-center md:justify-start">
+              @for (_ of fullStars; track $index) {
+                <mat-icon class="text-yellow-400 !text-2xl">star</mat-icon>
+              }
+              @if (hasHalfStar) {
+                <mat-icon class="text-yellow-400 !text-2xl">star_half</mat-icon>
+              }
+              @for (_ of emptyStars; track $index) {
+                <mat-icon class="text-gray-300 !text-2xl">star_outline</mat-icon>
+              }
+            </div>
+            <p class="text-gray-500 mt-2 text-sm">Based on {{ stats.totalReviews }} reviews</p>
+            @if (stats.verifiedPurchaseCount > 0) {
+              <p class="text-green-600 text-xs mt-1 font-medium"><mat-icon class="!text-sm align-middle">check_circle</mat-icon> {{ stats.verifiedPurchaseCount }} verified purchases</p>
+            }
+          </div>
+
+          <!-- Rating Distribution -->
+          <div class="col-span-2 space-y-2">
+            @for (i of [5, 4, 3, 2, 1]; track i) {
+              <div class="flex items-center gap-3 cursor-pointer hover:bg-gray-50 rounded-lg px-2 py-1 transition" (click)="selectRatingFilter(selectedRating === i ? null : i)">
+                <span class="text-sm font-bold text-gray-600 w-6">{{ i }} <mat-icon class="!text-sm align-middle">star</mat-icon></span>
+                <div class="flex-1 bg-gray-200 rounded-full h-3 overflow-hidden">
+                  <div class="h-full rounded-full transition-all duration-500"
+                       [class.bg-yellow-400]="i >= 4"
+                       [class.bg-yellow-500]="i === 3"
+                       [class.bg-orange-400]="i === 2"
+                       [class.bg-red-400]="i === 1"
+                       [style.width.%]="getRatingPercentage(i)">
+                  </div>
+                </div>
+                <span class="text-sm text-gray-500 w-16 text-right">{{ getRatingCount(i) }}</span>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Action Bar -->
+    <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+      <!-- Filters -->
+      <div class="flex flex-wrap items-center gap-3">
+        <!-- Rating Filter Tabs -->
+        <div class="flex items-center gap-1">
+          <button (click)="selectRatingFilter(null)"
+                  class="px-3 py-1.5 text-sm rounded-full font-medium transition"
+                  [class.bg-purple-700]="selectedRating === null"
+                  [class.text-white]="selectedRating === null"
+                  [class.bg-gray-100]="selectedRating !== null"
+                  [class.text-gray-600]="selectedRating !== null">
+            All
+          </button>
+          @for (i of [5, 4, 3, 2, 1]; track i) {
+            <button (click)="selectRatingFilter(selectedRating === i ? null : i)"
+                    class="px-3 py-1.5 text-sm rounded-full font-medium transition"
+                    [class.bg-purple-700]="selectedRating === i"
+                    [class.text-white]="selectedRating === i"
+                    [class.bg-gray-100]="selectedRating !== i"
+                    [class.text-gray-600]="selectedRating !== i">
+              {{ i }} <mat-icon class="!text-sm align-middle">star</mat-icon>
+            </button>
+          }
+        </div>
+
+        <!-- Toggle Filters -->
+        <button (click)="toggleHasImage()"
+                class="px-3 py-1.5 text-sm rounded-full font-medium transition flex items-center gap-1"
+                [class.bg-purple-100]="filterHasImage"
+                [class.text-purple-700]="filterHasImage"
+                [class.bg-gray-100]="!filterHasImage"
+                [class.text-gray-600]="!filterHasImage">
+          <mat-icon class="!text-sm">photo_camera</mat-icon> With Images
+        </button>
+        <button (click)="toggleVerifiedOnly()"
+                class="px-3 py-1.5 text-sm rounded-full font-medium transition flex items-center gap-1"
+                [class.bg-green-100]="filterVerifiedOnly"
+                [class.text-green-700]="filterVerifiedOnly"
+                [class.bg-gray-100]="!filterVerifiedOnly"
+                [class.text-gray-600]="!filterVerifiedOnly">
+          <mat-icon class="!text-sm">verified</mat-icon> Verified Only
+        </button>
+      </div>
+
+      <!-- Sort + Write Review -->
+      <div class="flex items-center gap-3">
+        <select (change)="changeSort($any($event.target).value)"
+                class="border border-gray-300 rounded-xl px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500">
+          <option value="newest" [selected]="selectedSort === 'newest'">Newest First</option>
+          <option value="highest" [selected]="selectedSort === 'highest'">Highest Rating</option>
+          <option value="lowest" [selected]="selectedSort === 'lowest'">Lowest Rating</option>
+          <option value="helpful" [selected]="selectedSort === 'helpful'">Most Helpful</option>
+        </select>
+
+        @if (isLoggedIn) {
+          @if (canReviewResult?.canReview) {
+            <button (click)="openWriteReview()"
+                    class="bg-purple-700 hover:bg-purple-800 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition shadow-md hover:shadow-lg flex items-center gap-2">
+              <mat-icon>edit</mat-icon> Write a Review
+            </button>
+          } @else {
+            <span class="text-sm text-gray-400 italic">
+                @if (canReviewResult?.reason) {
+                    {{ canReviewResult?.reason }}
+              } @else {
+                You have already reviewed this product
+              }
+            </span>
+          }
+        } @else {
+          <a routerLink="/login" class="bg-purple-700 hover:bg-purple-800 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition shadow-md hover:shadow-lg flex items-center gap-2 no-underline">
+            <mat-icon>edit</mat-icon> Log in to Review
+          </a>
+        }
+      </div>
+    </div>
+
+    <!-- Reviews List -->
+    @if (isLoadingReviews) {
+      <div class="flex justify-center py-12">
+        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-700"></div>
+      </div>
+    } @else if (reviews.length === 0) {
+      <div class="text-center py-16 bg-gray-50 rounded-2xl">
+        <mat-icon class="!text-5xl text-gray-400">chat_bubble_outline</mat-icon>
+        <p class="text-gray-500 mt-4 text-lg">No reviews yet</p>
+        <p class="text-gray-400 text-sm mt-1">Be the first to share your experience!</p>
+      </div>
+    } @else {
+      <div class="space-y-6">
+        @for (review of reviews; track review.id) {
+          <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition">
+            <!-- Header -->
+            <div class="flex items-start justify-between">
+              <div class="flex items-center gap-3">
+                <!-- Avatar -->
+                <div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-700 font-bold text-sm">
+                  {{ review.userName.charAt(0).toUpperCase() }}
+                </div>
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="font-bold text-gray-800">{{ review.userName }}</span>
+                    @if (review.isVerifiedPurchase) {
+                      <span class="bg-green-100 text-green-700 text-xs font-bold px-2 py-0.5 rounded-full"><mat-icon class="!text-sm align-middle">check_circle</mat-icon> Verified Purchase</span>
+                    }
+                  </div>
+                  <div class="flex items-center gap-2 mt-0.5">
+                    <!-- Stars -->
+                    <div class="flex items-center gap-0.5">
+                      @for (s of [1,2,3,4,5]; track s) {
+                        <mat-icon [class.text-yellow-400]="s <= review.rating" [class.text-gray-300]="s > review.rating" class="!text-sm">{{ s <= review.rating ? 'star' : 'star_outline' }}</mat-icon>
+                      }
+                    </div>
+                    <span class="text-xs text-gray-400">{{ getTimeAgo(review.createdAt) }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Edit/Delete buttons -->
+              @if (review.canEdit) {
+                <div class="flex items-center gap-2">
+                  <button (click)="openEditReview(review)" class="text-gray-400 hover:text-purple-600 transition p-1">
+                    <mat-icon class="!text-sm">edit</mat-icon>
+                  </button>
+                  <button (click)="deleteReview(review)" class="text-gray-400 hover:text-red-600 transition p-1">
+                    <mat-icon class="!text-sm">delete</mat-icon>
+                  </button>
+                </div>
+              }
+            </div>
+
+            <!-- Title -->
+            @if (review.title) {
+              <h4 class="font-bold text-gray-800 mt-3">{{ review.title }}</h4>
+            }
+
+            <!-- Content -->
+            <p class="text-gray-700 mt-2 leading-relaxed">{{ review.content }}</p>
+
+            <!-- Images -->
+            @if (review.images.length > 0) {
+              <div class="flex gap-2 mt-3 flex-wrap">
+                @for (img of review.images; track img.id) {
+                  <div class="w-20 h-20 rounded-lg overflow-hidden bg-gray-100 cursor-pointer hover:opacity-80 transition">
+                    <img [src]="img.imageUrl" alt="Review image" class="w-full h-full object-cover">
+                  </div>
+                }
+              </div>
+            }
+
+            <!-- Admin Reply -->
+            @if (review.adminReply) {
+              <div class="mt-4 bg-purple-50 border border-purple-100 rounded-xl p-4">
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="text-xs font-bold text-purple-700"><mat-icon class="!text-sm align-middle">support_agent</mat-icon> Store Reply</span>
+                  @if (review.adminReplyDate) {
+                    <span class="text-xs text-purple-400">{{ getTimeAgo(review.adminReplyDate) }}</span>
+                  }
+                </div>
+                <p class="text-sm text-purple-800">{{ review.adminReply }}</p>
+              </div>
+            }
+
+            <!-- Actions -->
+            <div class="flex items-center gap-4 mt-4 pt-3 border-t border-gray-100">
+              <button (click)="toggleHelpful(review)"
+                      class="flex items-center gap-1.5 text-sm transition"
+                      [class.text-purple-600]="review.hasUserLiked"
+                      [class.font-bold]="review.hasUserLiked"
+                      [class.text-gray-400]="!review.hasUserLiked"
+                      [class.hover:text-purple-600]="!review.hasUserLiked">
+                <mat-icon class="!text-sm">thumb_up</mat-icon> Helpful
+                @if (review.helpfulCount > 0) {
+                  <span class="text-xs">({{ review.helpfulCount }})</span>
+                }
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Pagination -->
+      @if (totalPages > 1) {
+        <div class="flex justify-center items-center gap-2 mt-8">
+          <button (click)="goToPage(currentPage - 1)"
+                  [disabled]="currentPage === 1"
+                  class="px-3 py-2 rounded-lg text-sm font-medium transition"
+                  [class.text-gray-300]="currentPage === 1"
+                  [class.text-gray-600]="currentPage !== 1"
+                  [class.hover:bg-gray-100]="currentPage !== 1">
+            ← Previous
+          </button>
+
+          @for (page of pageNumbers; track page) {
+            <button (click)="goToPage(page)"
+                    class="w-10 h-10 rounded-lg text-sm font-bold transition"
+                    [class.bg-purple-700]="page === currentPage"
+                    [class.text-white]="page === currentPage"
+                    [class.text-gray-600]="page !== currentPage"
+                    [class.hover:bg-gray-100]="page !== currentPage">
+              {{ page }}
+            </button>
+          }
+
+          <button (click)="goToPage(currentPage + 1)"
+                  [disabled]="currentPage === totalPages"
+                  class="px-3 py-2 rounded-lg text-sm font-medium transition"
+                  [class.text-gray-300]="currentPage === totalPages"
+                  [class.text-gray-600]="currentPage !== totalPages"
+                  [class.hover:bg-gray-100]="currentPage !== totalPages">
+            Next →
+          </button>
+        </div>
+      }
+    }
+  }
+</div>
+
+<!-- Review Form Modal -->
+@if (showReviewForm) {
+  <app-review-form-modal
+    [productId]="productId()"
+    [editingReview]="editingReview"
+    (submitted)="onReviewSubmitted()"
+    (closed)="onReviewFormClose()">
+  </app-review-form-modal>
+}

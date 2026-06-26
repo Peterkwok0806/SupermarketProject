@@ -40,6 +40,15 @@
 
     <!-- 3. 右側導航 (購物車、使用者狀態) -->
     <div class="flex items-center gap-4 shrink-0">
+      <!-- Admin Panel Button (Admin only) -->
+      @if (isLoggedIn() && isAdmin()) {
+        <a routerLink="/admin/dashboard"
+           class="flex items-center gap-1.5 px-3 py-1.5 bg-white/20 hover:bg-white/30 text-white text-sm font-semibold rounded-lg transition backdrop-blur-sm">
+          <span class="text-base">⚙️</span>
+          <span class="hidden sm:inline">Admin</span>
+        </a>
+      }
+
       <!-- 購物車按鈕 (帶有數量標籤) -->
       <a routerLink="/cart" class="relative p-2 text-gray-600 hover:text-blue-600 transition">
         <span class="text-xl">🛒</span>

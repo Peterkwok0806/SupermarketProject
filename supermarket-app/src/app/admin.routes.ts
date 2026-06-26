@@ -24,6 +24,10 @@ export const adminRoutes: Routes =[
             {
                 path: 'users',loadComponent: () => import('./components/admin/users/users.component').then(m => m.AdminUsersComponent)
             },
+
+            {
+                path: 'reviews',loadComponent: () => import('./components/admin/reviews/reviews.component').then(m => m.AdminReviewsComponent)
+            },
         ]
 
     }

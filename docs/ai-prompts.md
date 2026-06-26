@@ -107,13 +107,15 @@ You are an expert full-stack .NET 8 + Angular 18+ developer.
 **Task: Implement Sales Trend Chart on Admin Dashboard**
 
 **Backend Requirements:**
-. Create a new method in IOrderService (or IProductService if more suitable)
+1. Create a new method in IOrderService (or IProductService if more suitable)
 
 2. Implement in Service:
 - Return daily sales amount for the last N days
  - Efficient query (group by date)
 
 3. Add endpoint in OrderController (or ProductController):
+
+4. Create or use siutuable DTO for reutrn
 
 **Frontend Requirements (ng2-charts):**
 1. Install ng2-charts and chart.js if not already installed (assume they are available)

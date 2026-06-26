@@ -29,6 +29,10 @@ namespace SupermarketMock
 
         public DbSet<EmailVerification> EmailVerifications => Set<EmailVerification>();
 
+        public DbSet<ProductReview> ProductReviews => Set<ProductReview>();
+        public DbSet<ReviewImage> ReviewImages => Set<ReviewImage>();
+        public DbSet<ReviewHelpful> ReviewHelpfuls => Set<ReviewHelpful>();
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             // === 解決 Decimal Precision Warning ===
@@ -154,6 +158,70 @@ namespace SupermarketMock
                 .Property(p => p.Type)
                 .HasConversion<string>()
                 .HasMaxLength(50);
+
+
+            // ==================== ProductReview 設定 ====================
+            // 將 ReviewStatus Enum 轉為字串儲存
+            modelBuilder.Entity<ProductReview>()
+                .Property(r => r.Status)
+                .HasConversion<string>()
+                .HasMaxLength(20);
+
+            // ProductReview 與 Product（多對一）
+            modelBuilder.Entity<ProductReview>()
+                .HasOne(r => r.Product)
+                .WithMany()
+                .HasForeignKey(r => r.ProductId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // ProductReview 與 User（多對一）
+            modelBuilder.Entity<ProductReview>()
+                .HasOne(r => r.User)
+                .WithMany()
+                .HasForeignKey(r => r.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // ProductReview 與 Order（多對一，可選）
+            modelBuilder.Entity<ProductReview>()
+                .HasOne(r => r.Order)
+                .WithMany()
+                .HasForeignKey(r => r.OrderId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            // 唯一索引：同一使用者對同一商品 (同訂單) 僅能評論一次
+            modelBuilder.Entity<ProductReview>()
+                .HasIndex(r => new { r.UserId, r.ProductId, r.OrderId })
+                .IsUnique();
+
+            // 常用查詢索引
+            modelBuilder.Entity<ProductReview>()
+                .HasIndex(r => new { r.ProductId, r.Status, r.CreatedAt });
+
+            modelBuilder.Entity<ProductReview>()
+                .HasIndex(r => new { r.UserId, r.CreatedAt });
+
+            // ReviewImage 設定
+            modelBuilder.Entity<ReviewImage>()
+                .HasOne(i => i.Review)
+                .WithMany(r => r.Images)
+                .HasForeignKey(i => i.ReviewId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // ReviewHelpful 複合主鍵
+            modelBuilder.Entity<ReviewHelpful>()
+                .HasKey(h => new { h.UserId, h.ReviewId });
+
+            modelBuilder.Entity<ReviewHelpful>()
+                .HasOne(h => h.User)
+                .WithMany()
+                .HasForeignKey(h => h.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<ReviewHelpful>()
+                .HasOne(h => h.Review)
+                .WithMany(r => r.HelpfulVotes)
+                .HasForeignKey(h => h.ReviewId)
+                .OnDelete(DeleteBehavior.Cascade);
 
 
             modelBuilder.Entity<User>().HasData(

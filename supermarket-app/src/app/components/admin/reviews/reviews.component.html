@@ -1,0 +1,283 @@
+<div class="space-y-6">
+  <!-- Page Header -->
+  <div>
+    <h1 class="text-2xl font-bold text-gray-900">Review Management</h1>
+    <p class="text-sm text-gray-500 mt-1">Manage customer reviews and ratings</p>
+  </div>
+
+  <!-- Dashboard Cards -->
+  @if (dashboard) {
+    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
+      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 text-center">
+        <p class="text-2xl font-bold text-gray-900">{{ dashboard.totalReviews }}</p>
+        <p class="text-xs text-gray-500 mt-1">Total</p>
+      </div>
+      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 text-center">
+        <p class="text-2xl font-bold text-yellow-500">{{ dashboard.pendingReviews }}</p>
+        <p class="text-xs text-gray-500 mt-1">Pending</p>
+      </div>
+      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 text-center">
+        <p class="text-2xl font-bold text-green-500">{{ dashboard.approvedReviews }}</p>
+        <p class="text-xs text-gray-500 mt-1">Approved</p>
+      </div>
+      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 text-center">
+        <p class="text-2xl font-bold text-red-500">{{ dashboard.rejectedReviews }}</p>
+        <p class="text-xs text-gray-500 mt-1">Rejected</p>
+      </div>
+      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 text-center">
+        <p class="text-2xl font-bold text-purple-500">{{ dashboard.averageRating | number:'1.1-1' }}</p>
+        <p class="text-xs text-gray-500 mt-1">Avg Rating</p>
+      </div>
+      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 text-center">
+        <p class="text-2xl font-bold text-blue-500">{{ dashboard.todayNewReviews }}</p>
+        <p class="text-xs text-gray-500 mt-1">Today</p>
+      </div>
+    </div>
+  }
+
+  <!-- Filters -->
+  <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+    <div class="flex flex-wrap items-end gap-4">
+      <div class="flex-1 min-w-[200px]">
+        <label class="block text-xs font-medium text-gray-500 mb-1">Keyword Search</label>
+        <input type="text"
+               [(ngModel)]="filterKeyword"
+               placeholder="Search reviews..."
+               class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-gray-500 mb-1">Status</label>
+        <select [(ngModel)]="filterStatus"
+                class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+          <option value="">All Status</option>
+          <option value="Pending">Pending</option>
+          <option value="Approved">Approved</option>
+          <option value="Rejected">Rejected</option>
+          <option value="Hidden">Hidden</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-gray-500 mb-1">Rating</label>
+        <select [(ngModel)]="filterRating"
+                class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+          <option [ngValue]="null">All Ratings</option>
+          <option [ngValue]="5">5 Stars</option>
+          <option [ngValue]="4">4 Stars</option>
+          <option [ngValue]="3">3 Stars</option>
+          <option [ngValue]="2">2 Stars</option>
+          <option [ngValue]="1">1 Star</option>
+        </select>
+      </div>
+      <div class="flex gap-2">
+        <button (click)="applyFilters()"
+                class="px-4 py-2 bg-purple-700 text-white text-sm font-medium rounded-lg hover:bg-purple-800 transition">
+          Search
+        </button>
+        <button (click)="clearFilters()"
+                class="px-4 py-2 bg-gray-100 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-200 transition">
+          Clear
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reviews Table -->
+  <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+    @if (isLoading) {
+      <div class="flex items-center justify-center py-20">
+        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-700"></div>
+      </div>
+    } @else if (reviews.length === 0) {
+      <div class="text-center py-20 text-gray-400">
+        <mat-icon class="text-5xl mb-3">rate_review</mat-icon>
+        <p class="text-lg font-medium">No reviews found</p>
+        <p class="text-sm mt-1">Try adjusting your filters</p>
+      </div>
+    } @else {
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50 border-b border-gray-200">
+            <tr>
+              <th class="text-left px-4 py-3 font-medium text-gray-500">Review</th>
+              <th class="text-left px-4 py-3 font-medium text-gray-500">Product</th>
+              <th class="text-center px-4 py-3 font-medium text-gray-500">Rating</th>
+              <th class="text-center px-4 py-3 font-medium text-gray-500">Status</th>
+              <th class="text-center px-4 py-3 font-medium text-gray-500">Helpful</th>
+              <th class="text-left px-4 py-3 font-medium text-gray-500">Date</th>
+              <th class="text-right px-4 py-3 font-medium text-gray-500">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            @for (review of reviews; track review.id) {
+              <tr class="hover:bg-gray-50 transition">
+                <td class="px-4 py-3">
+                  <div class="max-w-xs">
+                    <div class="flex items-center gap-2 mb-1">
+                      <span class="font-medium text-gray-900">{{ review.userName }}</span>
+                      @if (review.isVerifiedPurchase) {
+                        <span class="px-1.5 py-0.5 bg-blue-100 text-blue-600 text-xs rounded">Verified</span>
+                      }
+                    </div>
+                    @if (review.title) {
+                      <p class="text-gray-700 font-medium text-xs">{{ review.title }}</p>
+                    }
+                    <p class="text-gray-500 text-xs line-clamp-2">{{ review.content }}</p>
+                    @if (review.adminReply) {
+                      <div class="mt-1 px-2 py-1 bg-purple-50 rounded text-xs text-purple-700">
+                        <span class="font-medium">Admin:</span> {{ review.adminReply }}
+                      </div>
+                    }
+                  </div>
+                </td>
+                <td class="px-4 py-3">
+                  <span class="text-gray-700 text-xs">{{ review.productName }}</span>
+                </td>
+                <td class="px-4 py-3 text-center">
+                  <div class="flex items-center justify-center gap-0.5">
+                    @for (s of getStars(review.rating); track $index) {
+                      <mat-icon class="text-yellow-400 !text-sm">star</mat-icon>
+                    }
+                    @for (s of getEmptyStars(review.rating); track $index) {
+                      <mat-icon class="text-gray-300 !text-sm">star_outline</mat-icon>
+                    }
+                  </div>
+                </td>
+                <td class="px-4 py-3 text-center">
+                  <select [ngModel]="review.status"
+                          (ngModelChange)="changeStatus(review, $event)"
+                          class="text-xs font-medium rounded-full px-2 py-1 border-0 cursor-pointer focus:ring-2 focus:ring-purple-500"
+                          [class]="getStatusBadgeClass(review.status)">
+                    <option value="Pending">待審核</option>
+                    <option value="Approved">已通過</option>
+                    <option value="Rejected">已拒絕</option>
+                    <option value="Hidden">已隱藏</option>
+                  </select>
+                </td>
+                <td class="px-4 py-3 text-center text-gray-500 text-xs">
+                  <div class="flex items-center justify-center gap-1">
+                    <mat-icon class="!text-sm text-gray-400">thumb_up</mat-icon>
+                    {{ review.helpfulCount }}
+                  </div>
+                </td>
+                <td class="px-4 py-3 text-gray-500 text-xs">
+                  {{ getTimeAgo(review.createdAt) }}
+                </td>
+                <td class="px-4 py-3">
+                  <div class="flex items-center justify-end gap-1">
+                    @if (review.status === 'Pending') {
+                      <button (click)="approveReview(review)"
+                              class="p-1.5 bg-green-100 text-green-700 rounded hover:bg-green-200 transition"
+                              title="Approve">
+                        <mat-icon class="!text-sm">check</mat-icon>
+                      </button>
+                      <button (click)="rejectReview(review)"
+                              class="p-1.5 bg-red-100 text-red-700 rounded hover:bg-red-200 transition"
+                              title="Reject">
+                        <mat-icon class="!text-sm">close</mat-icon>
+                      </button>
+                    }
+                    <button (click)="openReplyModal(review)"
+                            class="p-1.5 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition"
+                            title="Reply">
+                      <mat-icon class="!text-sm">reply</mat-icon>
+                    </button>
+                    <button (click)="toggleVisibility(review)"
+                            class="p-1.5 bg-gray-100 text-gray-600 rounded hover:bg-gray-200 transition"
+                            [title]="review.status === 'Hidden' ? 'Show' : 'Hide'">
+                      <mat-icon class="!text-sm">{{ review.status === 'Hidden' ? 'visibility' : 'visibility_off' }}</mat-icon>
+                    </button>
+                    <button (click)="deleteReview(review)"
+                            class="p-1.5 bg-red-50 text-red-500 rounded hover:bg-red-100 transition"
+                            title="Delete">
+                      <mat-icon class="!text-sm">delete</mat-icon>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      @if (totalPages > 1) {
+        <div class="flex items-center justify-between px-4 py-3 border-t border-gray-100">
+          <p class="text-sm text-gray-500">
+            Showing {{ (currentPage - 1) * pageSize + 1 }} to {{ currentPage * pageSize > totalCount ? totalCount : currentPage * pageSize }} of {{ totalCount }} reviews
+          </p>
+          <div class="flex items-center gap-1">
+            <button (click)="goToPage(currentPage - 1)"
+                    [disabled]="currentPage === 1"
+                    class="px-3 py-1.5 text-sm rounded-lg border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition">
+              ‹
+            </button>
+            @for (p of pageNumbers; track p) {
+              <button (click)="goToPage(p)"
+                      class="px-3 py-1.5 text-sm rounded-lg border transition"
+                      [class.bg-purple-700]="p === currentPage"
+                      [class.text-white]="p === currentPage"
+                      [class.border-purple-700]="p === currentPage"
+                      [class.border-gray-300]="p !== currentPage"
+                      [class.hover:bg-gray-50]="p !== currentPage">
+                {{ p }}
+              </button>
+            }
+            <button (click)="goToPage(currentPage + 1)"
+                    [disabled]="currentPage === totalPages"
+                    class="px-3 py-1.5 text-sm rounded-lg border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition">
+              ›
+            </button>
+          </div>
+        </div>
+      }
+    }
+  </div>
+</div>
+
+<!-- Reply Modal -->
+@if (showReplyModal && selectedReview) {
+  <div class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" (click)="closeReplyModal()">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md" (click)="$event.stopPropagation()">
+      <div class="flex items-center justify-between p-6 border-b border-gray-100">
+        <h3 class="text-lg font-bold text-gray-900">
+          {{ selectedReview.adminReply ? 'Edit Reply' : 'Reply to Review' }}
+        </h3>
+        <button (click)="closeReplyModal()" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
+      </div>
+      <div class="p-6">
+        <div class="mb-4 p-3 bg-gray-50 rounded-xl">
+          <div class="flex items-center gap-1 mb-1">
+            @for (s of getStars(selectedReview.rating); track $index) {
+              <mat-icon class="text-yellow-400 !text-sm">star</mat-icon>
+            }
+          </div>
+          <p class="text-sm text-gray-700">{{ selectedReview.content }}</p>
+          <p class="text-xs text-gray-400 mt-1">by {{ selectedReview.userName }}</p>
+        </div>
+        <textarea [(ngModel)]="replyContent"
+                  placeholder="Write your reply..."
+                  rows="4"
+                  class="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none">
+        </textarea>
+      </div>
+      <div class="flex items-center justify-end gap-3 p-6 border-t border-gray-100">
+        <button (click)="closeReplyModal()"
+                class="px-5 py-2.5 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-100 transition">
+          Cancel
+        </button>
+        <button (click)="submitReply()"
+                [disabled]="!replyContent.trim() || isReplying"
+                class="px-6 py-2.5 rounded-xl text-sm font-bold text-white bg-purple-700 hover:bg-purple-800 disabled:bg-gray-300 disabled:cursor-not-allowed transition">
+          @if (isReplying) {
+            <span class="flex items-center gap-2">
+              <span class="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full"></span>
+              Sending...
+            </span>
+          } @else {
+            {{ selectedReview.adminReply ? 'Update Reply' : 'Send Reply' }}
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}

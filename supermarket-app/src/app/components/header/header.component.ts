@@ -32,6 +32,7 @@ export class HeaderComponent {
   totalItems = this.cartService.totalItems;
   currentUser = this.authService.currentUser;
   isLoggedIn = this.authService.isLoggedIn;
+  isAdmin = computed(() => this.currentUser()?.role === 'Admin');
 
   // Search
   private searchTerms$ = new Subject<string>();
