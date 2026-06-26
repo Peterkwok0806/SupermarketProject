@@ -67,9 +67,62 @@
 
   <!-- Products Table -->
   <div class="bg-white rounded-3xl shadow-sm overflow-hidden">
+    <!-- 批量操作工具列 -->
+    @if (hasSelection()) {
+      <div class="flex items-center justify-between bg-blue-50 px-6 py-3 border-b border-blue-100">
+        <span class="text-sm font-medium text-blue-700">
+          已選取 {{ selectedProductIds().length }} 項
+        </span>
+        <div class="flex items-center gap-2">
+          <button
+            (click)="batchToggleAvailability(true)"
+            [disabled]="isBatchLoading()"
+            class="px-4 py-2 bg-green-600 text-white text-sm font-semibold rounded-xl hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center gap-1.5">
+            @if (isBatchLoading()) {
+              <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+              </svg>
+            }
+            批量上架
+          </button>
+          <button
+            (click)="batchToggleAvailability(false)"
+            [disabled]="isBatchLoading()"
+            class="px-4 py-2 bg-amber-500 text-white text-sm font-semibold rounded-xl hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center gap-1.5">
+            @if (isBatchLoading()) {
+              <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+              </svg>
+            }
+            批量下架
+          </button>
+          <button
+            (click)="batchSoftDelete()"
+            [disabled]="isBatchLoading()"
+            class="px-4 py-2 bg-red-600 text-white text-sm font-semibold rounded-xl hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center gap-1.5">
+            @if (isBatchLoading()) {
+              <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+              </svg>
+            }
+            批量刪除
+          </button>
+        </div>
+      </div>
+    }
     <table class="w-full">
       <thead class="bg-gray-50">
         <tr>
+          <th class="px-2 py-4 text-center w-12">
+            <input type="checkbox"
+                   [checked]="isAllSelected()"
+                   (change)="toggleSelectAll()"
+                   aria-label="全選"
+                   class="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer">
+          </th>
           <th class="px-6 py-4 text-left">商品</th>
           <th class="px-6 py-4 text-right">價格</th>
           <th class="px-6 py-4 text-center">庫存</th>
@@ -79,7 +132,15 @@
       </thead>
       <tbody>
         @for (product of products(); track product.id) {
-          <tr class="border-t hover:bg-gray-50">
+          <tr class="border-t hover:bg-gray-50"
+              [class.bg-blue-50]="isSelected(product.id)">
+            <td class="px-2 py-4 text-center">
+              <input type="checkbox"
+                     [checked]="isSelected(product.id)"
+                     (change)="toggleSelectOne(product.id)"
+                     [attr.aria-label]="'選取 ' + product.name"
+                     class="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer">
+            </td>
             <td class="px-6 py-4">
               <div class="flex items-center gap-4">
                 <img [src]="product.photo | backendImage" [alt]="product.name" class="w-12 h-12 object-cover rounded-lg">
@@ -119,7 +180,7 @@
           </tr>
         } @empty {
           <tr>
-            <td colspan="5" class="px-6 py-12 text-center text-gray-400">
+            <td colspan="6" class="px-6 py-12 text-center text-gray-400">
               沒有找到符合條件的商品
             </td>
           </tr>

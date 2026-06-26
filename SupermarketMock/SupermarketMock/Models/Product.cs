@@ -36,6 +36,16 @@
             public int? ReviewCount { get; set; }
             public ICollection<ProductPromotion> ProductPromotions { get; set; } = new List<ProductPromotion>();
 
+            /// <summary>
+            /// 軟刪除標記：true 表示已刪除，預設 false
+            /// </summary>
+            public bool IsDeleted { get; set; } = false;
+
+            /// <summary>
+            /// 軟刪除時間（UTC）
+            /// </summary>
+            public DateTime? DeletedAt { get; set; }
+
         }
         
 

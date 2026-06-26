@@ -28,5 +28,20 @@ namespace SupermarketMock.Services
         /// <param name="threshold">庫存警戒門檻值，預設 10</param>
         /// <returns>低庫存統計資訊（總數 + 前 5 筆最低庫存商品）</returns>
         Task<ApiResult<LowStockAlertDto>> GetLowStockAlertAsync(int threshold = 10);
+
+        /// <summary>
+        /// 批量切換商品上架 / 下架狀態
+        /// </summary>
+        /// <param name="productIds">商品 ID 列表</param>
+        /// <param name="isAvailable">目標上架狀態</param>
+        /// <returns>操作結果</returns>
+        Task<ApiResult> BatchToggleAvailabilityAsync(List<int> productIds, bool isAvailable);
+
+        /// <summary>
+        /// 批量軟刪除商品（設定 IsDeleted = true）
+        /// </summary>
+        /// <param name="productIds">商品 ID 列表</param>
+        /// <returns>操作結果</returns>
+        Task<ApiResult> BatchSoftDeleteAsync(List<int> productIds);
     }
 }

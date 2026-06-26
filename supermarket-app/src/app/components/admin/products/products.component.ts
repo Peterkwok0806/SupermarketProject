@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed, resource } from '@angular/core';
+import { Component, inject, signal, computed, resource } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ProductService } from '../../../services/product.service';
@@ -37,6 +37,17 @@ export class AdminProductsComponent {
 
   // 哪個商品正在切換上下架，避免重複點擊
   togglingId: number | null = null;
+
+  // === 批量操作 ===
+  selectedProductIds = signal<number[]>([]);
+  isBatchLoading = signal(false);
+  hasSelection = computed(() => this.selectedProductIds().length > 0);
+  isAllSelected = computed(() => {
+    const prods = this.products();
+    if (prods.length === 0) return false;
+    const selected = this.selectedProductIds();
+    return prods.every(p => selected.includes(p.id));
+  });
 
   currentPage = toSignal(
     this.route.queryParams.pipe(
@@ -87,6 +98,7 @@ export class AdminProductsComponent {
   totalPages = computed(() => this.productResource.value()?.totalPages || 0);
 
   navigatePage(pageNumber: number): void {
+    this.clearSelection();
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: { page: pageNumber },
@@ -149,9 +161,89 @@ export class AdminProductsComponent {
     this.showModal = false;
   }
 
+  // === 批量操作方法 ===
+  toggleSelectAll(): void {
+    if (this.isAllSelected()) {
+      // Deselect only current page items
+      const currentPageIds = new Set(this.products().map(p => p.id));
+      this.selectedProductIds.set(this.selectedProductIds().filter(id => !currentPageIds.has(id)));
+    } else {
+      // Select all current page items (merge with any existing selections)
+      const currentPageIds = this.products().map(p => p.id);
+      const merged = new Set([...this.selectedProductIds(), ...currentPageIds]);
+      this.selectedProductIds.set([...merged]);
+    }
+  }
+
+  toggleSelectOne(productId: number): void {
+    const current = this.selectedProductIds();
+    if (current.includes(productId)) {
+      this.selectedProductIds.set(current.filter(id => id !== productId));
+    } else {
+      this.selectedProductIds.set([...current, productId]);
+    }
+  }
+
+  isSelected(productId: number): boolean {
+    return this.selectedProductIds().includes(productId);
+  }
+
+  clearSelection(): void {
+    this.selectedProductIds.set([]);
+  }
+
+  batchToggleAvailability(isAvailable: boolean): void {
+    if (this.isBatchLoading()) return;
+    const ids = this.selectedProductIds();
+    if (ids.length === 0) return;
+    this.isBatchLoading.set(true);
+    this.productService.batchToggleAvailability(ids, isAvailable).subscribe({
+      next: (res) => {
+        this.isBatchLoading.set(false);
+        if (res.success) {
+          alert(res.message);
+          this.clearSelection();
+          this.productResource.reload();
+        } else {
+          alert(res.message);
+        }
+      },
+      error: () => {
+        this.isBatchLoading.set(false);
+        alert('批量操作失敗');
+      }
+    });
+  }
+
+  batchSoftDelete(): void {
+    if (this.isBatchLoading()) return;
+    const ids = this.selectedProductIds();
+    if (ids.length === 0) return;
+    const confirmed = confirm(`確定要刪除 ${ids.length} 項商品？此操作不可復原！`);
+    if (!confirmed) return;
+    this.isBatchLoading.set(true);
+    this.productService.batchSoftDelete(ids).subscribe({
+      next: (res) => {
+        this.isBatchLoading.set(false);
+        if (res.success) {
+          alert(res.message);
+          this.clearSelection();
+          this.productResource.reload();
+        } else {
+          alert(res.message);
+        }
+      },
+      error: () => {
+        this.isBatchLoading.set(false);
+        alert('批量刪除失敗');
+      }
+    });
+  }
+
   // 篩選 / 搜尋 / 排序的處理
   onSearchChange(value: string): void {
     this.searchKeyword.set(value);
+    this.clearSelection();
     this.resetToFirstPage();
   }
 
@@ -161,11 +253,13 @@ export class AdminProductsComponent {
     } else {
       this.selectedCategoryId.set(Number(value));
     }
+    this.clearSelection();
     this.resetToFirstPage();
   }
 
   onSortChange(value: string): void {
     this.sortBy.set(value as ProductSortBy);
+    this.clearSelection();
     this.resetToFirstPage();
   }
 
@@ -173,6 +267,7 @@ export class AdminProductsComponent {
     this.searchKeyword.set('');
     this.selectedCategoryId.set(null);
     this.sortBy.set('');
+    this.clearSelection();
     this.resetToFirstPage();
   }
 

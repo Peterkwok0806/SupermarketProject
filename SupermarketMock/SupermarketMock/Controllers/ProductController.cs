@@ -105,5 +105,31 @@ namespace SupermarketMock.Controllers
             var result = await _productService.GetLowStockAlertAsync(threshold);
             return Ok(result);
         }
+
+        /// <summary>
+        /// 批量切換商品上架 / 下架狀態（僅限 Admin）
+        /// </summary>
+        /// <param name="request">批量操作請求（包含商品 ID 列表與目標狀態）</param>
+        /// <returns>操作結果</returns>
+        [HttpPost("batch/toggle-availability")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<ApiResult>> BatchToggleAvailability([FromBody] BatchOperationRequest request)
+        {
+            var result = await _productService.BatchToggleAvailabilityAsync(request.ProductIds, request.IsAvailable);
+            return result.Success ? Ok(result) : BadRequest(result);
+        }
+
+        /// <summary>
+        /// 批量軟刪除商品（僅限 Admin）
+        /// </summary>
+        /// <param name="request">批量操作請求（包含商品 ID 列表）</param>
+        /// <returns>操作結果</returns>
+        [HttpPost("batch/soft-delete")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<ApiResult>> BatchSoftDelete([FromBody] BatchOperationRequest request)
+        {
+            var result = await _productService.BatchSoftDeleteAsync(request.ProductIds);
+            return result.Success ? Ok(result) : BadRequest(result);
+        }
     }
 }

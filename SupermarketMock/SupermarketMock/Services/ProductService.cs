@@ -21,7 +21,7 @@ namespace SupermarketMock.Services
         {
             pageNumber = pageNumber < 1 ? 1 : pageNumber;
             pageSize = pageSize < 1 ? 10: pageSize;
-            var query = _context.Products.AsQueryable();
+            var query = _context.Products.Where(p => !p.IsDeleted).AsQueryable();
 
             // 關鍵邏輯：如果 category 是 null，此處會自動跳過，直接查詢全部商品
             if (category.HasValue)
@@ -76,6 +76,7 @@ namespace SupermarketMock.Services
             var now = DateTime.UtcNow;
 
             var product = await _context.Products
+                            .Where(p => !p.IsDeleted)
                             .Include(p => p.Category)
                             .Include(p => p.ProductPromotions
                                 .Where(pp => (pp.OverrideStartDate ?? pp.Promotion.StartDate) <= now
@@ -135,9 +136,10 @@ namespace SupermarketMock.Services
             }
 
             var query = _context.Products.AsNoTracking()
-                .Where(p => p.Name.Contains(keyword) ||
+                .Where(p => !p.IsDeleted &&
+                            (p.Name.Contains(keyword) ||
                             (p.Description != null && p.Description.Contains(keyword)) ||
-                            (p.Brand != null && p.Brand.Contains(keyword)));
+                            (p.Brand != null && p.Brand.Contains(keyword))));
 
             int totalCount = await query.CountAsync();
 
@@ -170,7 +172,7 @@ namespace SupermarketMock.Services
 
             // 效能優化：只撈取 Name 欄位並限制 8 筆
             return await _context.Products
-                .Where(p => p.Name.ToLower().Contains(searchTerm))
+                .Where(p => p.Name.ToLower().Contains(searchTerm) && !p.IsDeleted)
                 .Select(p => p.Name)
                 .Distinct()
                 .Take(8)
@@ -220,29 +222,39 @@ namespace SupermarketMock.Services
         {
             var now = DateTime.UtcNow;
 
-            var rawData = await query
-                .Select(p => new
-                {
-                    Product = p,
-                    ActivePromotions = p.ProductPromotions
-                        .Where(pp => (pp.OverrideStartDate ?? pp.Promotion.StartDate) <= now
-                                  && (pp.OverrideEndDate ?? pp.Promotion.EndDate) >= now)
-                        .OrderByDescending(pp => pp.Priority)
-                        .Select(pp => pp.Promotion)
-                        .ToList()
-                })
+            // 1. 先將商品列表撈進記憶體
+            var products = await query.ToListAsync();
+
+            if (!products.Any())
+                return Enumerable.Empty<ProductDto>();
+
+            // 2. 取得這些商品的 ID，一次查詢所有符合條件的促銷活動
+            var productIds = products.Select(p => p.Id).ToList();
+
+            var activePromotionsList = await _context.ProductPromotions
+                .Where(pp => productIds.Contains(pp.ProductId)
+                          && (pp.OverrideStartDate ?? pp.Promotion.StartDate) <= now
+                          && (pp.OverrideEndDate ?? pp.Promotion.EndDate) >= now)
+                .OrderByDescending(pp => pp.Priority)
+                .Include(pp => pp.Promotion)
                 .ToListAsync();
 
-            return rawData
-                .Select(item => CalculateMultipleDiscounts(item.Product, item.ActivePromotions))
+            // 3. 以 ProductId 為 Key 建立 Dictionary，方便快速查找
+            var promotionsDict = activePromotionsList
+                .GroupBy(pp => pp.ProductId)
+                .ToDictionary(g => g.Key, g => g.Select(pp => pp.Promotion).ToList());
+
+            // 4. 組裝 DTO
+            return products
+                .Select(p => CalculateMultipleDiscounts(p, promotionsDict.GetValueOrDefault(p.Id, new List<Promotion>())))
                 .OrderBy(dto => dto.name)
                 .ToList();
         }
 
         public async Task<ApiResult> CreateProductAsync(CreateProductDto dto)
         {
-            // 1. 檢查名稱是否重複
-            if (await _context.Products.AnyAsync(p => p.Name == dto.Name))
+            // 1. 檢查名稱是否重複（排除已軟刪除的商品）
+            if (await _context.Products.AnyAsync(p => p.Name == dto.Name && !p.IsDeleted))
             {
                 return new ApiResult { Success = false, Message = "已有相同名稱貨品" };
             }
@@ -296,7 +308,7 @@ namespace SupermarketMock.Services
             try
             {
                 var product = await _context.Products
-                    .FromSql($"SELECT * FROM Products WITH (UPDLOCK, ROWLOCK) WHERE Id = {id}")
+                    .FromSql($"SELECT * FROM Products WITH (UPDLOCK, ROWLOCK) WHERE Id = {id} AND IsDeleted = 0")
                     .FirstOrDefaultAsync();
 
                 if (product == null)
@@ -329,15 +341,15 @@ namespace SupermarketMock.Services
             // 確保門檻值 >= 1，避免無意義查詢
             if (threshold < 1) threshold = 10;
 
-            // 查詢低庫存商品總數（僅限上架且庫存 > 0），AsNoTracking 提升讀取效能
+            // 查詢低庫存商品總數（僅限上架且庫存 > 0，排除已軟刪除），AsNoTracking 提升讀取效能
             var totalLowStockCount = await _context.Products
                 .AsNoTracking()
-                .CountAsync(p => p.IsAvailable && p.StockQuantity <= threshold && p.StockQuantity > 0);
+                .CountAsync(p => !p.IsDeleted && p.IsAvailable && p.StockQuantity <= threshold && p.StockQuantity > 0);
 
             // 查詢庫存最低的前 5 筆商品
             var lowStockProducts = await _context.Products
                 .AsNoTracking()
-                .Where(p => p.IsAvailable && p.StockQuantity <= threshold && p.StockQuantity > 0)
+                .Where(p => !p.IsDeleted && p.IsAvailable && p.StockQuantity <= threshold && p.StockQuantity > 0)
                 .OrderBy(p => p.StockQuantity)
                 .Take(5)
                 .Select(p => new LowStockProductDto
@@ -360,6 +372,81 @@ namespace SupermarketMock.Services
             };
         }
 
+        /// <inheritdoc/>
+        public async Task<ApiResult> BatchToggleAvailabilityAsync(List<int> productIds, bool isAvailable)
+        {
+            if (productIds == null || productIds.Count == 0)
+            {
+                return new ApiResult { Success = false, Message = "未提供商品 ID" };
+            }
+
+            if (productIds.Count > 500)
+            {
+                return new ApiResult { Success = false, Message = "單次操作最多 500 個商品" };
+            }
+
+            try
+            {
+                var affectedRows = await _context.Products
+                    .Where(p => productIds.Contains(p.Id) && !p.IsDeleted)
+                    .ExecuteUpdateAsync(s => s
+                        .SetProperty(p => p.IsAvailable, isAvailable));
+
+                if (affectedRows == 0)
+                {
+                    return new ApiResult { Success = false, Message = "找不到符合條件的商品" };
+                }
+
+                return new ApiResult
+                {
+                    Success = true,
+                    Message = $"已批量{(isAvailable ? "上架" : "下架")} {affectedRows} 項商品"
+                };
+            }
+            catch (Exception)
+            {
+                return new ApiResult { Success = false, Message = "批量上下架失敗，請稍後再試" };
+            }
+        }
+
+        /// <inheritdoc/>
+        public async Task<ApiResult> BatchSoftDeleteAsync(List<int> productIds)
+        {
+            if (productIds == null || productIds.Count == 0)
+            {
+                return new ApiResult { Success = false, Message = "未提供商品 ID" };
+            }
+
+            if (productIds.Count > 500)
+            {
+                return new ApiResult { Success = false, Message = "單次操作最多 500 個商品" };
+            }
+
+            try
+            {
+                var affectedRows = await _context.Products
+                    .Where(p => productIds.Contains(p.Id) && !p.IsDeleted)
+                    .ExecuteUpdateAsync(s => s
+                        .SetProperty(p => p.IsDeleted, true)
+                        .SetProperty(p => p.DeletedAt, DateTime.UtcNow));
+
+                if (affectedRows == 0)
+                {
+                    return new ApiResult { Success = false, Message = "找不到符合條件的商品" };
+                }
+
+                return new ApiResult
+                {
+                    Success = true,
+                    Message = $"已成功軟刪除 {affectedRows} 項商品"
+                };
+            }
+            catch (Exception)
+            {
+                return new ApiResult { Success = false, Message = "批量軟刪除失敗，請稍後再試" };
+            }
+        }
+
         public async Task<ApiResult> UpdateProductAsync(int id, CreateProductDto dto)
         {
             using var transaction = await _context.Database.BeginTransactionAsync();
@@ -367,7 +454,7 @@ namespace SupermarketMock.Services
             {
 
                 var product = await _context.Products
-                    .FromSql($"SELECT * FROM Products WITH (UPDLOCK, ROWLOCK) WHERE Id = {id}")
+                    .FromSql($"SELECT * FROM Products WITH (UPDLOCK, ROWLOCK) WHERE Id = {id} AND IsDeleted = 0")
                     .FirstOrDefaultAsync();
 
                 if (product == null)

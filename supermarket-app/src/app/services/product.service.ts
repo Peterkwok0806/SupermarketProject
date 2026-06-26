@@ -4,7 +4,7 @@ import { Observable, of } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { Product, ProductCategory, ProductDto,PagedResult } from '../models/product';
 import { LowStockAlert } from '../models/dashboard';
-import { ApiResultData } from '../models/api-result';
+import { ApiResult, ApiResultData } from '../models/api-result';
 import { environment } from '../../environments/environment';
 
 
@@ -86,4 +86,11 @@ export class ProductService {
     );
   }
 
+  batchToggleAvailability(productIds: number[], isAvailable: boolean): Observable<ApiResult> {
+    return this.http.post<ApiResult>(`${this.apiUrl}/batch/toggle-availability`, { productIds, isAvailable });
+  }
+
+  batchSoftDelete(productIds: number[]): Observable<ApiResult> {
+    return this.http.post<ApiResult>(`${this.apiUrl}/batch/soft-delete`, { productIds });
+  }
 }
