@@ -1,11 +1,13 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, DestroyRef, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { OrderStatus } from '../../../models/order';
-import { DashboardStats, RecentOrder } from '../../../models/dashboard';
+import { DashboardStats, RecentOrder, LowStockAlert } from '../../../models/dashboard';
 import { OrderstatusNamePipe } from '../../../pipes/orderstatus-name.pipe';
 import { DashboardApiService } from '../../../services/dashboard-api.service';
+import { ProductService } from '../../../services/product.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -15,6 +17,8 @@ import { DashboardApiService } from '../../../services/dashboard-api.service';
 })
 export class AdminDashboardComponent implements OnInit {
   private dashboardApi = inject(DashboardApiService);
+  private productService = inject(ProductService);
+  private destroyRef = inject(DestroyRef);
 
   isLoading = signal(true);
   error = signal<string | null>(null);
@@ -26,6 +30,7 @@ export class AdminDashboardComponent implements OnInit {
   pendingOrders = signal(0);
   monthlyRevenue = signal(0);
   recentOrders = signal<RecentOrder[]>([]);
+  lowStockAlert = signal<LowStockAlert | null>(null);
 
   getStatusClass(status: OrderStatus): string {
     switch (status) {
@@ -50,7 +55,9 @@ export class AdminDashboardComponent implements OnInit {
 
   loadDashboardStats() {
     this.isLoading.set(true);
-    this.dashboardApi.getDashboardStats().subscribe({
+    this.dashboardApi.getDashboardStats().pipe(
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe({
       next: (stats: DashboardStats) => {
         this.todayOrders.set(stats.todayOrders);
         this.todayRevenue.set(stats.todayRevenue);
@@ -66,6 +73,14 @@ export class AdminDashboardComponent implements OnInit {
         this.error.set('Failed to load dashboard data');
         this.isLoading.set(false);
       }
+    });
+
+    // 低庫存警報（獨立請求，失敗不影響主面板）
+    this.productService.getLowStockAlert().pipe(
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe({
+      next: (alert) => this.lowStockAlert.set(alert),
+      error: (err) => console.error('Failed to load low stock alert:', err)
     });
   }
 }

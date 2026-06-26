@@ -21,5 +21,12 @@ namespace SupermarketMock.Services
         Task<ApiResult> UpdateProductAsync(int id, CreateProductDto createProductDto);
 
         Task<ApiResult> ToggleAvailabilityAsync(int id);
+
+        /// <summary>
+        /// 取得低庫存商品警報統計
+        /// </summary>
+        /// <param name="threshold">庫存警戒門檻值，預設 10</param>
+        /// <returns>低庫存統計資訊（總數 + 前 5 筆最低庫存商品）</returns>
+        Task<ApiResult<LowStockAlertDto>> GetLowStockAlertAsync(int threshold = 10);
     }
 }

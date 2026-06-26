@@ -323,6 +323,43 @@ namespace SupermarketMock.Services
             }
         }
 
+        /// <inheritdoc/>
+        public async Task<ApiResult<LowStockAlertDto>> GetLowStockAlertAsync(int threshold = 10)
+        {
+            // 確保門檻值 >= 1，避免無意義查詢
+            if (threshold < 1) threshold = 10;
+
+            // 查詢低庫存商品總數（僅限上架且庫存 > 0），AsNoTracking 提升讀取效能
+            var totalLowStockCount = await _context.Products
+                .AsNoTracking()
+                .CountAsync(p => p.IsAvailable && p.StockQuantity <= threshold && p.StockQuantity > 0);
+
+            // 查詢庫存最低的前 5 筆商品
+            var lowStockProducts = await _context.Products
+                .AsNoTracking()
+                .Where(p => p.IsAvailable && p.StockQuantity <= threshold && p.StockQuantity > 0)
+                .OrderBy(p => p.StockQuantity)
+                .Take(5)
+                .Select(p => new LowStockProductDto
+                {
+                    Id = p.Id,
+                    Name = p.Name,
+                    StockQuantity = p.StockQuantity
+                })
+                .ToListAsync();
+
+            return new ApiResult<LowStockAlertDto>
+            {
+                Success = true,
+                Item = new LowStockAlertDto
+                {
+                    TotalLowStockCount = totalLowStockCount,
+                    Threshold = threshold,
+                    LowStockProducts = lowStockProducts
+                }
+            };
+        }
+
         public async Task<ApiResult> UpdateProductAsync(int id, CreateProductDto dto)
         {
             using var transaction = await _context.Database.BeginTransactionAsync();

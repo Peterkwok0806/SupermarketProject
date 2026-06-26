@@ -15,3 +15,15 @@ export interface RecentOrder {
   status: number;
   createdAt: Date;
 }
+
+export interface LowStockProduct {
+  id: number;
+  name: string;
+  stockQuantity: number;
+}
+
+export interface LowStockAlert {
+  totalLowStockCount: number;
+  threshold: number;
+  lowStockProducts: LowStockProduct[];
+}

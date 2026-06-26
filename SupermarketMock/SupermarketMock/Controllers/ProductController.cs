@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SupermarketMock.DTOs;
 using SupermarketMock.Models;
@@ -89,6 +90,20 @@ namespace SupermarketMock.Controllers
             var result = await _productService.ToggleAvailabilityAsync(productId);
 
             return result.Success ? Ok(result) : BadRequest(result);
+        }
+
+        /// <summary>
+        /// 取得低庫存商品警報統計（僅限 Admin）
+        /// </summary>
+        /// <param name="threshold">庫存警戒門檻值，預設 10</param>
+        /// <returns>低庫存統計資訊（總數 + 前 5 筆最低庫存商品）</returns>
+        [HttpGet("low-stock-alert")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<ApiResult<LowStockAlertDto>>> GetLowStockAlert(
+            [FromQuery] int threshold = 10)
+        {
+            var result = await _productService.GetLowStockAlertAsync(threshold);
+            return Ok(result);
         }
     }
 }

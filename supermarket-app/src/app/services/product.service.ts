@@ -1,7 +1,10 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { Product, ProductCategory, ProductDto,PagedResult } from '../models/product';
+import { LowStockAlert } from '../models/dashboard';
+import { ApiResultData } from '../models/api-result';
 import { environment } from '../../environments/environment';
 
 
@@ -73,6 +76,13 @@ export class ProductService {
     return this.http.patch<{ success: boolean; message: string }>(
       `${this.apiUrl}/${id}/availability`,
       {}
+    );
+  }
+
+  getLowStockAlert(threshold: number = 10): Observable<LowStockAlert> {
+    const params = new HttpParams().set('threshold', threshold.toString());
+    return this.http.get<ApiResultData<LowStockAlert>>(`${this.apiUrl}/low-stock-alert`, { params }).pipe(
+      map(res => res.item)
     );
   }
 
