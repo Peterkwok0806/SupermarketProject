@@ -318,6 +318,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 Developed by Peter Kwok  
 Actively looking for Junior .NET Developer opportunities in Hong Kong.
-
-[![GitHub](https://img.shields.io/badge/GitHub-Peterkwok0806-black)](https://github.com/Peterkwok0806)
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-Peter%20Kwok-blue)](https://linkedin.com/in/your-profile)
