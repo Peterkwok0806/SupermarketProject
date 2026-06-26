@@ -11,5 +11,10 @@ namespace SupermarketMock.IServices
         /// </summary>
         /// <param name="days">查詢天數，預設 7，範圍 1..90</param>
         Task<ApiResult<SalesTrendDto>> GetSalesTrendAsync(int days = 7);
+
+        /// <summary>
+        /// 取得銷售數量最高的前 10 名商品（排除已刪除商品與取消訂單）
+        /// </summary>
+        Task<ApiResult<List<TopSellingProductDto>>> GetTopSellingProductsAsync();
     }
 }

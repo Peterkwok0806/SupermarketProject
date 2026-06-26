@@ -38,5 +38,16 @@ namespace SupermarketMock.Controllers
             var result = await _dashboardService.GetSalesTrendAsync(days);
             return Ok(result);
         }
+
+        /// <summary>
+        /// 取得銷售數量最高的前 10 名商品（僅限 Admin）
+        /// </summary>
+        [HttpGet("top-selling-products")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<ApiResult<List<TopSellingProductDto>>>> GetTopSellingProducts()
+        {
+            var result = await _dashboardService.GetTopSellingProductsAsync();
+            return Ok(result);
+        }
     }
 }

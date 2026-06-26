@@ -48,3 +48,16 @@ export interface SalesTrend {
   totalOrders: number;   // 期間總訂單數
   points: SalesTrendPoint[]; // 連續日期資料（已補齊零銷量日）
 }
+
+/**
+ * 熱銷商品（對應後端 TopSellingProductDto）
+ */
+export interface TopSellingProduct {
+  rank: number;            // 排名 1-10
+  productId: number;       // 商品 ID
+  snowflakeId: number;     // Snowflake ID（導航用）
+  productName: string;     // 商品名稱
+  totalQuantitySold: number;   // 總銷售數量
+  totalSalesAmount: number;    // 總銷售金額
+  photo?: string;          // 商品圖片
+}

@@ -3,7 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { ApiResultData } from '../models/api-result';
-import { DashboardStats, SalesTrend } from '../models/dashboard';
+import { DashboardStats, SalesTrend, TopSellingProduct } from '../models/dashboard';
 
 @Injectable({
   providedIn: 'root'
@@ -28,6 +28,15 @@ export class DashboardApiService {
   getSalesTrend(days: number = 7): Observable<SalesTrend> {
     const params = new HttpParams().set('days', days.toString());
     return this.http.get<ApiResultData<SalesTrend>>(`${this.apiUrl}/sales-trend`, { params }).pipe(
+      map(res => res.item!)
+    );
+  }
+
+  /**
+   * 取得銷售數量最高的前 10 名商品
+   */
+  getTopSellingProducts(): Observable<TopSellingProduct[]> {
+    return this.http.get<ApiResultData<TopSellingProduct[]>>(`${this.apiUrl}/top-selling-products`).pipe(
       map(res => res.item!)
     );
   }

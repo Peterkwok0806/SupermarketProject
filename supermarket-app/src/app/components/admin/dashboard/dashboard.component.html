@@ -235,6 +235,114 @@
       }
     }
 
+    <!-- Top 10 Best Selling Products -->
+    @if (isTopSellingLoading()) {
+      <!-- Loading Skeleton -->
+      <div class="bg-white rounded-3xl shadow-sm p-8 mb-10">
+        <div class="flex items-center gap-3 mb-6">
+          <div class="w-12 h-12 bg-gradient-to-br from-amber-100 to-orange-100 rounded-2xl flex items-center justify-center animate-pulse">
+            <mat-icon class="text-orange-600">trending_up</mat-icon>
+          </div>
+          <div>
+            <div class="h-6 w-48 bg-gray-200 rounded-lg animate-pulse mb-1"></div>
+            <div class="h-4 w-32 bg-gray-100 rounded-lg animate-pulse"></div>
+          </div>
+        </div>
+        <div class="space-y-3">
+          @for (i of [1,2,3,4,5,6,7,8,9,10]; track i) {
+            <div class="flex items-center gap-4 p-3 rounded-2xl">
+              <div class="w-9 h-9 rounded-xl bg-gray-100 animate-pulse"></div>
+              <div class="w-10 h-10 rounded-xl bg-gray-100 animate-pulse"></div>
+              <div class="flex-1">
+                <div class="h-4 bg-gray-200 rounded-lg animate-pulse" [style.width.%]="60 + (i * 3)"></div>
+              </div>
+              <div class="w-16 h-6 bg-gray-100 rounded-lg animate-pulse"></div>
+              <div class="hidden sm:block w-20 h-5 bg-gray-100 rounded-lg animate-pulse"></div>
+            </div>
+          }
+        </div>
+      </div>
+    } @else if (topSellingProducts().length > 0) {
+      <a routerLink="/admin/products"
+         class="block bg-white rounded-3xl shadow-sm p-8 mb-10 hover:shadow-md transition-all cursor-pointer group">
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-6">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 bg-gradient-to-br from-amber-100 to-orange-100 rounded-2xl flex items-center justify-center">
+              <mat-icon class="text-orange-600">trending_up</mat-icon>
+            </div>
+            <div>
+              <h3 class="text-xl font-bold text-gray-800">熱銷商品 Top 10</h3>
+              <p class="text-sm text-gray-500">依據累計銷售數量排名</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 text-purple-600 group-hover:text-purple-800 transition">
+            <span class="text-sm font-medium hidden sm:inline">查看全部商品</span>
+            <mat-icon>arrow_forward</mat-icon>
+          </div>
+        </div>
+
+        <!-- Product List -->
+        <div class="space-y-2">
+          @for (product of topSellingProducts(); track product.productId) {
+            <div class="flex items-center gap-4 p-3 rounded-2xl hover:bg-gray-50 transition-all"
+                 [class.bg-amber-50]="product.rank <= 3"
+                 [class.border]="product.rank <= 3"
+                 [class.border-amber-200]="product.rank <= 3">
+              <!-- Rank Badge -->
+              <div class="flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center font-bold text-sm"
+                   [class.bg-gradient-to-br]="product.rank <= 3"
+                   [class.from-amber-400]="product.rank === 1"
+                   [class.to-yellow-500]="product.rank === 1"
+                   [class.text-white]="product.rank === 1"
+                   [class.from-gray-300]="product.rank === 2"
+                   [class.to-gray-400]="product.rank === 2"
+                   [class.text-white]="product.rank === 2"
+                   [class.from-orange-400]="product.rank === 3"
+                   [class.to-orange-500]="product.rank === 3"
+                   [class.text-white]="product.rank === 3"
+                   [class.bg-gray-100]="product.rank > 3"
+                   [class.text-gray-500]="product.rank > 3">
+                {{ product.rank }}
+              </div>
+
+              <!-- Product Photo -->
+              @if (product.photo) {
+                <img [src]="product.photo | backendImage" [alt]="product.productName"
+                     loading="lazy"
+                     class="w-10 h-10 rounded-xl object-cover flex-shrink-0" />
+              } @else {
+                <div class="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center flex-shrink-0">
+                  <mat-icon class="text-gray-400">image</mat-icon>
+                </div>
+              }
+
+              <!-- Product Name -->
+              <div class="flex-1 min-w-0">
+                <p class="font-medium text-gray-800 truncate">{{ product.productName }}</p>
+              </div>
+
+              <!-- Quantity Sold -->
+              <div class="text-right flex-shrink-0">
+                <p class="text-lg font-bold"
+                   [class.text-orange-600]="product.rank <= 3"
+                   [class.text-gray-700]="product.rank > 3">
+                  {{ product.totalQuantitySold }}
+                </p>
+                <p class="text-xs text-gray-400">件已售出</p>
+              </div>
+
+              <!-- Sales Amount -->
+              <div class="text-right flex-shrink-0 hidden sm:block min-w-[100px]">
+                <p class="text-sm font-semibold text-gray-600">{{ product.totalSalesAmount | currency:'HKD' }}</p>
+                <p class="text-xs text-gray-400">銷售額</p>
+              </div>
+            </div>
+          }
+        </div>
+      </a>
+    }
+
     <!-- Recent Orders -->
     <div class="bg-white rounded-3xl shadow-sm p-8">
       <div class="flex items-center justify-between mb-6">

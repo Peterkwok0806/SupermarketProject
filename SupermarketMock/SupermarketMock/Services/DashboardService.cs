@@ -168,5 +168,60 @@ namespace SupermarketMock.Services
                 Item = result
             };
         }
+
+        public async Task<ApiResult<List<TopSellingProductDto>>> GetTopSellingProductsAsync()
+        {
+            // 查詢銷售數量最高的前 10 名商品
+            // - 排除已刪除商品 (IsDeleted)
+            // - 排除取消的訂單 (Cancelled)
+            // - 兩步查詢：先按 ProductId 聚合取 Top 10，再回頭查商品詳情
+            //   避免 GroupBy 中使用導航屬性欄位導致 EF Core 無法翻譯為 SQL 的風險
+
+            // Step 1: 純聚合（只按 FK 分組，確保可翻譯為 SQL）
+            var topAggregates = await _context.OrderItems
+                .AsNoTracking()
+                .Where(oi => !oi.Product.IsDeleted
+                          && oi.Order.Status != OrderStatus.Cancelled)
+                .GroupBy(oi => oi.ProductId)
+                .Select(g => new
+                {
+                    ProductId = g.Key,
+                    TotalQuantity = g.Sum(oi => oi.Quantity),
+                    TotalAmount = g.Sum(oi => oi.SubTotal)
+                })
+                .OrderByDescending(x => x.TotalQuantity)
+                .Take(10)
+                .ToListAsync();
+
+            // Step 2: 批次查詢商品詳情
+            var productIds = topAggregates.Select(x => x.ProductId).ToList();
+            var productLookup = await _context.Products
+                .AsNoTracking()
+                .Where(p => productIds.Contains(p.Id))
+                .ToDictionaryAsync(p => p.Id);
+
+            var result = topAggregates
+                .Select((x, index) =>
+                {
+                    productLookup.TryGetValue(x.ProductId, out var product);
+                    return new TopSellingProductDto
+                    {
+                        Rank = index + 1,
+                        ProductId = x.ProductId,
+                        SnowflakeId = product?.SnowflakeId ?? 0,
+                        ProductName = product?.Name ?? "Unknown",
+                        TotalQuantitySold = x.TotalQuantity,
+                        TotalSalesAmount = Math.Round(x.TotalAmount, 2),
+                        Photo = product?.Photo
+                    };
+                })
+                .ToList();
+
+            return new ApiResult<List<TopSellingProductDto>>
+            {
+                Success = true,
+                Item = result
+            };
+        }
     }
 }

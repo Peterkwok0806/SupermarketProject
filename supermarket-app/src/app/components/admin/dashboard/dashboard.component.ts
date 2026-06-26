@@ -18,8 +18,9 @@ import {
   Title
 } from 'chart.js';
 import { OrderStatus } from '../../../models/order';
-import { DashboardStats, RecentOrder, LowStockAlert, SalesTrend, SalesTrendPoint } from '../../../models/dashboard';
+import { DashboardStats, RecentOrder, LowStockAlert, SalesTrend, SalesTrendPoint, TopSellingProduct } from '../../../models/dashboard';
 import { OrderstatusNamePipe } from '../../../pipes/orderstatus-name.pipe';
+import { BackendImagePipe } from '../../../pipes/backend-image.pipe';
 import { DashboardApiService } from '../../../services/dashboard-api.service';
 import { ProductService } from '../../../services/product.service';
 
@@ -41,7 +42,7 @@ type TrendPeriod = 7 | 14 | 30;
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, OrderstatusNamePipe, MatIconModule, RouterLink, BaseChartDirective],
+  imports: [CommonModule, OrderstatusNamePipe, BackendImagePipe, MatIconModule, RouterLink, BaseChartDirective],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css'
 })
@@ -61,10 +62,12 @@ export class AdminDashboardComponent implements OnInit {
   monthlyRevenue = signal(0);
   recentOrders = signal<RecentOrder[]>([]);
   lowStockAlert = signal<LowStockAlert | null>(null);
+  topSellingProducts = signal<TopSellingProduct[]>([]);
 
   // 銷售趨勢相關 Signals
   salesTrend = signal<SalesTrend | null>(null);
   isTrendLoading = signal(false);
+  isTopSellingLoading = signal(false);
   trendError = signal<string | null>(null);
   trendPeriod = signal<TrendPeriod>(7);
 
@@ -217,6 +220,7 @@ export class AdminDashboardComponent implements OnInit {
     // 使用 forkJoin 平行載入主要資源以縮短初始載入時間
     this.loadDashboardStats();
     this.loadSalesTrend(this.trendPeriod());
+    this.loadTopSellingProducts();
   }
 
   loadDashboardStats() {
@@ -251,6 +255,25 @@ export class AdminDashboardComponent implements OnInit {
               next: (alert) => this.lowStockAlert.set(alert),
               error: (e) => console.error('Low stock alert fallback also failed:', e)
             });
+        }
+      });
+  }
+
+  /**
+   * 載入熱銷商品 Top 10
+   */
+  loadTopSellingProducts() {
+    this.isTopSellingLoading.set(true);
+    this.dashboardApi.getTopSellingProducts()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (products) => {
+          this.topSellingProducts.set(products);
+          this.isTopSellingLoading.set(false);
+        },
+        error: (err) => {
+          console.error('Failed to load top selling products:', err);
+          this.isTopSellingLoading.set(false);
         }
       });
   }
