@@ -15,15 +15,21 @@ export interface OrderEntity {
   address: string;
   remark?: string;
   createdAt: Date;
-  orderItems:OrderItem[];
+  orderItems: OrderItem[];
+  // Coupon info
+  couponCode?: string;
+  couponType?: string;
+  discountAmount: number;
+  subTotal: number;
 }
 
 export interface OrderItem{
-productId:number;
-productName: string;
-productPhoto: string;
-quantity: number;
-unitPrice:number;
+  productId: number;
+  productName: string;
+  productPhoto: string;
+  quantity: number;
+  unitPrice: number;
+  subTotal: number;
 }
 
 export enum OrderStatus {

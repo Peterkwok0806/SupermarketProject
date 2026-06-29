@@ -6,17 +6,23 @@ import { OrderStatus} from '../models/order';
 })
 export class OrderstatusNamePipe implements PipeTransform {
 
-   private readonly CATEGORY_LABEL_MAP: Record<OrderStatus, string> = {
-    [OrderStatus.Pending]: 'Pending',
-    [OrderStatus.Paid]: 'Paid',
-    [OrderStatus.Processing]: 'Processing',
-    [OrderStatus.Shipped]: 'Shipped',
-    [OrderStatus.Completed]: 'Completed',
-    [OrderStatus.Cancelled]: 'Cancelled',
-    };
+  private readonly STATUS_LABEL_MAP: Record<string, string> = {
+    'Pending': 'Pending',
+    'Paid': 'Paid',
+    'Processing': 'Processing',
+    'Shipped': 'Shipped',
+    'Completed': 'Completed',
+    'Cancelled': 'Cancelled',
+  };
 
   transform(value: OrderStatus | number | string): string {
-    return this.CATEGORY_LABEL_MAP[value as OrderStatus]|| '未知狀態';
+    // Handle string enum values from backend (e.g., "Pending", "Paid")
+    if (typeof value === 'string' && this.STATUS_LABEL_MAP[value]) {
+      return this.STATUS_LABEL_MAP[value];
+    }
+    // Fallback for numeric enum values
+    const enumName = OrderStatus[value as number];
+    return this.STATUS_LABEL_MAP[enumName] || '未知狀態';
   }
 
 }

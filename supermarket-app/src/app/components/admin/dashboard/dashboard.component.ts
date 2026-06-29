@@ -199,17 +199,19 @@ export class AdminDashboardComponent implements OnInit {
     });
   }
 
-  getStatusClass(status: OrderStatus): string {
-    switch (status) {
-      case OrderStatus.Completed:
+  getStatusClass(status: OrderStatus | string): string {
+    // Normalize: backend may send string ("Pending") or number (0)
+    const s = typeof status === 'string' ? status : OrderStatus[status];
+    switch (s) {
+      case 'Completed':
         return 'bg-green-100 text-green-800';
-      case OrderStatus.Cancelled:
+      case 'Cancelled':
         return 'bg-red-100 text-red-800';
-      case OrderStatus.Pending:
+      case 'Pending':
         return 'bg-amber-100 text-amber-800';
-      case OrderStatus.Paid:
-      case OrderStatus.Processing:
-      case OrderStatus.Shipped:
+      case 'Paid':
+      case 'Processing':
+      case 'Shipped':
         return 'bg-blue-100 text-blue-800';
       default:
         return 'bg-gray-100 text-gray-800';

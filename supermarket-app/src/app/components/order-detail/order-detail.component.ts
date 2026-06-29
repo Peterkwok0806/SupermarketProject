@@ -40,24 +40,22 @@ async loadOrder(snowflakeId: string| null) {
     }
   }
 
-getStatusClass(status: OrderStatus): string {
-    switch (status) {
-      case OrderStatus.Completed:
-        return 'bg-green-100 text-green-800'; // 綠色
-        
-      case OrderStatus.Cancelled:
-        return 'bg-red-100 text-red-800'; // 紅色
-        
-      case OrderStatus.Pending:
-        return 'bg-amber-100 text-amber-800'; // 琥珀色/深黃（待付款）
-        
-      case OrderStatus.Paid:
-      case OrderStatus.Processing:
-      case OrderStatus.Shipped:
-        return 'bg-blue-100 text-blue-800'; // 藍色（處理中系列）
-        
+  getStatusClass(status: OrderStatus | string): string {
+    // Normalize: backend may send string ("Pending") or number (0)
+    const s = typeof status === 'string' ? status : OrderStatus[status];
+    switch (s) {
+      case 'Completed':
+        return 'bg-green-100 text-green-800';
+      case 'Cancelled':
+        return 'bg-red-100 text-red-800';
+      case 'Pending':
+        return 'bg-amber-100 text-amber-800';
+      case 'Paid':
+      case 'Processing':
+      case 'Shipped':
+        return 'bg-blue-100 text-blue-800';
       default:
-        return 'bg-gray-100 text-gray-800'; // 灰色
+        return 'bg-gray-100 text-gray-800';
     }
   }
 

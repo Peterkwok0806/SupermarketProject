@@ -18,6 +18,7 @@ namespace SupermarketMock.Services
 
         private OrderDto MapToOrderDto(Order order, Dictionary<int, Product> lockedProducts)
         {
+            var subTotal = order.OrderItems.Sum(oi => oi.SubTotal);
             return new OrderDto
             {
                 snowflakeId = order.SnowflakeId.ToString(),
@@ -28,6 +29,10 @@ namespace SupermarketMock.Services
                 address = order.Address,
                 remark = order.Remark,
                 createdAt = order.CreatedAt,
+                couponCode = order.Coupon?.Code,
+                couponType = order.Coupon?.Type.ToString(),
+                discountAmount = order.DiscountAmount,
+                subTotal = subTotal,
                 orderItems = order.OrderItems.Select(oi=>
                 {
                     var currentProduct = lockedProducts[oi.ProductId];
@@ -46,6 +51,7 @@ namespace SupermarketMock.Services
 
         private OrderDto MapToOrderDto(Order order)
         {
+            var subTotal = order.OrderItems.Sum(oi => oi.SubTotal);
             return new OrderDto
             {
                 snowflakeId = order.SnowflakeId.ToString(),
@@ -56,7 +62,10 @@ namespace SupermarketMock.Services
                 address = order.Address,
                 remark = order.Remark,
                 createdAt = order.CreatedAt,
-               
+                couponCode = order.Coupon?.Code,
+                couponType = order.Coupon?.Type.ToString(),
+                discountAmount = order.DiscountAmount,
+                subTotal = subTotal,
                 orderItems = order.OrderItems.Select(oi => new OrderItemDto
                 {
                     productId = oi.ProductId,
@@ -290,6 +299,7 @@ namespace SupermarketMock.Services
             }
 
             var order = await _context.Orders
+                .Include(o => o.Coupon)
                 .Include(o => o.OrderItems)
                 .ThenInclude(oi => oi.Product)
                 .FirstOrDefaultAsync(o => o.SnowflakeId == snowflakeIdLong && o.UserId == userId);
@@ -304,7 +314,7 @@ namespace SupermarketMock.Services
             pageNumber = pageNumber < 1 ? 1 : pageNumber;
             pageSize = pageSize < 1 ? 10 : pageSize;
 
-            var query = _context.Orders.AsQueryable();
+            var query = _context.Orders.Include(o => o.Coupon).AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(snowflakeId))
             {
@@ -369,6 +379,7 @@ namespace SupermarketMock.Services
         public async Task<List<OrderDto>> GetOrdersByUserIdAsync(int userId)
         {
             var orders = await _context.Orders
+                .Include(o => o.Coupon)
                 .Include(o => o.OrderItems)
                 .ThenInclude(oi => oi.Product)
                 .Where(o => o.UserId == userId)

@@ -22,6 +22,12 @@ namespace SupermarketMock.DTOs
         public string? remark { get; set; }
         public DateTime createdAt { get; set; }
         public List<OrderItemDto> orderItems { get; set; } = new();
+
+        // Coupon info
+        public string? couponCode { get; set; }
+        public string? couponType { get; set; }
+        public decimal discountAmount { get; set; }
+        public decimal subTotal { get; set; }
     }
 
     public class OrderItemDto
