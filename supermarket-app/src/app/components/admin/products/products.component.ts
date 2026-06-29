@@ -2,6 +2,7 @@ import { Component, inject, signal, computed, resource } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ProductService } from '../../../services/product.service';
+import { NotificationService } from '../../../services/notification.service';
 import { ProductModalComponent } from '../product-modal/product-modal.component';
 import { BackendImagePipe } from '../../../pipes/backend-image.pipe';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -19,6 +20,7 @@ export type ProductSortBy = '' | 'name_asc' | 'name_desc' | 'price_asc' | 'price
 })
 export class AdminProductsComponent {
   private productService = inject(ProductService);
+  private notificationService = inject(NotificationService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
 
@@ -48,6 +50,10 @@ export class AdminProductsComponent {
     const selected = this.selectedProductIds();
     return prods.every(p => selected.includes(p.id));
   });
+
+  // === 匯入 / 匯出狀態 ===
+  isExporting = signal(false);
+  isImporting = signal(false);
 
   currentPage = toSignal(
     this.route.queryParams.pipe(
@@ -79,7 +85,7 @@ export class AdminProductsComponent {
       categoryId: this.selectedCategoryId(),
       sortBy: this.sortBy()
     }),
-    // 執行異步請求（底層必須回傳 Promise，所以用 firstValueFrom 轉換，或改用 http.get 的 Promise 版本）
+    // 執行異步請求（底層必須回傳 Promise，所以用 firstValueFrom 轉換）
     loader: async ({ request }) => {
       const result = await firstValueFrom(
         this.productService.getProducts(
@@ -236,6 +242,56 @@ export class AdminProductsComponent {
       error: () => {
         this.isBatchLoading.set(false);
         alert('批量刪除失敗');
+      }
+    });
+  }
+
+  // === 匯出 Excel ===
+  exportProducts(): void {
+    this.isExporting.set(true);
+    this.productService.exportProducts().subscribe({
+      next: (blob) => {
+        // 產生暫時 Blob URL 並觸發下載
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Products_匯出.xlsx`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        // 釋放記憶體
+        setTimeout(() => URL.revokeObjectURL(url), 5000);
+        this.isExporting.set(false);
+        this.notificationService.success('匯出成功，檔案已下載');
+      },
+      error: (err) => {
+        this.isExporting.set(false);
+        this.notificationService.error('匯出失敗：' + (err?.error?.message || '未知錯誤'));
+      }
+    });
+  }
+
+  // === 匯入 Excel ===
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) return;
+    const file = input.files[0];
+    input.value = ''; // 清空，避免重複選同一檔觸發不了
+
+    this.isImporting.set(true);
+    this.productService.importProducts(file).subscribe({
+      next: (res) => {
+        this.isImporting.set(false);
+        if (res.success) {
+          this.notificationService.success(res.message);
+          this.productResource.reload(); // 自動刷新列表
+        } else {
+          this.notificationService.error(res.message);
+        }
+      },
+      error: (err) => {
+        this.isImporting.set(false);
+        this.notificationService.error('匯入失敗：' + (err?.error?.message || '未知錯誤'));
       }
     });
   }

@@ -131,5 +131,40 @@ namespace SupermarketMock.Controllers
             var result = await _productService.BatchSoftDeleteAsync(request.ProductIds);
             return result.Success ? Ok(result) : BadRequest(result);
         }
+
+        /// <summary>
+        /// 匯出所有商品為 Excel 檔案 (xlsx)（僅限 Admin）
+        /// </summary>
+        /// <returns>Excel 檔案的 FileResult，下載用</returns>
+        [HttpGet("export")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> ExportProducts()
+        {
+            var fileBytes = await _productService.ExportProductsToExcelAsync();
+            var fileName = $"Products_{DateTime.Now:yyyyMMddHHmmss}.xlsx";
+            return File(
+                fileBytes,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                fileName);
+        }
+
+        /// <summary>
+        /// 從 Excel 檔案批次匯入商品（僅限 Admin）
+        /// 會根據「商品分類名稱」自動尋找或新建對應的 ProductCategory
+        /// </summary>
+        /// <param name="file">前端上傳的 .xlsx 檔案 (IFormFile)</param>
+        /// <returns>匯入結果 (含成功 / 失敗筆數)</returns>
+        [HttpPost("import")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<ApiResult>> ImportProducts(IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+            {
+                return BadRequest(new ApiResult { Success = false, Message = "請上傳 Excel 檔案" });
+            }
+
+            var result = await _productService.ImportProductsFromExcelAsync(file);
+            return result.Success ? Ok(result) : BadRequest(result);
+        }
     }
 }

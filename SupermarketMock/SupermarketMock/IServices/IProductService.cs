@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SupermarketMock.DTOs;
 using SupermarketMock.Models;
+using Microsoft.AspNetCore.Http;
 namespace SupermarketMock.Services
 {
     public interface IProductService
@@ -43,5 +44,19 @@ namespace SupermarketMock.Services
         /// <param name="productIds">商品 ID 列表</param>
         /// <returns>操作結果</returns>
         Task<ApiResult> BatchSoftDeleteAsync(List<int> productIds);
+
+        /// <summary>
+        /// 將所有商品匯出為 Excel 檔案 (byte[])
+        /// </summary>
+        /// <returns>Excel 檔案的二進位內容</returns>
+        Task<byte[]> ExportProductsToExcelAsync();
+
+        /// <summary>
+        /// 從使用者上傳的 Excel 檔案批次匯入商品
+        /// 會根據「分類名稱」自動查找或建立對應的 ProductCategory
+        /// </summary>
+        /// <param name="file">前端上傳的 .xlsx 檔案</param>
+        /// <returns>匯入結果（成功筆數、失敗清單等）</returns>
+        Task<ApiResult> ImportProductsFromExcelAsync(IFormFile file);
     }
 }

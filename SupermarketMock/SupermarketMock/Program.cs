@@ -9,6 +9,7 @@ using System.Text;
 using IdGen;
 using Hangfire;
 using SupermarketMock.IServices;
+using OfficeOpenXml;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -88,6 +89,9 @@ builder.Services.AddAuthorization();
 
 // 註冊雪花 ID 產生器，設定當前伺服器節點編號為 1
 builder.Services.AddSingleton<IIdGenerator<long>>(new IdGenerator(1));
+
+// 設定 EPPlus License Context (個人 / 學習用途使用 NonCommercialPersonal)
+ExcelPackage.License.SetNonCommercialPersonal("SupermarketProject");
 
 
 var app = builder.Build();

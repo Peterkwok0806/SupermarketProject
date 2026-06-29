@@ -1,10 +1,48 @@
 <div class="p-8">
-  <div class="flex justify-between items-center mb-8">
+  <div class="flex flex-wrap justify-between items-center mb-8 gap-3">
     <h2 class="text-3xl font-bold">商品管理</h2>
-    <button (click)="openAddProductModal()"
-            class="bg-purple-700 hover:bg-purple-800 text-white px-6 py-3 rounded-2xl font-medium flex items-center gap-2">
-      + 新增商品
-    </button>
+    <div class="flex flex-wrap items-center gap-3">
+      <!-- 匯出 Excel -->
+      <button (click)="exportProducts()"
+              [disabled]="isExporting()"
+              class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-2xl font-medium flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition shadow-sm">
+        @if (isExporting()) {
+          <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+          </svg>
+          <span>匯出中...</span>
+        } @else {
+          <span class="text-lg">📤</span>
+          <span>匯出 Excel</span>
+        }
+      </button>
+
+      <!-- 匯入 Excel (hidden file input + 觸發按鈕) -->
+      <input type="file" #fileInput accept=".xlsx"
+             (change)="onFileSelected($event)"
+             class="hidden">
+      <button (click)="fileInput.click()"
+              [disabled]="isImporting()"
+              class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-2xl font-medium flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition shadow-sm">
+        @if (isImporting()) {
+          <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+          </svg>
+          <span>匯入中...</span>
+        } @else {
+          <span class="text-lg">📥</span>
+          <span>匯入 Excel</span>
+        }
+      </button>
+
+      <!-- 原本的「新增商品」按鈕 -->
+      <button (click)="openAddProductModal()"
+              class="bg-purple-700 hover:bg-purple-800 text-white px-6 py-3 rounded-2xl font-medium flex items-center gap-2">
+        + 新增商品
+      </button>
+    </div>
   </div>
 
   <!-- 1. 篩選 / 搜尋 / 排序工具列 -->

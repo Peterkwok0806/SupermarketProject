@@ -2,6 +2,10 @@
 using Microsoft.EntityFrameworkCore;
 using SupermarketMock.DTOs;
 using SupermarketMock.Models;
+using OfficeOpenXml;
+using OfficeOpenXml.Style;
+using System.Drawing;
+using IdGen;
 
 namespace SupermarketMock.Services
 {
@@ -9,11 +13,13 @@ namespace SupermarketMock.Services
     {
         private readonly SupermarketContext _context;
         private readonly IFileUploadService _fileUploadService;
+        private readonly IIdGenerator<long> _idGenerator;
 
-        public ProductService(SupermarketContext context, IFileUploadService fileUploadService)
+        public ProductService(SupermarketContext context, IFileUploadService fileUploadService, IIdGenerator<long> idGenerator)
         {
             _context = context;
             _fileUploadService = fileUploadService;
+            _idGenerator = idGenerator;
         }
 
 
@@ -509,6 +515,234 @@ namespace SupermarketMock.Services
             }
         }
 
+        /// <summary>
+        /// 將所有未軟刪除商品匯出為 Excel (xlsx) 檔案。
+        /// 使用 EPPlus 8.x 寫入，包含中文標題列與樣式。
+        /// </summary>
+        public async Task<byte[]> ExportProductsToExcelAsync()
+        {
+            // 1. 查詢所有未刪除商品，並 Include Category 以讀取分類名稱
+            var products = await _context.Products
+                .AsNoTracking()
+                .Where(p => !p.IsDeleted)
+                .Include(p => p.Category)
+                .OrderBy(p => p.Id)
+                .ToListAsync();
+
+            // 2. 建立 ExcelPackage，會自動 dispose
+            using var package = new ExcelPackage();
+            var worksheet = package.Workbook.Worksheets.Add("Products");
+
+            // 3. 設定中文表頭
+            string[] headers = new[]
+            {
+                "商品名稱",
+                "商品分類名稱",
+                "價格",
+                "庫存量",
+                "商品描述"
+            };
+
+            for (int i = 0; i < headers.Length; i++)
+            {
+                worksheet.Cells[1, i + 1].Value = headers[i];
+            }
+
+            // 4. 為表頭設定樣式 (粗體、背景色、置中、框線)
+            using (var headerRange = worksheet.Cells[1, 1, 1, headers.Length])
+            {
+                headerRange.Style.Font.Bold = true;
+                headerRange.Style.Font.Size = 12;
+                headerRange.Style.Fill.PatternType = ExcelFillStyle.Solid;
+                headerRange.Style.Fill.BackgroundColor.SetColor(Color.FromArgb(52, 152, 219)); // 藍色
+                headerRange.Style.Font.Color.SetColor(Color.White);
+                headerRange.Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                headerRange.Style.VerticalAlignment = ExcelVerticalAlignment.Center;
+                headerRange.Style.Border.BorderAround(ExcelBorderStyle.Thin);
+            }
+
+            // 5. 逐行寫入資料
+            int row = 2;
+            foreach (var p in products)
+            {
+                worksheet.Cells[row, 1].Value = p.Name;
+                worksheet.Cells[row, 2].Value = p.Category?.Name ?? string.Empty;
+                worksheet.Cells[row, 3].Value = p.Price;
+                worksheet.Cells[row, 4].Value = p.StockQuantity;
+                worksheet.Cells[row, 5].Value = p.Description ?? string.Empty;
+                row++;
+            }
+
+            // 6. 價格欄位格式化為貨幣
+            if (products.Count > 0)
+            {
+                worksheet.Cells[2, 3, row - 1, 3].Style.Numberformat.Format = "#,##0.00";
+            }
+
+            // 7. 為資料區塊加上外框
+            if (products.Count > 0)
+            {
+                var dataRange = worksheet.Cells[2, 1, row - 1, headers.Length];
+                dataRange.Style.Border.Top.Style = ExcelBorderStyle.Thin;
+                dataRange.Style.Border.Bottom.Style = ExcelBorderStyle.Thin;
+                dataRange.Style.Border.Left.Style = ExcelBorderStyle.Thin;
+                dataRange.Style.Border.Right.Style = ExcelBorderStyle.Thin;
+            }
+
+            // 8. 自動調整欄寬
+            worksheet.Cells[1, 1, row - 1, headers.Length].AutoFitColumns();
+
+            // 9. 設定工作表預設欄寬下限
+            worksheet.Column(1).Width = Math.Max(worksheet.Column(1).Width, 20);
+            worksheet.Column(2).Width = Math.Max(worksheet.Column(2).Width, 18);
+            worksheet.Column(5).Width = Math.Max(worksheet.Column(5).Width, 30);
+
+            // 10. 凍結首列
+            worksheet.View.FreezePanes(2, 1);
+
+            // 11. 輸出 byte[]
+            return await Task.FromResult(package.GetAsByteArray());
+        }
+
+        /// <summary>
+        /// 從使用者上傳的 Excel 檔案批次匯入商品。
+        /// 流程：
+        ///   1. 讀取 .xlsx
+        ///   2. 逐列解析 (略過標題列)
+        ///   3. 依「商品分類名稱」查找或自動建立 ProductCategory
+        ///   4. 批次寫入 Products (產生 SnowflakeId)
+        /// </summary>
+        public async Task<ApiResult> ImportProductsFromExcelAsync(IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+            {
+                return new ApiResult { Success = false, Message = "請上傳有效的 Excel 檔案" };
+            }
+
+            // 1. 檢查副檔名
+            var extension = Path.GetExtension(file.FileName).ToLower();
+            if (extension != ".xlsx")
+            {
+                return new ApiResult { Success = false, Message = "僅支援 .xlsx 格式的 Excel 檔案" };
+            }
+
+            var successList = new List<string>();
+            var failedList = new List<string>();
+            int totalRows = 0;
+
+            // 2. 預先載入所有分類，轉成「不區分大小寫」的字典，避免重複查詢資料庫
+            var categoryDict = await _context.ProductCategories
+                .ToDictionaryAsync(c => c.Name.Trim().ToLower(), c => c.Id);
+
+            using var stream = file.OpenReadStream();
+            using var package = new ExcelPackage(stream);
+
+            if (package.Workbook.Worksheets.Count == 0)
+            {
+                return new ApiResult { Success = false, Message = "Excel 檔案中沒有工作表" };
+            }
+
+            var worksheet = package.Workbook.Worksheets[0];
+            int rowCount = worksheet.Dimension?.Rows ?? 0;
+
+            if (rowCount < 2)
+            {
+                return new ApiResult { Success = false, Message = "Excel 檔案中沒有資料" };
+            }
+
+            // 3. 逐列讀取 (第 1 列為標題，從第 2 列開始)
+            var newProducts = new List<Product>();
+            int maxDisplayOrder = categoryDict.Count > 0
+                ? await _context.ProductCategories.MaxAsync(c => (int?)c.DisplayOrder) ?? 0
+                : 0;
+
+            for (int row = 2; row <= rowCount; row++)
+            {
+                totalRows++;
+                try
+                {
+                    var name = worksheet.Cells[row, 1].Value?.ToString()?.Trim();
+                    var categoryName = worksheet.Cells[row, 2].Value?.ToString()?.Trim();
+                    var priceCell = worksheet.Cells[row, 3].Value;
+                    var stockCell = worksheet.Cells[row, 4].Value;
+                    var description = worksheet.Cells[row, 5].Value?.ToString()?.Trim();
+
+                    // 4. 必填欄位驗證
+                    if (string.IsNullOrWhiteSpace(name))
+                    {
+                        failedList.Add($"第 {row} 列：商品名稱不可為空");
+                        continue;
+                    }
+                    if (string.IsNullOrWhiteSpace(categoryName))
+                    {
+                        failedList.Add($"第 {row} 列：商品分類名稱不可為空");
+                        continue;
+                    }
+
+                    // 5. 解析價格
+                    if (!decimal.TryParse(priceCell?.ToString(), out decimal price) || price < 0)
+                    {
+                        failedList.Add($"第 {row} 列：價格格式錯誤或為負數");
+                        continue;
+                    }
+
+                    // 6. 解析庫存量
+                    if (!int.TryParse(stockCell?.ToString(), out int stock) || stock < 0)
+                    {
+                        failedList.Add($"第 {row} 列：庫存量格式錯誤或為負數");
+                        continue;
+                    }
+
+                    // 7. 依分類名稱查找 ID，查不到時自動新增
+                    var key = categoryName.ToLower();
+                    if (!categoryDict.TryGetValue(key, out int categoryId))
+                    {
+                        var newCategory = new ProductCategory
+                        {
+                            Name = categoryName,
+                            DisplayOrder = ++maxDisplayOrder
+                        };
+                        _context.ProductCategories.Add(newCategory);
+                        await _context.SaveChangesAsync(); // 立即 Save 以取得新 ID
+                        categoryId = newCategory.Id;
+                        categoryDict[key] = categoryId;
+                    }
+
+                    // 8. 建立 Product 實體
+                    var product = new Product
+                    {
+                        SnowflakeId = _idGenerator.CreateId(),
+                        Name = name,
+                        Description = string.IsNullOrWhiteSpace(description) ? null : description,
+                        Price = price,
+                        StockQuantity = stock,
+                        CategoryId = categoryId,
+                        IsAvailable = true,
+                        Photo = "/images/products/default-product.jpg",
+                        IsDeleted = false
+                    };
+                    newProducts.Add(product);
+                    successList.Add(name);
+                }
+                catch (Exception ex)
+                {
+                    failedList.Add($"第 {row} 列：解析失敗 - {ex.Message}");
+                }
+            }
+
+            // 9. 批次寫入 Products (一次性 SaveChanges)
+            if (newProducts.Count > 0)
+            {
+                _context.Products.AddRange(newProducts);
+                await _context.SaveChangesAsync();
+            }
+
+            return new ApiResult
+            {
+                Success = true,
+                Message = $"匯入完成：成功 {successList.Count} 筆、失敗 {failedList.Count} 筆、總共 {totalRows} 筆"
+            };
+        }
 
 
 
