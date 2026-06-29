@@ -4,12 +4,13 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { ApiResult, ApiResultData, ApiResultPagination } from '../models/api-result';
 import { Review, ReviewStats, ReviewImage, CreateReview, UpdateReview, CanReviewResult } from '../models/review';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ReviewApiService {
-  private apiUrl = 'https://localhost:7154/api/Review';
+  private apiUrl = `${environment.apiUrl}api/Review`;
   private http = inject(HttpClient);
 
   /**

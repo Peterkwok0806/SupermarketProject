@@ -32,6 +32,11 @@ export const routes: Routes = [
     { path: 'order/:snowflakeId', component: OrderDetailComponent, canActivate: [authGuard] },
     { path: 'profile', component: ProfileComponent, canActivate: [authGuard] },
     { 
+      path: 'coupons', 
+      loadComponent: () => import('./components/coupons/coupons.component').then(m => m.CouponsComponent),
+      canActivate: [authGuard] 
+    },
+    { 
       path: 'admin', 
       //canActivate: [authGuard, adminGuard],
       loadChildren: () => import('./admin.routes').then(m => m.adminRoutes) 

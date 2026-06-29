@@ -3,12 +3,13 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { ApiResult, ApiResultData, ApiResultPagination } from '../models/api-result';
 import { Review, ReviewDashboard, ReviewStatus } from '../models/review';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AdminReviewApiService {
-  private apiUrl = 'https://localhost:7154/api/admin/reviews';
+  private apiUrl = `${environment.apiUrl}api/admin/reviews`;
   private http = inject(HttpClient);
 
   getReviews(

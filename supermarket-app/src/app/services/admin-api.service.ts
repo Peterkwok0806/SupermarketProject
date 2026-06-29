@@ -3,12 +3,13 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 import { ApiResultPagination, ApiResult } from '../models/api-result';
 import { AdminUser, UpdateUserStatus, UpdateUserRole } from '../models/admin-user';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AdminApiService {
-  private apiUrl = 'https://localhost:7154/api/admin';
+  private apiUrl = `${environment.apiUrl}api/admin`;
   private http = inject(HttpClient);
 
   getUsers(page: number = 1, pageSize: number = 10, search?: string): Observable<ApiResultPagination<AdminUser>> {

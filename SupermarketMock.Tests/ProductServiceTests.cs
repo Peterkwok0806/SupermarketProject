@@ -4,8 +4,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Moq;
 using SupermarketMock.Models;
 using SupermarketMock.Services;
+using SupermarketMock.IServices;
 using Xunit;
 
 namespace SupermarketMock.Tests
@@ -24,7 +26,7 @@ namespace SupermarketMock.Tests
                 .Options;
 
             _context = new SupermarketContext(options);
-            _service = new ProductService(_context);
+            _service = new ProductService(_context, new Mock<IFileUploadService>().Object);
         }
 
 

@@ -4,12 +4,13 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { ApiResultData } from '../models/api-result';
 import { DashboardStats, SalesTrend, TopSellingProduct } from '../models/dashboard';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class DashboardApiService {
-  private apiUrl = 'https://localhost:7154/api/dashboard';
+  private apiUrl = `${environment.apiUrl}api/dashboard`;
 
   private http = inject(HttpClient);
 

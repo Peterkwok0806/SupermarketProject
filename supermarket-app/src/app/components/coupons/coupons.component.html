@@ -1,0 +1,154 @@
+<div class="coupons-page">
+  <div class="container">
+    <!-- Page Header -->
+    <div class="page-header">
+      <h1>🎟️ My Coupons</h1>
+      <p class="subtitle">Browse available coupons and view your usage history</p>
+    </div>
+
+    <!-- Tab Navigation -->
+    <div class="tab-nav">
+      <button 
+        class="tab-btn" 
+        [class.active]="activeTab === 'available'"
+        (click)="switchTab('available')">
+        📋 Available Coupons
+      </button>
+      <button 
+        class="tab-btn" 
+        [class.active]="activeTab === 'history'"
+        (click)="switchTab('history')">
+        📜 Usage History
+      </button>
+    </div>
+
+    <!-- ===== Available Coupons Tab ===== -->
+    <div *ngIf="activeTab === 'available'" class="tab-content">
+      <!-- Loading -->
+      <div *ngIf="availableLoading" class="loading-state">
+        <div class="spinner"></div>
+        <p>Loading coupons...</p>
+      </div>
+
+      <!-- Error -->
+      <div *ngIf="availableError && !availableLoading" class="error-state">
+        <p>{{ availableError }}</p>
+        <button class="btn-retry" (click)="loadAvailableCoupons()">Retry</button>
+      </div>
+
+      <!-- Empty -->
+      <div *ngIf="!availableLoading && !availableError && availableCoupons.length === 0" class="empty-state">
+        <span class="empty-icon">🎫</span>
+        <p>No coupons available at the moment.</p>
+        <p class="empty-hint">Check back later for new promotions!</p>
+      </div>
+
+      <!-- Coupon Cards -->
+      <div *ngIf="!availableLoading && availableCoupons.length > 0" class="coupon-grid">
+        <div 
+          *ngFor="let coupon of availableCoupons" 
+          class="coupon-card"
+          [class.expiring-soon]="isExpiringSoon(coupon.endDate)">
+          
+          <!-- Left: Discount Badge -->
+          <div class="coupon-badge" [ngClass]="{
+            'badge-percentage': coupon.type === CouponType.Percentage,
+            'badge-fixed': coupon.type === CouponType.FixedAmount,
+            'badge-shipping': coupon.type === CouponType.FreeShipping
+          }">
+            <span class="discount-value">{{ getDiscountText(coupon) }}</span>
+          </div>
+
+          <!-- Right: Details -->
+          <div class="coupon-details">
+            <div class="coupon-header-row">
+              <span class="coupon-code" (click)="copyCode(coupon.code, $event)" title="Click to copy">
+                {{ coupon.code }}
+              </span>
+              <span *ngIf="isExpiringSoon(coupon.endDate)" class="expiring-badge">⏰ Expiring Soon</span>
+            </div>
+            
+            <p *ngIf="coupon.description" class="coupon-description">{{ coupon.description }}</p>
+            
+            <div class="coupon-meta">
+              <span *ngIf="coupon.minimumOrderAmount" class="meta-item">
+                🛒 Min. order: HK${{ coupon.minimumOrderAmount.toFixed(2) }}
+              </span>
+              <span class="meta-item">
+                📦 {{ getScopeText(coupon) }}
+              </span>
+              <span class="meta-item">
+                📊 {{ getUsageLimitText(coupon) }}
+              </span>
+            </div>
+
+            <div class="coupon-footer">
+              <span class="validity">
+                Valid: {{ formatDate(coupon.startDate) }} — {{ formatDate(coupon.endDate) }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== Usage History Tab ===== -->
+    <div *ngIf="activeTab === 'history'" class="tab-content">
+      <!-- Loading -->
+      <div *ngIf="historyLoading" class="loading-state">
+        <div class="spinner"></div>
+        <p>Loading history...</p>
+      </div>
+
+      <!-- Error -->
+      <div *ngIf="historyError && !historyLoading" class="error-state">
+        <p>{{ historyError }}</p>
+        <button class="btn-retry" (click)="loadUsageHistory()">Retry</button>
+      </div>
+
+      <!-- Empty -->
+      <div *ngIf="!historyLoading && !historyError && usageHistory.length === 0" class="empty-state">
+        <span class="empty-icon">📭</span>
+        <p>No coupon usage history yet.</p>
+        <p class="empty-hint">Use a coupon on your next order to see it here!</p>
+      </div>
+
+      <!-- History Table -->
+      <div *ngIf="!historyLoading && usageHistory.length > 0" class="history-table-wrapper">
+        <table class="history-table">
+          <thead>
+            <tr>
+              <th>Coupon Code</th>
+              <th>Description</th>
+              <th>Discount</th>
+              <th>Order #</th>
+              <th>Used At</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let usage of usageHistory">
+              <td><span class="code-badge">{{ usage.couponCode }}</span></td>
+              <td>{{ usage.couponDescription || '-' }}</td>
+              <td class="discount-cell">-HK${{ usage.discountApplied.toFixed(2) }}</td>
+              <td>
+                <a [routerLink]="['/orders', usage.orderId]" class="order-link">#{{ usage.orderId }}</a>
+              </td>
+              <td>{{ formatDate(usage.usedAt) }}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Pagination -->
+        <div *ngIf="historyTotalCount > historyPageSize" class="pagination">
+          <button 
+            *ngFor="let p of getHistoryPages()" 
+            class="page-btn"
+            [class.active]="p === historyPage"
+            (click)="goToHistoryPage(p)">
+            {{ p }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

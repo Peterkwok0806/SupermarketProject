@@ -33,6 +33,11 @@ namespace SupermarketMock
         public DbSet<ReviewImage> ReviewImages => Set<ReviewImage>();
         public DbSet<ReviewHelpful> ReviewHelpfuls => Set<ReviewHelpful>();
 
+        public DbSet<Coupon> Coupons => Set<Coupon>();
+        public DbSet<CouponUsage> CouponUsages => Set<CouponUsage>();
+        public DbSet<CouponProduct> CouponProducts => Set<CouponProduct>();
+        public DbSet<CouponCategory> CouponCategories => Set<CouponCategory>();
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             // === 解決 Decimal Precision Warning ===
@@ -221,6 +226,106 @@ namespace SupermarketMock
                 .HasOne(h => h.Review)
                 .WithMany(r => r.HelpfulVotes)
                 .HasForeignKey(h => h.ReviewId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // ==================== Coupon 設定 ====================
+            // Enum 轉字串
+            modelBuilder.Entity<Coupon>()
+                .Property(c => c.Type)
+                .HasConversion<string>()
+                .HasMaxLength(20);
+
+            modelBuilder.Entity<Coupon>()
+                .Property(c => c.Scope)
+                .HasConversion<string>()
+                .HasMaxLength(20);
+
+            // Coupon Code 唯一索引
+            modelBuilder.Entity<Coupon>()
+                .HasIndex(c => c.Code)
+                .IsUnique();
+
+            // Coupon decimal precision
+            modelBuilder.Entity<Coupon>()
+                .Property(c => c.DiscountValue)
+                .HasColumnType("decimal(18,2)");
+
+            modelBuilder.Entity<Coupon>()
+                .Property(c => c.MinimumOrderAmount)
+                .HasColumnType("decimal(18,2)");
+
+            modelBuilder.Entity<Coupon>()
+                .Property(c => c.MaximumDiscountAmount)
+                .HasColumnType("decimal(18,2)");
+
+            // Order.CouponId FK
+            modelBuilder.Entity<Order>()
+                .HasOne(o => o.Coupon)
+                .WithMany()
+                .HasForeignKey(o => o.CouponId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            modelBuilder.Entity<Order>()
+                .Property(o => o.DiscountAmount)
+                .HasColumnType("decimal(18,2)");
+
+            // CouponUsage FK relationships
+            modelBuilder.Entity<CouponUsage>()
+                .HasOne(u => u.Coupon)
+                .WithMany(c => c.CouponUsages)
+                .HasForeignKey(u => u.CouponId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<CouponUsage>()
+                .HasOne(u => u.User)
+                .WithMany()
+                .HasForeignKey(u => u.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<CouponUsage>()
+                .HasOne(u => u.Order)
+                .WithMany()
+                .HasForeignKey(u => u.OrderId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<CouponUsage>()
+                .Property(u => u.DiscountApplied)
+                .HasColumnType("decimal(18,2)");
+
+            // CouponUsage indexes
+            modelBuilder.Entity<CouponUsage>()
+                .HasIndex(u => new { u.CouponId, u.UserId });
+
+            // CouponProduct composite key
+            modelBuilder.Entity<CouponProduct>()
+                .HasKey(cp => new { cp.CouponId, cp.ProductId });
+
+            modelBuilder.Entity<CouponProduct>()
+                .HasOne(cp => cp.Coupon)
+                .WithMany(c => c.CouponProducts)
+                .HasForeignKey(cp => cp.CouponId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<CouponProduct>()
+                .HasOne(cp => cp.Product)
+                .WithMany()
+                .HasForeignKey(cp => cp.ProductId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // CouponCategory composite key
+            modelBuilder.Entity<CouponCategory>()
+                .HasKey(cc => new { cc.CouponId, cc.CategoryId });
+
+            modelBuilder.Entity<CouponCategory>()
+                .HasOne(cc => cc.Coupon)
+                .WithMany(c => c.CouponCategories)
+                .HasForeignKey(cc => cc.CouponId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<CouponCategory>()
+                .HasOne(cc => cc.Category)
+                .WithMany()
+                .HasForeignKey(cc => cc.CategoryId)
                 .OnDelete(DeleteBehavior.Cascade);
 
 

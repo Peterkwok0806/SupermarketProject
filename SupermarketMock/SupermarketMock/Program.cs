@@ -61,6 +61,7 @@ builder.Services.AddScoped<IFileUploadService, FileUploadService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<IAdminService, AdminService>();
 builder.Services.AddScoped<IReviewService, ReviewService>();
+builder.Services.AddScoped<ICouponService, CouponService>();
 
 // 綁定 appsettings.json 中的 "Jwt" 區段到 JwtSetting 類別
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));

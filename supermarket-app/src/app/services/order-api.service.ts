@@ -2,21 +2,22 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient,HttpParams} from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { ApiResult,ApiResultPagination} from '../models/api-result';
-import { OrderEntity,OrderStatus,searchOrderRequest } from '../models/order';
+import { OrderEntity,OrderRequest,OrderStatus,searchOrderRequest } from '../models/order';
+import { environment } from '../../environments/environment';
 
 
 @Injectable({
   providedIn: 'root'
 })
 export class OrderApiService {
-  private apiUrl = 'https://localhost:7154/api/order';
+  private apiUrl = `${environment.apiUrl}api/order`;
 
   private http = inject(HttpClient);
 
   constructor() { }
 
   /** 建立訂單 */
-  createOrder(orderData: any): Observable<any> {
+  createOrder(orderData: OrderRequest): Observable<any> {
     return this.http.post<any>(this.apiUrl, orderData);
   }
 

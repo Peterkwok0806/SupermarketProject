@@ -1,10 +1,10 @@
-import { Injectable, inject, signal, computed, effect } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { OrderApiService } from './order-api.service';
-import { OrderRequest} from '../models/order';
-import { OrderEntity } from '../models/order';
+import { OrderRequest, OrderEntity } from '../models/order';
 import { lastValueFrom } from 'rxjs';
 import { CartService } from './cart.service';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router } from '@angular/router';
+import { CouponApiService } from './coupon-api.service';
 
 @Injectable({
   providedIn: 'root'
@@ -14,25 +14,31 @@ export class OrderService {
   private orderApi = inject(OrderApiService);
   private router = inject(Router);
   private cartService = inject(CartService);
+  private couponApi = inject(CouponApiService);
 
  isSubmitting = signal<Boolean>(false);
  currentOrder = signal<OrderEntity | null>(null);
  isProcessing = signal<boolean>(false);
  orders = signal<OrderEntity[]>([]);
 
-  async SubmitOrder(data:OrderRequest){
+  async SubmitOrder(data: OrderRequest, couponCode?: string) {
     this.isSubmitting.set(true);
     try {
-      const response = await lastValueFrom(this.orderApi.createOrder(data));
-      if (response.success && response?.order?.snowflakeId){
-        this.cartService.clearCart();  
+      const orderPayload: OrderRequest = {
+      ...data,
+      couponCode: couponCode ?? null
+    };
+
+      const response = await lastValueFrom(this.orderApi.createOrder(orderPayload));
+      if (response.success && response?.order?.snowflakeId) {
+        this.cartService.clearCart();
         await this.router.navigate(['/order-success'], {
-        queryParams: { snowflakeId: response.order.snowflakeId }
-      });
+          queryParams: { snowflakeId: response.order.snowflakeId }
+        });
       }
-    }catch (error: any){
+    } catch (error: any) {
       console.error(error);
-    }finally{
+    } finally {
       this.isSubmitting.set(false);
     }
   }

@@ -19,6 +19,11 @@
         public string Address { get; set; } = string.Empty;
         public string? Remark { get; set; }
 
+        // Coupon support
+        public int? CouponId { get; set; }
+        public Coupon? Coupon { get; set; }
+        public decimal DiscountAmount { get; set; } = 0;
+
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; }
 

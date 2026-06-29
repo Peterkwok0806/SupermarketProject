@@ -3,6 +3,7 @@ export interface OrderRequest {
     phone:string
     address:string
     remark: string
+    couponCode?: string | null
 }
 
 export interface OrderEntity {

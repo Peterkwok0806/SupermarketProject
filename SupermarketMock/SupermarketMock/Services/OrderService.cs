@@ -218,7 +218,47 @@ namespace SupermarketMock.Services
                     totalAmount += itemSubTotal;
                 }
 
-                order.TotalAmount = Math.Round(totalAmount, 2);
+                // ===== 優惠券處理 =====
+                decimal discountAmount = 0;
+                if (!string.IsNullOrWhiteSpace(dto.CouponCode))
+                {
+                    // 鎖定並驗證優惠券（ROWLOCK + UPDLOCK）
+                    var coupon = await ValidateAndLockCouponAsync(
+                        dto.CouponCode, userId, totalAmount, sortedCartItems, lockedProducts);
+
+                    if (coupon == null)
+                    {
+                        await transaction.RollbackAsync();
+                        return new OrderResult
+                        {
+                            Success = false,
+                            Message = $"優惠券「{dto.CouponCode}」無效或不適用"
+                        };
+                    }
+
+                    // 計算折扣金額
+                    discountAmount = CalculateCouponDiscount(coupon, totalAmount);
+
+                    // 設定訂單優惠券資訊
+                    order.CouponId = coupon.Id;
+                    order.DiscountAmount = discountAmount;
+
+                    // 記錄優惠券使用紀錄
+                    _context.CouponUsages.Add(new CouponUsage
+                    {
+                        CouponId = coupon.Id,
+                        UserId = userId,
+                        Order = order,
+                        DiscountApplied = discountAmount,
+                        UsedAt = DateTime.UtcNow
+                    });
+
+                    // 累加使用次數並更新時間戳
+                    coupon.UsedCount++;
+                    coupon.UpdatedAt = DateTime.UtcNow;
+                }
+
+                order.TotalAmount = Math.Round(Math.Max(0, totalAmount - discountAmount), 2);
 
                 _context.Orders.Add(order);
                 _context.CartItems.RemoveRange(cartItems); // 移除這批購物車項目
@@ -366,8 +406,124 @@ namespace SupermarketMock.Services
 
             return new ApiResult() { Success = true, Message = "訂單狀態更新成功" };
         }
-         
 
+        /// <summary>
+        /// 鎖定並驗證優惠券是否可用（ROWLOCK + UPDLOCK）。
+        /// </summary>
+        /// <param name="couponCode">優惠券代碼</param>
+        /// <param name="userId">使用者 ID</param>
+        /// <param name="orderSubtotal">訂單折前總金額</param>
+        /// <param name="cartItems">已排序的購物車項目（用於 Scope 驗證）</param>
+        /// <param name="lockedProducts">已鎖定的商品字典（用於 Scope 驗證）</param>
+        /// <returns>驗證通過的 Coupon 實體，否則回傳 null</returns>
+        private async Task<Coupon?> ValidateAndLockCouponAsync(
+            string couponCode,
+            int userId,
+            decimal orderSubtotal,
+            List<CartItem> cartItems,
+            Dictionary<int, Product> lockedProducts)
+        {
+            var now = DateTime.UtcNow;
+            Coupon? coupon;
 
+            if (_context.Database.ProviderName?.Contains("InMemory") == true)
+            {
+                // 測試環境：使用一般查詢（不支援 UPDLOCK）
+                coupon = await _context.Coupons
+                    .Include(c => c.CouponProducts)
+                    .Include(c => c.CouponCategories)
+                    .FirstOrDefaultAsync(c => c.Code == couponCode.ToUpper().Trim());
+            }
+            else
+            {
+                // 正式環境（SQL Server）：使用 ROWLOCK + UPDLOCK 鎖定優惠券列
+                coupon = await _context.Coupons
+                    .FromSql($"SELECT * FROM Coupons WITH (ROWLOCK, UPDLOCK) WHERE Code = {couponCode.ToUpper().Trim()}")
+                    .Include(c => c.CouponProducts)
+                    .Include(c => c.CouponCategories)
+                    .FirstOrDefaultAsync();
+            }
+
+            if (coupon == null)
+                return null;
+
+            // 基本驗證：是否啟用、是否過期、是否超過有效期
+            if (!coupon.IsActive)
+                return null;
+
+            if (coupon.StartDate > now)
+                return null;
+
+            if (coupon.EndDate < now)
+                return null;
+
+            // 全域使用次數限制
+            if (coupon.UsageLimit.HasValue && coupon.UsedCount >= coupon.UsageLimit.Value)
+                return null;
+
+            // 每人使用次數限制
+            if (coupon.UsageLimitPerUser.HasValue)
+            {
+                var userUsageCount = await _context.CouponUsages
+                    .CountAsync(u => u.CouponId == coupon.Id && u.UserId == userId);
+
+                if (userUsageCount >= coupon.UsageLimitPerUser.Value)
+                    return null;
+            }
+
+            // 最低消費門檻
+            if (coupon.MinimumOrderAmount.HasValue && orderSubtotal < coupon.MinimumOrderAmount.Value)
+                return null;
+
+            // Scope 驗證：依適用範圍檢查購物車商品是否符合
+            if (coupon.Scope == CouponScope.Product)
+            {
+                var couponProductIds = coupon.CouponProducts.Select(cp => cp.ProductId).ToList();
+                var cartProductIds = cartItems.Select(ci => ci.ProductId).ToList();
+
+                if (!cartProductIds.Any(id => couponProductIds.Contains(id)))
+                    return null;
+            }
+            else if (coupon.Scope == CouponScope.Category)
+            {
+                var couponCategoryIds = coupon.CouponCategories.Select(cc => cc.CategoryId).ToList();
+                var cartCategoryIds = cartItems
+                    .Where(ci => lockedProducts.ContainsKey(ci.ProductId))
+                    .Select(ci => lockedProducts[ci.ProductId].CategoryId)
+                    .Distinct()
+                    .ToList();
+
+                if (!cartCategoryIds.Any(id => couponCategoryIds.Contains(id)))
+                    return null;
+            }
+
+            return coupon;
+        }
+
+        /// <summary>
+        /// 根據優惠券類型計算折扣金額（含最大折扣上限與不超過訂單總額）。
+        /// </summary>
+        /// <param name="coupon">已驗證的優惠券</param>
+        /// <param name="orderSubtotal">訂單折前總金額</param>
+        /// <returns>計算後的折扣金額</returns>
+        private static decimal CalculateCouponDiscount(Coupon coupon, decimal orderSubtotal)
+        {
+            decimal discount = coupon.Type switch
+            {
+                CouponType.Percentage => orderSubtotal * (coupon.DiscountValue / 100m),
+                CouponType.FixedAmount => coupon.DiscountValue,
+                CouponType.FreeShipping => 0, // 運費折扣另行處理
+                _ => 0
+            };
+
+            // 受限於最大折扣金額
+            if (coupon.MaximumDiscountAmount.HasValue && discount > coupon.MaximumDiscountAmount.Value)
+                discount = coupon.MaximumDiscountAmount.Value;
+
+            // 折扣金額不得超過訂單總額
+            discount = Math.Min(discount, orderSubtotal);
+
+            return Math.Round(discount, 2);
+        }
     }
 }

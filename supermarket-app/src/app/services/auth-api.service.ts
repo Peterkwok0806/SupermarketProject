@@ -2,13 +2,14 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { RegisterRequest, AuthResponse, LoginRequest, updateProfileRequest, VerifyRequest } from '../models/auth';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthApiService {
 
-  private apiUrl = 'https://localhost:7154/api/auth';
+  private apiUrl = `${environment.apiUrl}api/auth`;
   private http = inject(HttpClient);
 
   constructor() { }
