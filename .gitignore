@@ -39,6 +39,7 @@ publish/
 *.[Pp]ublish.xml
 appsettings.Development.json
 appsettings.Local.json
+**/appsettings.Production.json
 UserSecrets/
 
 # ==============================================================================

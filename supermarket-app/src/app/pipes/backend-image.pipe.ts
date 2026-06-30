@@ -7,11 +7,11 @@ import { environment } from '../../environments/environment';
 export class BackendImagePipe implements PipeTransform {
   private backendUrl = environment.apiUrl;
 
-  transform(relativeUrl: string | null | undefined): string {
-    if (!relativeUrl) {
-      return 'public/images/default-product.jpg'; // 如果後端沒給圖，自動回傳前端的預設圖
+    transform(relativeUrl: string | null | undefined): string {
+      if (!relativeUrl) {
+        return `${this.backendUrl}images/products/default-product.jpg`;
+      }
+      return `${this.backendUrl}images/products/${relativeUrl}`;
     }
-    return `${this.backendUrl}${relativeUrl}`;;
-  }
 
 }
