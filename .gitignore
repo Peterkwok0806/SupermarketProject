@@ -103,3 +103,16 @@ yarn-error.log*
 Thumbs.db
 $RECYCLE.BIN/
 *.lnk
+
+# ==============================================================================
+# wwwroot: Angular build output should NEVER be committed here
+# ==============================================================================
+# Angular production build artifacts (outputHashing: "all")
+SupermarketMock/SupermarketMock/wwwroot/chunk-*.js
+SupermarketMock/SupermarketMock/wwwroot/main-*.js
+SupermarketMock/SupermarketMock/wwwroot/polyfills-*.js
+SupermarketMock/SupermarketMock/wwwroot/styles-*.css
+SupermarketMock/SupermarketMock/wwwroot/index.html
+SupermarketMock/SupermarketMock/wwwroot/favicon.ico
+# Deploy zip (large binary, should not be in repo)
+SupermarketMock/deploy.zip
