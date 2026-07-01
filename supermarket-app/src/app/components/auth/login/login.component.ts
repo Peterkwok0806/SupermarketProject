@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink, Router } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
+import { NotificationService } from '../../../services/notification.service';
 import { LoginRequest } from '../../../models/auth';
 
 @Component({
@@ -14,6 +15,7 @@ import { LoginRequest } from '../../../models/auth';
 export class LoginComponent {
    private authService = inject(AuthService);
    private router = inject(Router);
+   private notificationService = inject(NotificationService);
    loginData: LoginRequest ={email: '',password: ''}
    isLoading = this.authService.isLoading;
 
@@ -21,18 +23,18 @@ export class LoginComponent {
     console.log('✅ Login button clicked!');
     
     if (!this.loginData.email || !this.loginData.password) {
-      alert("請填寫 Email 和密碼");
+      this.notificationService.error("請填寫 Email 和密碼");
       return;
     }
      this.isLoading.set(true);
     try {
       const success = await this.authService.login(this.loginData);
       if (success) {
-        alert("🎉 登入成功！");
+        this.notificationService.success("🎉 登入成功！");
         this.router.navigate(['/']);
       }
     } catch (error: any) {
-      alert(error.message || "登入失敗，請檢查帳號密碼");
+      this.notificationService.error(error.message || "登入失敗，請檢查帳號密碼");
     } finally {
        this.isLoading.set(false);
     }

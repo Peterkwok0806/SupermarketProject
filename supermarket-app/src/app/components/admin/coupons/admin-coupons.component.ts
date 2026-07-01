@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { AdminCouponApiService } from '../../../services/admin-coupon-api.service';
+import { NotificationService } from '../../../services/notification.service';
 import {
   CouponListDto,
   CouponStatsDto,
@@ -23,6 +24,7 @@ import {
 })
 export class AdminCouponsComponent implements OnInit {
   private adminCouponApi = inject(AdminCouponApiService);
+  private notificationService = inject(NotificationService);
 
   // Dashboard stats
   stats: CouponStatsDto | null = null;
@@ -349,16 +351,16 @@ export class AdminCouponsComponent implements OnInit {
         const deleted = res.deleted ?? 0;
         const errors: string[] = res.errors ?? [];
         if (errors.length > 0) {
-          alert(`Deleted ${deleted} coupon(s).\nSkipped:\n${errors.join('\n')}`);
+          this.notificationService.error(`Deleted ${deleted} coupon(s).\nSkipped:\n${errors.join('\n')}`);
         } else {
-          alert(`Successfully deleted ${deleted} coupon(s).`);
+          this.notificationService.success(`Successfully deleted ${deleted} coupon(s).`);
         }
         this.clearSelection();
         this.loadCoupons();
         this.loadStats();
       },
       error: () => {
-        alert('Failed to bulk delete coupons.');
+        this.notificationService.error('Failed to bulk delete coupons.');
       }
     });
   }

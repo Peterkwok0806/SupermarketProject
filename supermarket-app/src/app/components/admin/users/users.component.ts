@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { AdminApiService } from '../../../services/admin-api.service';
+import { NotificationService } from '../../../services/notification.service';
 import { AdminUser } from '../../../models/admin-user';
 
 @Component({
@@ -13,6 +14,7 @@ import { AdminUser } from '../../../models/admin-user';
 })
 export class AdminUsersComponent implements OnInit {
   private adminApi = inject(AdminApiService);
+  private notificationService = inject(NotificationService);
 
   users = signal<AdminUser[]>([]);
   isLoading = signal(true);
@@ -116,12 +118,12 @@ export class AdminUsersComponent implements OnInit {
       this.adminApi.updateUserStatus(user.id, form.isActive).subscribe({
         next: (res) => {
           if (!res.success) {
-            alert(res.message);
+            this.notificationService.error(res.message);
           }
         },
         error: (err) => {
           console.error('Failed to update status:', err);
-          alert('更新狀態失敗');
+          this.notificationService.error('更新狀態失敗');
         }
       });
     }
@@ -131,12 +133,12 @@ export class AdminUsersComponent implements OnInit {
       this.adminApi.updateUserRole(user.id, form.role).subscribe({
         next: (res) => {
           if (!res.success) {
-            alert(res.message);
+            this.notificationService.error(res.message);
           }
         },
         error: (err) => {
           console.error('Failed to update role:', err);
-          alert('更新角色失敗');
+          this.notificationService.error('更新角色失敗');
         }
       });
     }

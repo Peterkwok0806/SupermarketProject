@@ -6,6 +6,7 @@ import { OrderService } from '../../services/order.service';
 import { Router } from '@angular/router';
 import { BackendImagePipe } from '../../pipes/backend-image.pipe';
 import { CouponApiService } from '../../services/coupon-api.service';
+import { NotificationService } from '../../services/notification.service';
 import { CouponValidationResultDto } from '../../models/coupon';
 
 @Component({
@@ -19,6 +20,7 @@ export class CheckoutComponent implements OnInit {
   private orderService = inject(OrderService);
   private router = inject(Router);
   private couponApi = inject(CouponApiService);
+  private notificationService = inject(NotificationService);
 
   cart = this.cartService.cart;
   totalPrice = this.cartService.totalPrice;
@@ -107,12 +109,12 @@ export class CheckoutComponent implements OnInit {
   // ===== Submit Order =====
   async onSubmitOrder() {
     if (!this.orderData.fullName || !this.orderData.phone || !this.orderData.address) {
-      alert("請填寫完整收貨資料");
+      this.notificationService.error("請填寫完整收貨資料");
       return;
     }
 
     if (this.cartItems().length === 0) {
-      alert("購物車是空的");
+      this.notificationService.error("購物車是空的");
       return;
     }
 

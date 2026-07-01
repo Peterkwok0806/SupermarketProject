@@ -9,6 +9,7 @@ import { RouterLink, ActivatedRoute, Router} from '@angular/router';
 import { map,firstValueFrom} from 'rxjs';
 import {searchOrderRequest} from '../../../models/order';
 import { StatusupdateModalComponent } from '../statusupdate-modal/statusupdate-modal.component'
+import { NotificationService } from '../../../services/notification.service';
 import { lastValueFrom } from 'rxjs';
 
 
@@ -23,6 +24,7 @@ export class AdminOrdersComponent {
   private orderApi = inject(OrderApiService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private notificationService = inject(NotificationService);
 
   editingOrder: any | null = null;
   isModalLoading: boolean = false;
@@ -242,7 +244,7 @@ export class AdminOrdersComponent {
 
 
   viewOrderDetail(order: any) {
-    alert(`查看訂單 #${order.id} 詳細資訊 (功能開發中)`);
+    this.notificationService.error(`查看訂單 #${order.id} 詳細資訊 (功能開發中)`);
   }
 
   getStatusClass(status: OrderStatus | string): string {

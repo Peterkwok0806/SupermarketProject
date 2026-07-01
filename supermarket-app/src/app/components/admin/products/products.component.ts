@@ -139,16 +139,16 @@ export class AdminProductsComponent {
       next: (res) => {
         this.togglingId = null;
         if (res?.success) {
-          alert(res.message || '切換成功');
+          this.notificationService.success(res.message || '切換成功');
           this.productResource.reload();
         } else {
-          alert(res?.message || '切換失敗');
+          this.notificationService.error(res?.message || '切換失敗');
         }
       },
       error: (err) => {
         this.togglingId = null;
         console.error('切換上下架失敗', err);
-        alert('切換上下架失敗：' + (err?.error?.message || err?.message || '未知錯誤'));
+        this.notificationService.error('切換上下架失敗：' + (err?.error?.message || err?.message || '未知錯誤'));
       }
     });
   }
@@ -207,16 +207,16 @@ export class AdminProductsComponent {
       next: (res) => {
         this.isBatchLoading.set(false);
         if (res.success) {
-          alert(res.message);
+          this.notificationService.success(res.message);
           this.clearSelection();
           this.productResource.reload();
         } else {
-          alert(res.message);
+          this.notificationService.error(res.message);
         }
       },
       error: () => {
         this.isBatchLoading.set(false);
-        alert('批量操作失敗');
+        this.notificationService.error('批量操作失敗');
       }
     });
   }
@@ -232,16 +232,16 @@ export class AdminProductsComponent {
       next: (res) => {
         this.isBatchLoading.set(false);
         if (res.success) {
-          alert(res.message);
+          this.notificationService.success(res.message);
           this.clearSelection();
           this.productResource.reload();
         } else {
-          alert(res.message);
+          this.notificationService.error(res.message);
         }
       },
       error: () => {
         this.isBatchLoading.set(false);
-        alert('批量刪除失敗');
+        this.notificationService.error('批量刪除失敗');
       }
     });
   }

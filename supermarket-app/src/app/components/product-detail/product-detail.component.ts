@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ProductService } from '../../services/product.service';
 import { CartService } from '../../services/cart.service';
+import { NotificationService } from '../../services/notification.service';
 import { Product, ProductDto } from '../../models/product';
 import { Subscription,lastValueFrom } from 'rxjs';
 import { BackendImagePipe } from '../../pipes/backend-image.pipe';
@@ -18,6 +19,7 @@ export class ProductDetailComponent implements OnInit,OnDestroy{
   private route = inject(ActivatedRoute);
   private productService = inject(ProductService);
   private cartService = inject(CartService);
+  private notificationService = inject(NotificationService);
   private routeSub!: Subscription;
 
   product: Product | null = null;
@@ -64,11 +66,11 @@ export class ProductDetailComponent implements OnInit,OnDestroy{
     try {
       await this.cartService.addToCart(this.product.id, this.quantity);
 
-      alert(`已成功加入購物車！ 🛒`);
+      this.notificationService.success(`已成功加入購物車！ 🛒`);
       
     } catch (error) {
       console.error(error);
-      alert('加入購物車失敗，請稍後再試');
+      this.notificationService.error('加入購物車失敗，請稍後再試');
     }
   }
 
