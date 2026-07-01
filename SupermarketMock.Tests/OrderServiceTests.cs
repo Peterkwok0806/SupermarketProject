@@ -414,5 +414,95 @@ namespace SupermarketMock.Tests
 
             Assert.Empty(_context.CouponUsages);
         }
+
+        // ==================== 取消訂單：恢復庫存測試 ====================
+
+        [Fact]
+        public async Task UpdateOrderStatusAsync_CancelOrder_ShouldRestoreStock()
+        {
+            // Arrange：建立一個訂單（商品 1 庫存 20，購買 5 → 庫存變 15）
+            SeedProduct(1, stock: 20, price: 100m);
+            SeedCartItem(1, productId: 1, quantity: 5);
+            var createResult = await _service.CreateOrderAsync(1, CreateValidDto());
+            Assert.True(createResult.Success);
+
+            var orderSnowflakeId = createResult.Order!.snowflakeId;
+
+            // 驗證庫存已被扣減（20 - 5 = 15）
+            var productAfterOrder = await _context.Products.FindAsync(1);
+            Assert.Equal(15, productAfterOrder!.StockQuantity);
+
+            // Act：取消訂單
+            var cancelResult = await _service.UpdateOrderStatusAsync(orderSnowflakeId, OrderStatus.Cancelled);
+            Assert.True(cancelResult.Success);
+
+            // Assert：庫存已恢復（15 + 5 = 20）
+            var productAfterCancel = await _context.Products.FindAsync(1);
+            Assert.NotNull(productAfterCancel);
+            Assert.Equal(20, productAfterCancel.StockQuantity);
+        }
+
+        [Fact]
+        public async Task UpdateOrderStatusAsync_CancelOrderWithCoupon_ShouldRestoreStockAndCouponUsage()
+        {
+            // Arrange：建立一個使用優惠券的訂單
+            SeedProduct(1, stock: 20, price: 100m);
+            SeedCartItem(1, productId: 1, quantity: 5);
+            var coupon = SeedCoupon("SAVE10", CouponType.Percentage, discountValue: 10m);
+            var createResult = await _service.CreateOrderAsync(1, CreateValidDto("SAVE10"));
+            Assert.True(createResult.Success);
+
+            var orderSnowflakeId = createResult.Order!.snowflakeId;
+
+            // 驗證庫存已被扣減
+            var productAfterOrder = await _context.Products.FindAsync(1);
+            Assert.Equal(15, productAfterOrder!.StockQuantity);
+
+            // 驗證優惠券已被使用（UsedCount = 1）
+            var couponAfterOrder = await _context.Coupons.FindAsync(coupon.Id);
+            Assert.Equal(1, couponAfterOrder!.UsedCount);
+
+            // 驗證 CouponUsage 記錄已建立
+            Assert.Single(_context.CouponUsages);
+
+            // Act：取消訂單
+            var cancelResult = await _service.UpdateOrderStatusAsync(orderSnowflakeId, OrderStatus.Cancelled);
+            Assert.True(cancelResult.Success);
+
+            // Assert：庫存已恢復（15 + 5 = 20）
+            var productAfterCancel = await _context.Products.FindAsync(1);
+            Assert.Equal(20, productAfterCancel!.StockQuantity);
+
+            // Assert：優惠券使用次數已恢復（1 - 1 = 0）
+            var couponAfterCancel = await _context.Coupons.FindAsync(coupon.Id);
+            Assert.Equal(0, couponAfterCancel!.UsedCount);
+
+            // Assert：CouponUsage 記錄已移除
+            Assert.Empty(_context.CouponUsages);
+        }
+
+        [Fact]
+        public async Task UpdateOrderStatusAsync_AlreadyCancelled_ShouldNotRestoreStockAgain()
+        {
+            // Arrange：建立一個已取消的訂單
+            SeedProduct(1, stock: 20, price: 100m);
+            SeedCartItem(1, productId: 1, quantity: 5);
+            var createResult = await _service.CreateOrderAsync(1, CreateValidDto());
+            Assert.True(createResult.Success);
+
+            var orderSnowflakeId = createResult.Order!.snowflakeId;
+
+            // 第一次取消（庫存 15 → 20）
+            await _service.UpdateOrderStatusAsync(orderSnowflakeId, OrderStatus.Cancelled);
+            var productAfterFirstCancel = await _context.Products.FindAsync(1);
+            Assert.Equal(20, productAfterFirstCancel!.StockQuantity);
+
+            // Act：重複取消（不應再次恢復庫存）
+            await _service.UpdateOrderStatusAsync(orderSnowflakeId, OrderStatus.Cancelled);
+
+            // Assert：庫存不應被重複恢復（仍是 20，不是 25）
+            var productAfterSecondCancel = await _context.Products.FindAsync(1);
+            Assert.Equal(20, productAfterSecondCancel!.StockQuantity);
+        }
     }
 }

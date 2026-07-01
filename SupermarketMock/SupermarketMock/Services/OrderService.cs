@@ -365,10 +365,40 @@ namespace SupermarketMock.Services
                 return new ApiResult() { Success = false, Message = "訂單不存在" };
             }
 
-            // 如果是取消訂單，可以選擇是否恢復庫存（這裡先不恢復，之後可擴展）
+            // 如果是取消訂單，恢復庫存與優惠券使用次數
             if (newStatus == OrderStatus.Cancelled && order.Status != OrderStatus.Cancelled)
             {
-                // TODO: 未來可加入恢復庫存的邏輯 
+                // 1. 批次載入相關商品（避免 N+1：一次性查詢而非 foreach 中逐一 FindAsync）
+                var productIds = order.OrderItems.Select(oi => oi.ProductId).ToList();
+                var products = await _context.Products
+                    .Where(p => productIds.Contains(p.Id))
+                    .ToDictionaryAsync(p => p.Id);
+
+                // 2. 恢復每個訂單明細的商品庫存
+                foreach (var item in order.OrderItems)
+                {
+                    if (products.TryGetValue(item.ProductId, out var product))
+                    {
+                        product.StockQuantity += item.Quantity;
+                    }
+                }
+
+                // 3. 恢復優惠券使用紀錄（若有）
+                if (order.CouponId.HasValue)
+                {
+                    var usage = await _context.CouponUsages
+                        .FirstOrDefaultAsync(u => u.OrderId == order.Id);
+                    if (usage != null)
+                    {
+                        var coupon = await _context.Coupons.FindAsync(order.CouponId.Value);
+                        if (coupon != null)
+                        {
+                            coupon.UsedCount = Math.Max(0, coupon.UsedCount - 1);
+                            coupon.UpdatedAt = DateTime.UtcNow;
+                        }
+                        _context.CouponUsages.Remove(usage);
+                    }
+                }
             }
 
             order.Status = newStatus;
