@@ -28,49 +28,10 @@ namespace SupermarketMock.Services
                         .Select(pp => pp.Promotion)
                         .ToList();
 
-                    decimal subtoal = 0;
-
                     var primaryPromotion = activePromotions.FirstOrDefault();
 
-                    decimal currentPrice = primaryPromotion == null ? ci.Product.Price : primaryPromotion.Type switch
-                    {
-                        PromotionType.PercentageOff => Math.Round(ci.Product.Price * (1 - (primaryPromotion.DiscountValue!.Value / 100)), 2),
-                        PromotionType.FixedDiscount => Math.Max(0, ci.Product.Price - primaryPromotion.DiscountValue!.Value),
-                        _ => ci.Product.Price
-                    };
-
-                    if (primaryPromotion == null ||
-                    (primaryPromotion.Type != PromotionType.BuyXGetYFree &&
-                     primaryPromotion.Type != PromotionType.QuantitySpecialPrice))
-                    {
-                        subtoal = currentPrice * ci.Quantity;
-                    }
-                    else if (primaryPromotion.Type == PromotionType.BuyXGetYFree)
-                    {
-                        // 買 X 送 Y (例如：買 2 送 1)
-                        int buyQty = primaryPromotion.BuyQuantity!.Value;
-                        int freeQty = primaryPromotion.FreeQuantity!.Value;
-                        int groupSize = buyQty + freeQty; // 一組總共 3 件
-
-                        int completedGroups = ci.Quantity / groupSize; // 命中幾組
-                        int remainder = ci.Quantity % groupSize;       // 剩下沒滿組的散件
-
-                        // 實際要收費的件數 = (每組應付件數 * 組數) + 散件
-                        int chargeableQuantity = (buyQty * completedGroups) + remainder;
-                        subtoal = currentPrice * chargeableQuantity;
-                    }
-                    else if (primaryPromotion.Type == PromotionType.QuantitySpecialPrice)
-                    {
-                        // N 件特價 (例如：2 件特價 25 元)
-                        int specialQty = primaryPromotion.BuyQuantity!.Value;
-                        decimal specialPrice = primaryPromotion.DiscountValue!.Value;
-
-                        int specialGroups = ci.Quantity / specialQty; // 命中幾組特價
-                        int remainder = ci.Quantity % specialQty;     // 剩下沒湊滿的散件
-
-                        // 總價 = (特價組數 * 特價總額) + (散件 * 基礎單價)
-                        subtoal = (specialGroups * specialPrice) + (remainder * currentPrice);
-                    }
+                    decimal currentPrice = PricingCalculator.CalculateFinalPrice(ci.Product, primaryPromotion);
+                    decimal subtoal = PricingCalculator.CalculateItemSubTotal(ci.Product, primaryPromotion, ci.Quantity);
 
                     totalprice += subtoal;
 
@@ -89,80 +50,29 @@ namespace SupermarketMock.Services
                             photo = ci.Product.Photo,
                             isOnSale = activePromotions.Any(),
                             originalPrice = activePromotions.Any() ? ci.Product.Price : null,
-                            promotionNames = activePromotions.Select(p => p.Name).ToList() // 輸出多個標籤
+                            promotionNames = activePromotions.Select(p => p.Name).ToList()
                         }
                     };
                 }).ToList(),
 
                 TotalAmount = Math.Round(totalprice, 2)
-
-
             };
         }
 
         private decimal TotalPrice(Cart cart) 
         {
             decimal finalTotal = 0;
-            var now = DateTime.UtcNow;
 
             foreach (var item in cart.CartItems)
             {
-                // 該商品目前最優先 (Priority 最高) 的活動
                 var primaryPromotion = item.Product.ProductPromotions
                                         .Select(pp => pp.Promotion)
                                         .FirstOrDefault();
 
-                // 計算這款商品的「基礎折後單價」（處理單品打折、現折）
-                decimal basePrice = primaryPromotion == null ? item.Product.Price : primaryPromotion.Type switch
-                {
-                    PromotionType.PercentageOff =>
-                        Math.Round(item.Product.Price * (1 - (primaryPromotion.DiscountValue!.Value / 100)), 2),
-
-                    PromotionType.FixedDiscount =>
-                        Math.Max(0, item.Product.Price - primaryPromotion.DiscountValue!.Value),
-
-                    _ => item.Product.Price // 買二送一、兩件特價時，單件基礎價維持原價
-                };
-
-                // 如果沒有命中數量類型活動，該品項總價就是：基礎折後價 * 數量
-                if (primaryPromotion == null ||
-                    (primaryPromotion.Type != PromotionType.BuyXGetYFree &&
-                     primaryPromotion.Type != PromotionType.QuantitySpecialPrice))
-                {
-                    finalTotal += basePrice * item.Quantity;
-                    continue;
-                }
-
-                if (primaryPromotion.Type == PromotionType.BuyXGetYFree)
-                {
-                    // 買 X 送 Y (例如：買 2 送 1)
-                    int buyQty = primaryPromotion.BuyQuantity!.Value;
-                    int freeQty = primaryPromotion.FreeQuantity!.Value;
-                    int groupSize = buyQty + freeQty; // 一組總共 3 件
-
-                    int completedGroups = item.Quantity / groupSize; // 命中幾組
-                    int remainder = item.Quantity % groupSize;       // 剩下沒滿組的散件
-
-                    // 實際要收費的件數 = (每組應付件數 * 組數) + 散件
-                    int chargeableQuantity = (buyQty * completedGroups) + remainder;
-                    finalTotal += basePrice * chargeableQuantity;
-                }
-                else if (primaryPromotion.Type == PromotionType.QuantitySpecialPrice)
-                {
-                    // N 件特價 (例如：2 件特價 25 元)
-                    int specialQty = primaryPromotion.BuyQuantity!.Value;
-                    decimal specialPrice = primaryPromotion.DiscountValue!.Value;
-
-                    int specialGroups = item.Quantity / specialQty; // 命中幾組特價
-                    int remainder = item.Quantity % specialQty;     // 剩下沒湊滿的散件
-
-                    // 總價 = (特價組數 * 特價總額) + (散件 * 基礎單價)
-                    finalTotal += (specialGroups * specialPrice) + (remainder * basePrice);
-                }
-                
+                finalTotal += PricingCalculator.CalculateItemSubTotal(
+                    item.Product, primaryPromotion, item.Quantity);
             }
             return Math.Round(finalTotal, 2);
-
         }
 
         private async Task<Cart?> GetCartWithPromotionsAsync(int userId)

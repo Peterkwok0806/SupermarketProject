@@ -362,7 +362,7 @@ namespace SupermarketMock.Services
             }
 
             // Calculate discount
-            decimal discount = CalculateDiscount(coupon, dto.OrderSubtotal);
+            decimal discount = PricingCalculator.CalculateCouponDiscount(coupon, dto.OrderSubtotal);
 
             return Ok(new CouponValidationResultDto
             {

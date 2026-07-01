@@ -169,48 +169,9 @@ namespace SupermarketMock.Services
                        .Select(pp => pp.Promotion)
                        .FirstOrDefault();
 
-                    // 計算這款商品的「基礎折後單價」
-                    decimal finalUnitPrice = primaryPromotion == null ? dbProduct.Price : primaryPromotion.Type switch
-                    {
-                        PromotionType.PercentageOff =>
-                            Math.Round(dbProduct.Price * (1 - (primaryPromotion.DiscountValue!.Value / 100)), 2),
-
-                        PromotionType.FixedDiscount =>
-                            Math.Max(0, dbProduct.Price - primaryPromotion.DiscountValue!.Value),
-
-                        _ => dbProduct.Price // 買二送一、兩件特價時，單件基礎價維持原價
-                    };
-
-                    // 計算這款品項的最終明細總額（處理件數組合優惠）
-                    decimal itemSubTotal = 0;
-
-                    if (primaryPromotion != null && primaryPromotion.Type == PromotionType.BuyXGetYFree)
-                    {
-                        int buyQty = primaryPromotion.BuyQuantity!.Value;
-                        int freeQty = primaryPromotion.FreeQuantity!.Value;
-                        int groupSize = buyQty + freeQty;
-
-                        int completedGroups = cartItem.Quantity / groupSize;
-                        int remainder = cartItem.Quantity % groupSize;
-
-                        int chargeableQuantity = (buyQty * completedGroups) + remainder;
-                        itemSubTotal = finalUnitPrice * chargeableQuantity;
-                    }
-                    else if (primaryPromotion != null && primaryPromotion.Type == PromotionType.QuantitySpecialPrice)
-                    {
-                        int specialQty = primaryPromotion.BuyQuantity!.Value;
-                        decimal specialPrice = primaryPromotion.DiscountValue!.Value;
-
-                        int specialGroups = cartItem.Quantity / specialQty;
-                        int remainder = cartItem.Quantity % specialQty;
-
-                        itemSubTotal = (specialGroups * specialPrice) + (remainder * finalUnitPrice);
-                    }
-                    else
-                    {
-                        // 無數量優惠或無活動，總價 = 基礎折後單價 * 數量
-                        itemSubTotal = finalUnitPrice * cartItem.Quantity;
-                    }
+                    // 使用共享的 PricingCalculator 計算折後單價與項目小計
+                    decimal finalUnitPrice = PricingCalculator.CalculateFinalPrice(dbProduct, primaryPromotion);
+                    decimal itemSubTotal = PricingCalculator.CalculateItemSubTotal(dbProduct, primaryPromotion, cartItem.Quantity);
 
                     // 建立訂單明細
                     var orderItem = new OrderItem
@@ -246,7 +207,7 @@ namespace SupermarketMock.Services
                     }
 
                     // 計算折扣金額
-                    discountAmount = CalculateCouponDiscount(coupon, totalAmount);
+                    discountAmount = PricingCalculator.CalculateCouponDiscount(coupon, totalAmount);
 
                     // 設定訂單優惠券資訊
                     order.CouponId = coupon.Id;
@@ -511,30 +472,5 @@ namespace SupermarketMock.Services
             return coupon;
         }
 
-        /// <summary>
-        /// 根據優惠券類型計算折扣金額（含最大折扣上限與不超過訂單總額）。
-        /// </summary>
-        /// <param name="coupon">已驗證的優惠券</param>
-        /// <param name="orderSubtotal">訂單折前總金額</param>
-        /// <returns>計算後的折扣金額</returns>
-        private static decimal CalculateCouponDiscount(Coupon coupon, decimal orderSubtotal)
-        {
-            decimal discount = coupon.Type switch
-            {
-                CouponType.Percentage => orderSubtotal * (coupon.DiscountValue / 100m),
-                CouponType.FixedAmount => coupon.DiscountValue,
-                CouponType.FreeShipping => 0, // 運費折扣另行處理
-                _ => 0
-            };
-
-            // 受限於最大折扣金額
-            if (coupon.MaximumDiscountAmount.HasValue && discount > coupon.MaximumDiscountAmount.Value)
-                discount = coupon.MaximumDiscountAmount.Value;
-
-            // 折扣金額不得超過訂單總額
-            discount = Math.Min(discount, orderSubtotal);
-
-            return Math.Round(discount, 2);
-        }
     }
 }
