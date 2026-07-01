@@ -10,6 +10,8 @@ using IdGen;
 using Hangfire;
 using SupermarketMock.IServices;
 using SupermarketMock.Middleware;
+using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.RateLimiting;
 using OfficeOpenXml;
 
 
@@ -89,6 +91,59 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 builder.Services.AddAuthorization();
 
+// ===== API Rate Limiting =====
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    // Rate limit exceeded 回傳統一 JSON 格式
+    options.OnRejected = async (context, cancellationToken) =>
+    {
+        context.HttpContext.Response.ContentType = "application/json; charset=utf-8";
+        var retryAfter = context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfterValue)
+            ? (int)retryAfterValue.TotalSeconds
+            : 60;
+
+        context.HttpContext.Response.Headers.RetryAfter = retryAfter.ToString();
+
+        var result = new ApiResult
+        {
+            Success = false,
+            Message = $"Too many requests. Please try again after {retryAfter} seconds."
+        };
+
+        var json = System.Text.Json.JsonSerializer.Serialize(result, new System.Text.Json.JsonSerializerOptions
+        {
+            PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
+        });
+        await context.HttpContext.Response.WriteAsync(json, cancellationToken);
+    };
+
+    // Auth endpoints: 5 requests per minute per IP (prevent brute-force)
+    options.AddFixedWindowLimiter("auth", opt =>
+    {
+        opt.PermitLimit = 5;
+        opt.Window = TimeSpan.FromMinutes(1);
+        opt.QueueLimit = 0;
+    });
+
+    // AI Chat: 10 requests per minute per IP (expensive OpenAI calls)
+    options.AddFixedWindowLimiter("ai-chat", opt =>
+    {
+        opt.PermitLimit = 10;
+        opt.Window = TimeSpan.FromMinutes(1);
+        opt.QueueLimit = 0;
+    });
+
+    // General: 100 requests per minute per IP (default for all endpoints)
+    options.AddFixedWindowLimiter("general", opt =>
+    {
+        opt.PermitLimit = 100;
+        opt.Window = TimeSpan.FromMinutes(1);
+        opt.QueueLimit = 2;
+    });
+});
+
 // 註冊雪花 ID 產生器，設定當前伺服器節點編號為 1
 builder.Services.AddSingleton<IIdGenerator<long>>(new IdGenerator(1));
 
@@ -115,6 +170,9 @@ app.UseCors("AllowAngularApp");
 
 // 全域例外處理中介層（放於管線早期，攔截所有未處理的例外）
 app.UseMiddleware<GlobalExceptionMiddleware>();
+
+// 啟用 Rate Limiting（放於 Middleware 後、Authorization 前）
+app.UseRateLimiter();
 
 app.UseAuthorization();
 

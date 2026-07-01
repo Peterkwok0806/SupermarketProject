@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using SupermarketMock.DTOs;
 using SupermarketMock.Services;
 using System.Security.Claims;
@@ -25,6 +26,7 @@ namespace SupermarketMock.Controllers
         }
 
         [HttpPost("register")]
+        [EnableRateLimiting("auth")]
         public async Task<IActionResult> Register([FromBody] UserRegisterDto dto)
         {
             var result = await _authService.RegisterAsync(dto);
@@ -54,6 +56,7 @@ namespace SupermarketMock.Controllers
     
 
         [HttpPost("login")]
+        [EnableRateLimiting("auth")]
         public async Task<IActionResult> LoginAsync([FromBody] LoginDto dto)
         {
             try
@@ -86,6 +89,7 @@ namespace SupermarketMock.Controllers
         }
 
         [HttpPost("refresh-token")]
+        [EnableRateLimiting("auth")]
         public async Task<IActionResult> RefreshToken()
         {
             // 從客戶端自動帶過來的 Cookie 中讀取加密的 Refresh Token

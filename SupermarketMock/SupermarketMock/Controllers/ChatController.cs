@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using SupermarketMock.DTOs;
 using SupermarketMock.Services;
 
@@ -27,6 +28,7 @@ namespace SupermarketMock.Controllers
         /// 接收使用者訊息，回傳 AI 客服回覆
         /// </summary>
         [HttpPost]
+        [EnableRateLimiting("ai-chat")]
         public async Task<ActionResult<ApiResult<string>>> Chat([FromBody] ChatRequestDto request)
         {
             // 基本防呆驗證
