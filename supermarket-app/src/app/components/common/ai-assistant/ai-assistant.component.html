@@ -1,0 +1,105 @@
+<!-- AI 客服聊天視窗 -->
+
+<!-- 浮動按鈕 -->
+<button
+  (click)="toggleChat()"
+  class="fixed right-6 bottom-6 z-50 flex items-center justify-center w-14 h-14 rounded-full
+         bg-gradient-to-br from-violet-500 to-purple-600 text-white shadow-lg
+         hover:from-violet-600 hover:to-purple-700 hover:scale-105
+         transition-all duration-200 ease-in-out cursor-pointer">
+  @if (isOpen()) {
+    <span class="text-2xl">✕</span>
+  } @else {
+    <span class="text-2xl">💬</span>
+  }
+</button>
+
+<!-- 聊天視窗 -->
+@if (isOpen()) {
+  <div class="fixed right-6 bottom-24 z-50 w-[360px] h-[480px] flex flex-col
+              bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden
+              animate-in fade-in slide-in-from-bottom-4 duration-200">
+
+    <!-- 頂部標題列 -->
+    <div class="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-violet-500 to-purple-600 text-white">
+      <div class="flex items-center gap-2">
+        <span class="text-lg">🤖</span>
+        <span class="font-semibold text-sm">AI 智慧客服</span>
+      </div>
+      <button
+        (click)="toggleChat()"
+        class="w-7 h-7 flex items-center justify-center rounded-full
+               hover:bg-white/20 transition-colors cursor-pointer text-sm">
+        ✕
+      </button>
+    </div>
+
+    <!-- 對話紀錄滾動區 -->
+    <div class="flex-1 overflow-y-auto px-4 py-3 space-y-3 bg-gray-50">
+      @for (msg of messages(); track $index) {
+        @if (msg.sender === 'user') {
+          <!-- 使用者氣泡：靠右 -->
+          <div class="flex justify-end">
+            <div class="max-w-[80%] px-4 py-2 rounded-2xl rounded-br-md
+                        bg-violet-500 text-white text-sm leading-relaxed
+                        whitespace-pre-wrap break-words">
+              {{ msg.text }}
+            </div>
+          </div>
+        } @else {
+          <!-- AI 氣泡：靠左 -->
+          <div class="flex justify-start">
+            <div class="max-w-[80%] px-4 py-2 rounded-2xl rounded-bl-md
+                        bg-white text-gray-800 text-sm leading-relaxed
+                        border border-gray-100 shadow-sm
+                        whitespace-pre-wrap break-words">
+              {{ msg.text }}
+            </div>
+          </div>
+        }
+      }
+
+      <!-- Loading 指示器 -->
+      @if (isLoading()) {
+        <div class="flex justify-start">
+          <div class="px-4 py-2 rounded-2xl rounded-bl-md bg-white border border-gray-100 shadow-sm">
+            <div class="flex items-center gap-1">
+              <span class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0ms"></span>
+              <span class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 150ms"></span>
+              <span class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 300ms"></span>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- 底部輸入欄 -->
+    <div class="border-t border-gray-200 px-3 py-3 bg-white">
+      <div class="flex items-center gap-2">
+        <input
+          type="text"
+          [ngModel]="userQuery()"
+          (ngModelChange)="userQuery.set($event)"
+          (keydown.enter)="sendMessage()"
+          placeholder="輸入您的問題…"
+          [disabled]="isLoading()"
+          class="flex-1 px-4 py-2 text-sm rounded-full border border-gray-300
+                 focus:outline-none focus:ring-2 focus:ring-violet-400 focus:border-transparent
+                 disabled:bg-gray-100 disabled:cursor-not-allowed
+                 transition-all duration-150" />
+        <button
+          (click)="sendMessage()"
+          [disabled]="isLoading() || !userQuery().trim()"
+          class="flex items-center justify-center w-9 h-9 rounded-full
+                 bg-gradient-to-br from-violet-500 to-purple-600 text-white
+                 hover:from-violet-600 hover:to-purple-700
+                 disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed
+                 transition-all duration-150 cursor-pointer">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+}

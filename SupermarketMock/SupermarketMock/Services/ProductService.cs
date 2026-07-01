@@ -280,12 +280,12 @@ namespace SupermarketMock.Services
                     return new ApiResult { Success = false, Message = "圖片上傳失敗，只支援 JPG, PNG, WEBP 格式" };
                 }
 
-                savedPhotoPath = $"/images/products/{fileName}";
+                savedPhotoPath = $"/{fileName}";
             }
             else
             {
                 // 如果管理員沒上傳圖片，可以給一個前端 public 資料夾內的預設圖路徑
-                savedPhotoPath = "/images/products/default-product.jpg";
+                savedPhotoPath = "default-product.jpg";
             }
 
 
@@ -491,7 +491,7 @@ namespace SupermarketMock.Services
                         }
                     }
 
-                    savePath = $"/images/products/{fileName}";
+                    savePath = $"/{fileName}";
 
                 }
 
@@ -718,7 +718,7 @@ namespace SupermarketMock.Services
                         StockQuantity = stock,
                         CategoryId = categoryId,
                         IsAvailable = true,
-                        Photo = "/images/products/default-product.jpg",
+                        Photo = "default-product.jpg",
                         IsDeleted = false
                     };
                     newProducts.Add(product);
