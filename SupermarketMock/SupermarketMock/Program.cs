@@ -188,6 +188,10 @@ builder.Services.AddRateLimiter(options =>
     });
 });
 
+// ===== Health Check（健康檢查端點）=====
+builder.Services.AddHealthChecks()
+    .AddSqlServer(connectionString!, name: "sqlserver", tags: new[] { "db" });
+
 // 註冊雪花 ID 產生器，設定當前伺服器節點編號為 1
 builder.Services.AddSingleton<IIdGenerator<long>>(new IdGenerator(1));
 
@@ -219,6 +223,28 @@ app.UseMiddleware<GlobalExceptionMiddleware>();
 app.UseRateLimiter();
 
 app.UseAuthorization();
+
+// Health Check 端點：GET /health
+app.MapHealthChecks("/health", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+    ResponseWriter = async (context, report) =>
+    {
+        context.Response.ContentType = "application/json; charset=utf-8";
+        var result = new
+        {
+            status = report.Status.ToString(),
+            checks = report.Entries.Select(e => new
+            {
+                name = e.Key,
+                status = e.Value.Status.ToString(),
+                duration = e.Value.Duration.ToString(),
+                description = e.Value.Description
+            }),
+            totalDuration = report.TotalDuration.ToString()
+        };
+        await context.Response.WriteAsJsonAsync(result);
+    }
+});
 
 app.MapControllers();
 
