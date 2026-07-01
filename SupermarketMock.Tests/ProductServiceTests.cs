@@ -9,6 +9,7 @@ using SupermarketMock.Models;
 using SupermarketMock.Services;
 using SupermarketMock.IServices;
 using IdGen;
+using Microsoft.Extensions.Caching.Memory;
 using Xunit;
 
 namespace SupermarketMock.Tests
@@ -27,7 +28,8 @@ namespace SupermarketMock.Tests
                 .Options;
 
             _context = new SupermarketContext(options);
-            _service = new ProductService(_context, new Mock<IFileUploadService>().Object, new Mock<IIdGenerator<long>>().Object);
+            _service = new ProductService(_context, new Mock<IFileUploadService>().Object,
+                new Mock<IIdGenerator<long>>().Object, new MemoryCache(new MemoryCacheOptions()));
         }
 
 

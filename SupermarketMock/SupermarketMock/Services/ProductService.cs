@@ -6,6 +6,7 @@ using OfficeOpenXml;
 using OfficeOpenXml.Style;
 using System.Drawing;
 using IdGen;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace SupermarketMock.Services
 {
@@ -14,12 +15,15 @@ namespace SupermarketMock.Services
         private readonly SupermarketContext _context;
         private readonly IFileUploadService _fileUploadService;
         private readonly IIdGenerator<long> _idGenerator;
+        private readonly IMemoryCache _cache;
 
-        public ProductService(SupermarketContext context, IFileUploadService fileUploadService, IIdGenerator<long> idGenerator)
+        public ProductService(SupermarketContext context, IFileUploadService fileUploadService,
+            IIdGenerator<long> idGenerator, IMemoryCache cache)
         {
             _context = context;
             _fileUploadService = fileUploadService;
             _idGenerator = idGenerator;
+            _cache = cache;
         }
 
 
@@ -72,9 +76,13 @@ namespace SupermarketMock.Services
 
         public async Task<IEnumerable<ProductCategory>> GetCategoriesAsync()
         {
-            return await _context.ProductCategories
-                         .OrderBy(c => c.DisplayOrder)
-                         .ToListAsync();
+            return await _cache.GetOrCreateAsync(CacheKeys.Categories, async entry =>
+            {
+                entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10);
+                return await _context.ProductCategories
+                    .OrderBy(c => c.DisplayOrder)
+                    .ToListAsync();
+            });
         }
 
         public async Task<ProductDetailDto?> GetProductByIdAsync(int id)
@@ -736,6 +744,9 @@ namespace SupermarketMock.Services
                 _context.Products.AddRange(newProducts);
                 await _context.SaveChangesAsync();
             }
+
+            // 10. 若匯入過程中建立了新分類，主動清除分類快取以確保一致性
+            _cache.Remove(CacheKeys.Categories);
 
             return new ApiResult
             {

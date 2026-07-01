@@ -54,6 +54,9 @@ builder.Services.AddHangfire(configuration => configuration
 
 builder.Services.AddHangfireServer();
 
+// 快取服務（用於 Product Categories、Dashboard Stats 等讀取頻繁的端點）
+builder.Services.AddMemoryCache();
+
 
 //Services註冊
 builder.Services.AddScoped<IProductService, ProductService>();

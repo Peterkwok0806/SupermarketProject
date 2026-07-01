@@ -2,71 +2,73 @@
 using SupermarketMock.DTOs;
 using SupermarketMock.IServices;
 using SupermarketMock.Models;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace SupermarketMock.Services
 {
     public class DashboardService : IDashboardService
     {
         private readonly SupermarketContext _context;
+        private readonly IMemoryCache _cache;
 
-        public DashboardService(SupermarketContext context)
+        public DashboardService(SupermarketContext context, IMemoryCache cache)
         {
             _context = context;
+            _cache = cache;
         }
 
         public async Task<ApiResult<DashboardStatsDto>> GetDashboardStatsAsync()
         {
             var today = DateTime.UtcNow.Date;
-            var firstDayOfMonth = new DateTime(today.Year, today.Month, 1);
+            var cacheKey = CacheKeys.DashboardStats(today);
 
-            // 今日訂單數
-            var todayOrders = await _context.Orders
-                .CountAsync(o => o.CreatedAt.Date == today);
-
-            // 今日收入（排除取消訂單）
-            var todayRevenue = await _context.Orders
-                .Where(o => o.CreatedAt.Date == today && o.Status != OrderStatus.Cancelled )
-                .SumAsync(o => o.TotalAmount);
-
-            // 總商品數
-            var totalProducts = await _context.Products.CountAsync();
-
-            // 總用戶數
-            var totalUsers = await _context.Users.CountAsync();
-
-            // 待處理訂單
-            var pendingOrders = await _context.Orders
-                .CountAsync(o => o.Status == OrderStatus.Pending);
-
-            // 本月收入
-            var monthlyRevenue = await _context.Orders
-                .Where(o => o.CreatedAt >= firstDayOfMonth && o.Status != OrderStatus.Cancelled)
-                .SumAsync(o => o.TotalAmount);
-
-            // 最近 5 筆訂單
-            var recentOrders = await _context.Orders
-                .OrderByDescending(o => o.CreatedAt)
-                .Take(5)
-                .Select(o => new RecentOrderDto
-                {
-                    snowflakeId = o.SnowflakeId.ToString(),
-                    FullName = o.FullName,
-                    TotalAmount = o.TotalAmount,
-                    Status = o.Status,
-                    CreatedAt = o.CreatedAt
-                })
-                .ToListAsync();
-
-            var dashboardStatsDto = new DashboardStatsDto()
+            var dashboardStatsDto = await _cache.GetOrCreateAsync(cacheKey, async entry =>
             {
-                TodayOrders = todayOrders,
-                TodayRevenue = todayRevenue,
-                TotalProducts = totalProducts,
-                TotalUsers = totalUsers,
-                PendingOrders = pendingOrders,
-                MonthlyRevenue = monthlyRevenue,
-                RecentOrders = recentOrders
-            };
+                entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5);
+
+                var firstDayOfMonth = new DateTime(today.Year, today.Month, 1);
+
+                var todayOrders = await _context.Orders
+                    .CountAsync(o => o.CreatedAt.Date == today);
+
+                var todayRevenue = await _context.Orders
+                    .Where(o => o.CreatedAt.Date == today && o.Status != OrderStatus.Cancelled)
+                    .SumAsync(o => o.TotalAmount);
+
+                var totalProducts = await _context.Products.CountAsync();
+                var totalUsers = await _context.Users.CountAsync();
+
+                var pendingOrders = await _context.Orders
+                    .CountAsync(o => o.Status == OrderStatus.Pending);
+
+                var monthlyRevenue = await _context.Orders
+                    .Where(o => o.CreatedAt >= firstDayOfMonth && o.Status != OrderStatus.Cancelled)
+                    .SumAsync(o => o.TotalAmount);
+
+                var recentOrders = await _context.Orders
+                    .OrderByDescending(o => o.CreatedAt)
+                    .Take(5)
+                    .Select(o => new RecentOrderDto
+                    {
+                        snowflakeId = o.SnowflakeId.ToString(),
+                        FullName = o.FullName,
+                        TotalAmount = o.TotalAmount,
+                        Status = o.Status,
+                        CreatedAt = o.CreatedAt
+                    })
+                    .ToListAsync();
+
+                return new DashboardStatsDto()
+                {
+                    TodayOrders = todayOrders,
+                    TodayRevenue = todayRevenue,
+                    TotalProducts = totalProducts,
+                    TotalUsers = totalUsers,
+                    PendingOrders = pendingOrders,
+                    MonthlyRevenue = monthlyRevenue,
+                    RecentOrders = recentOrders
+                };
+            });
 
             return new ApiResult<DashboardStatsDto>
             {
@@ -171,51 +173,49 @@ namespace SupermarketMock.Services
 
         public async Task<ApiResult<List<TopSellingProductDto>>> GetTopSellingProductsAsync()
         {
-            // 查詢銷售數量最高的前 10 名商品
-            // - 排除已刪除商品 (IsDeleted)
-            // - 排除取消的訂單 (Cancelled)
-            // - 兩步查詢：先按 ProductId 聚合取 Top 10，再回頭查商品詳情
-            //   避免 GroupBy 中使用導航屬性欄位導致 EF Core 無法翻譯為 SQL 的風險
+            // 熱銷商品 30 分鐘快取（使用者對排行榜即時性要求不高）
+            var result = await _cache.GetOrCreateAsync(CacheKeys.TopSellingProducts, async entry =>
+            {
+                entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(30);
 
-            // Step 1: 純聚合（只按 FK 分組，確保可翻譯為 SQL）
-            var topAggregates = await _context.OrderItems
-                .AsNoTracking()
-                .Where(oi => !oi.Product.IsDeleted
-                          && oi.Order.Status != OrderStatus.Cancelled)
-                .GroupBy(oi => oi.ProductId)
-                .Select(g => new
-                {
-                    ProductId = g.Key,
-                    TotalQuantity = g.Sum(oi => oi.Quantity),
-                    TotalAmount = g.Sum(oi => oi.SubTotal)
-                })
-                .OrderByDescending(x => x.TotalQuantity)
-                .Take(10)
-                .ToListAsync();
-
-            // Step 2: 批次查詢商品詳情
-            var productIds = topAggregates.Select(x => x.ProductId).ToList();
-            var productLookup = await _context.Products
-                .AsNoTracking()
-                .Where(p => productIds.Contains(p.Id))
-                .ToDictionaryAsync(p => p.Id);
-
-            var result = topAggregates
-                .Select((x, index) =>
-                {
-                    productLookup.TryGetValue(x.ProductId, out var product);
-                    return new TopSellingProductDto
+                var topAggregates = await _context.OrderItems
+                    .AsNoTracking()
+                    .Where(oi => !oi.Product.IsDeleted
+                              && oi.Order.Status != OrderStatus.Cancelled)
+                    .GroupBy(oi => oi.ProductId)
+                    .Select(g => new
                     {
-                        Rank = index + 1,
-                        ProductId = x.ProductId,
-                        SnowflakeId = product?.SnowflakeId ?? 0,
-                        ProductName = product?.Name ?? "Unknown",
-                        TotalQuantitySold = x.TotalQuantity,
-                        TotalSalesAmount = Math.Round(x.TotalAmount, 2),
-                        Photo = product?.Photo
-                    };
-                })
-                .ToList();
+                        ProductId = g.Key,
+                        TotalQuantity = g.Sum(oi => oi.Quantity),
+                        TotalAmount = g.Sum(oi => oi.SubTotal)
+                    })
+                    .OrderByDescending(x => x.TotalQuantity)
+                    .Take(10)
+                    .ToListAsync();
+
+                var productIds = topAggregates.Select(x => x.ProductId).ToList();
+                var productLookup = await _context.Products
+                    .AsNoTracking()
+                    .Where(p => productIds.Contains(p.Id))
+                    .ToDictionaryAsync(p => p.Id);
+
+                return topAggregates
+                    .Select((x, index) =>
+                    {
+                        productLookup.TryGetValue(x.ProductId, out var product);
+                        return new TopSellingProductDto
+                        {
+                            Rank = index + 1,
+                            ProductId = x.ProductId,
+                            SnowflakeId = product?.SnowflakeId ?? 0,
+                            ProductName = product?.Name ?? "Unknown",
+                            TotalQuantitySold = x.TotalQuantity,
+                            TotalSalesAmount = Math.Round(x.TotalAmount, 2),
+                            Photo = product?.Photo
+                        };
+                    })
+                    .ToList();
+            });
 
             return new ApiResult<List<TopSellingProductDto>>
             {
