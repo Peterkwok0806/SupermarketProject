@@ -17,6 +17,14 @@ using OfficeOpenXml;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// ===== Kestrel 全域請求大小限制（防禦大檔案上傳拖垮伺服器）=====
+// 超過此限制的請求會在 Kestrel 層級直接被拒絕（413 Payload Too Large）
+// 不會進入 ASP.NET Core 管線，也不會佔用應用程式記憶體
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.Limits.MaxRequestBodySize = 5 * 1024 * 1024; // 5 MB
+});
+
 // Add services to the container.
 
 builder.Services.AddControllers()
@@ -27,6 +35,13 @@ builder.Services.AddControllers()
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+// Multipart 表單上傳大小限制（與 Kestrel 保持一致）
+builder.Services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(options =>
+{
+    options.MultipartBodyLengthLimit = 5 * 1024 * 1024; // 5 MB
+    options.ValueLengthLimit = 5 * 1024 * 1024;
+});
 
 builder.Services.AddCors(options =>
 {
