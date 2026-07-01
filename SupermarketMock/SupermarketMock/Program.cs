@@ -9,6 +9,7 @@ using System.Text;
 using IdGen;
 using Hangfire;
 using SupermarketMock.IServices;
+using SupermarketMock.Middleware;
 using OfficeOpenXml;
 
 
@@ -111,6 +112,9 @@ app.UseStaticFiles();
 app.UseHttpsRedirection();
 
 app.UseCors("AllowAngularApp");
+
+// 全域例外處理中介層（放於管線早期，攔截所有未處理的例外）
+app.UseMiddleware<GlobalExceptionMiddleware>();
 
 app.UseAuthorization();
 
