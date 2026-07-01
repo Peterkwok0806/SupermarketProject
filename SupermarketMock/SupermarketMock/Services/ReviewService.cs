@@ -602,22 +602,41 @@ namespace SupermarketMock.Services
             var today = DateTime.UtcNow.Date;
             var tomorrow = today.AddDays(1);
 
-            var data = await _context.ProductReviews
+            // 效能優化：將原本的 ToListAsync() + 記憶體計算改為單次 SQL 聚合查詢
+            // 大幅減少資料庫來回次數與記憶體佔用
+            var stats = await _context.ProductReviews
                 .AsNoTracking()
                 .Where(r => !r.IsDeleted)
-                .Select(r => new { r.Status, r.CreatedAt, r.Rating })
-                .ToListAsync();
+                .GroupBy(r => 1) // 所有非刪除評論分到同一組，進行聚合
+                .Select(g => new
+                {
+                    PendingCount = g.Count(r => r.Status == ReviewStatus.Pending),
+                    ApprovedCount = g.Count(r => r.Status == ReviewStatus.Approved),
+                    RejectedCount = g.Count(r => r.Status == ReviewStatus.Rejected),
+                    HiddenCount = g.Count(r => r.Status == ReviewStatus.Hidden),
+                    TodayCount = g.Count(r => r.CreatedAt >= today && r.CreatedAt < tomorrow),
+                    ApprovedRatings = g.Where(r => r.Status == ReviewStatus.Approved)
+                        .Select(r => (double?)r.Rating)
+                })
+                .FirstOrDefaultAsync();
+
+            if (stats == null)
+            {
+                return new ReviewDashboardDto();
+            }
+
+            var avgRating = stats.ApprovedRatings.Any()
+                ? Math.Round(stats.ApprovedRatings.Average() ?? 0, 2)
+                : 0;
 
             return new ReviewDashboardDto
             {
-                PendingCount = data.Count(r => r.Status == ReviewStatus.Pending),
-                ApprovedCount = data.Count(r => r.Status == ReviewStatus.Approved),
-                RejectedCount = data.Count(r => r.Status == ReviewStatus.Rejected),
-                HiddenCount = data.Count(r => r.Status == ReviewStatus.Hidden),
-                TodayCount = data.Count(r => r.CreatedAt >= today && r.CreatedAt < tomorrow),
-                AverageRating = data.Where(r => r.Status == ReviewStatus.Approved).Any()
-                    ? Math.Round(data.Where(r => r.Status == ReviewStatus.Approved).Average(r => (double)r.Rating), 2)
-                    : 0
+                PendingCount = stats.PendingCount,
+                ApprovedCount = stats.ApprovedCount,
+                RejectedCount = stats.RejectedCount,
+                HiddenCount = stats.HiddenCount,
+                TodayCount = stats.TodayCount,
+                AverageRating = avgRating
             };
         }
 

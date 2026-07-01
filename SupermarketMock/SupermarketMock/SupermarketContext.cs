@@ -205,6 +205,15 @@ namespace SupermarketMock
             modelBuilder.Entity<ProductReview>()
                 .HasIndex(r => new { r.UserId, r.CreatedAt });
 
+            // 效能優化：加速 AdminGetDashboardAsync 的狀態統計
+            modelBuilder.Entity<ProductReview>()
+                .HasIndex(r => new { r.IsDeleted, r.Status })
+                .HasDatabaseName("IX_ProductReviews_IsDeleted_Status");
+
+            modelBuilder.Entity<ProductReview>()
+                .HasIndex(r => new { r.IsDeleted, r.CreatedAt })
+                .HasDatabaseName("IX_ProductReviews_IsDeleted_CreatedAt");
+
             // ReviewImage 設定
             modelBuilder.Entity<ReviewImage>()
                 .HasOne(i => i.Review)
