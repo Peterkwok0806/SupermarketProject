@@ -1,6 +1,6 @@
-import { Injectable, inject, signal} from '@angular/core';
-import { lastValueFrom, Observable, BehaviorSubject, filter, take, switchMap, tap, throwError, catchError, firstValueFrom } from 'rxjs';
-import { RegisterRequest, AuthResponse, LoginRequest, updateProfileRequest } from '../models/auth';
+import { Injectable, inject, signal } from '@angular/core';
+import { lastValueFrom, Observable, BehaviorSubject, filter, take, switchMap, tap, throwError, catchError } from 'rxjs';
+import { RegisterRequest, AuthResponse, LoginRequest, updateProfileRequest, User } from '../models/auth';
 import { AuthApiService } from './auth-api.service';
 import { Router, ActivatedRoute } from '@angular/router';
 
@@ -15,9 +15,9 @@ export class AuthService {
   private route = inject(ActivatedRoute);
 
   // 狀態管理
-  currentUser = signal<any>(null);
+  currentUser = signal<User | null>(null);
   isLoggedIn = signal<boolean>(false);
-  isLoading = signal<Boolean>(false);
+  isLoading = signal<boolean>(false);
 
   // Token 刷新相關
   private isRefreshing = false;
@@ -46,16 +46,12 @@ export class AuthService {
       this.isRefreshing = true;
       this.refreshTokenSubject.next(null);
 
-      console.log('🕒 開始背景刷新 Access Token...');
-
       return this.refreshToken().pipe(
-        switchMap((response) =>{
+        switchMap((response) => {
           const newToken = response.token ?? '';
 
-          if (newToken){
-            // 先廣播新 token 給排隊中的請求
+          if (newToken) {
             this.refreshTokenSubject.next(newToken);
-            console.log('Token 刷新成功');
           }
 
           // 用新 Token 重發原請求 (標記已 retry，避免循環)
@@ -73,7 +69,6 @@ export class AuthService {
       );
     } else {
       // 其他請求進入排隊等待
-      console.warn('Token 刷新中，請求進入等待隊列...');
       return this.refreshTokenSubject.pipe(
         filter(token => token !== null),
         take(1),
@@ -155,18 +150,16 @@ export class AuthService {
     }
   }
 
-  async verifyEmail(data: any){
+  async verifyEmail(data: any) {
+    this.isLoading.set(true);
     try {
-      const response = await firstValueFrom(this.authApi.verifyEmail(data));
-
-      console.log(response)
+      const response = await lastValueFrom(this.authApi.verifyEmail(data));
       if (!response.success) {
-      throw new Error(response.message || '註冊失敗');
+        throw new Error(response.message || '驗證失敗');
       }
-    }catch (error: any) {
-    console.error('Registration API error', error);
-    throw new Error(error.error?.message || error.message || '網路連線異常');
-    }finally{
+    } catch (error: any) {
+      throw new Error(error.error?.message || error.message || '網路連線異常');
+    } finally {
       this.isLoading.set(false);
     }
   }
@@ -192,12 +185,8 @@ export class AuthService {
 
   async login(credentials: LoginRequest): Promise<boolean> {
     this.isLoading.set(true);
-
-    console.log('1. 開始執行');
-    try{
-      console.log('2. 準備發送 API...');
-      const response = await lastValueFrom( this.authApi.login(credentials));
-      console.log('3. API 回傳結果:', response);
+    try {
+      const response = await lastValueFrom(this.authApi.login(credentials));
       if (response?.success && response.token) {
         localStorage.setItem('token', response.token);
         localStorage.setItem('currentUser', JSON.stringify(response.userdto));
@@ -269,10 +258,4 @@ export class AuthService {
     this.isLoggedIn.set(false);
     this.refreshTokenSubject.next(null);
   }
-
-  isTokenValid(): boolean {
-    return this.isLoggedIn();
-  }
-
-
 }

@@ -79,33 +79,24 @@ namespace SupermarketMock.Controllers
             if (!validationResult.IsValid)
                 return BadRequest(new { message = string.Join("；", validationResult.Errors.Select(e => e.ErrorMessage)) });
 
-            try
+            // GlobalExceptionMiddleware 已處理所有未捕獲的例外，無需 try/catch
+            var result = await _authService.LoginAsync(dto);
+
+            if (!result.success)
+                return BadRequest(new { message = result.message });
+
+            if (!string.IsNullOrEmpty(result.RefreshToken) && result.RefreshTokenExpiryTime.HasValue)
             {
-                var result = await _authService.LoginAsync(dto);
-
-                if (!result.success)
-                {
-                    return BadRequest(new { message = result.message });
-                }
-
-                if (!string.IsNullOrEmpty(result.RefreshToken) && result.RefreshTokenExpiryTime.HasValue)
-                {
-                    // 傳入 Token 與時間
-                    SetRefreshTokenCookie(result.RefreshToken, result.RefreshTokenExpiryTime.Value);
-                }
-
-                return Ok(new
-                {
-                    success = result.success,
-                    message = result.message,
-                    token = result.token,       
-                    userdto = result.userdto
-                });
+                SetRefreshTokenCookie(result.RefreshToken, result.RefreshTokenExpiryTime.Value);
             }
-            catch (Exception ex) 
+
+            return Ok(new
             {
-                return StatusCode(500, new { message = "登入失敗", error = ex.Message });
-            }
+                success = result.success,
+                message = result.message,
+                token = result.token,
+                userdto = result.userdto
+            });
         }
 
         [HttpPost("refresh-token")]

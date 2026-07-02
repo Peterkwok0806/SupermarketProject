@@ -30,7 +30,7 @@ export interface updateProfileRequest {
 }
 
 export interface User{
-    userid: string;
+    userId: number;
     username: string;
     email: string;
     role: string;

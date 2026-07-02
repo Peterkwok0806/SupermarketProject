@@ -14,6 +14,7 @@ using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.RateLimiting;
 using OfficeOpenXml;
 using Microsoft.OpenApi.Models;
+using FluentValidation;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -112,6 +113,9 @@ builder.Services.AddScoped<IReviewService, ReviewService>();
 builder.Services.AddScoped<ICouponService, CouponService>();
 builder.Services.AddScoped<IAiChatService, AiChatService>();
 
+// FluentValidation：掃描組件並自動註冊所有 AbstractValidator<T> 為 IValidator<T>
+builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+
 // 綁定 appsettings.json 中的 "Jwt" 區段到 JwtSetting 類別
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
 
@@ -188,7 +192,6 @@ builder.Services.AddRateLimiter(options =>
     });
 });
 
-// ===== Health Check（健康檢查端點）=====
 builder.Services.AddHealthChecks()
     .AddSqlServer(connectionString!, name: "sqlserver", tags: new[] { "db" });
 

@@ -58,6 +58,6 @@ export class AuthApiService {
   }
 
   changePassword(data: any): Observable<AuthResponse> {
-    return this.http.put<any>(`${this.apiUrl}/change-password`, data);
+    return this.http.put<AuthResponse>(`${this.apiUrl}/change-password`, data);
   }
 }
