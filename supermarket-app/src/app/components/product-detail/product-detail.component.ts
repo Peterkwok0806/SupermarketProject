@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ProductService } from '../../services/product.service';
 import { CartService } from '../../services/cart.service';
+import { WishlistService } from '../../services/wishlist.service';
 import { NotificationService } from '../../services/notification.service';
 import { LoggerService } from '../../services/logger.service';
 import { Product, ProductDto } from '../../models/product';
@@ -20,6 +21,7 @@ export class ProductDetailComponent implements OnInit,OnDestroy{
   private route = inject(ActivatedRoute);
   private productService = inject(ProductService);
   private cartService = inject(CartService);
+  private wishlistService = inject(WishlistService);
   private notificationService = inject(NotificationService);
   private logger = inject(LoggerService);
   private routeSub!: Subscription;
@@ -61,6 +63,19 @@ export class ProductDetailComponent implements OnInit,OnDestroy{
 
   ngOnDestroy(): void {
     this.routeSub?.unsubscribe();
+  }
+
+  isInWishlist(): boolean {
+    return this.product ? this.wishlistService.isInWishlist(this.product.id) : false;
+  }
+
+  async toggleWishlist() {
+    if (!this.product) return;
+    try {
+      await this.wishlistService.toggleWishlist(this.product.id);
+    } catch (error) {
+      this.logger.error('切換願望清單失敗', error);
+    }
   }
 
   async addToCart() {

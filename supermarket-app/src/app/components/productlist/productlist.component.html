@@ -92,6 +92,17 @@
                       class="w-full h-full object-cover group-hover:scale-105 transition duration-300"
                       onerror="this.src='https://picsum.photos'; this.onerror=null;">
 
+                    <!-- ❤️ Wishlist Heart Button -->
+                    <button (click)="toggleWishlist(item.id); $event.stopPropagation(); $event.preventDefault()"
+                            class="absolute top-3 right-3 z-20 w-9 h-9 rounded-full bg-white/90 backdrop-blur-sm shadow-md flex items-center justify-center transition hover:scale-110 active:scale-95"
+                            [title]="isInWishlist(item.id) ? '取消收藏' : '加入收藏'">
+                      @if (isInWishlist(item.id)) {
+                        <span class="text-lg">❤️</span>
+                      } @else {
+                        <span class="text-lg">🤍</span>
+                      }
+                    </button>
+
                     <!-- Promotion Tags -->
                     @if (item.isOnSale && item.promotionNames?.length) {
                       <div class="absolute top-3 left-3 flex flex-col gap-1.5 z-10 max-w-[85%]">

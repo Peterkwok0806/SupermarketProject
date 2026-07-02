@@ -49,6 +49,17 @@
         </a>
       }
 
+      <!-- 願望清單按鈕 (帶有數量標籤) -->
+      <a routerLink="/wishlist" class="relative p-2 text-gray-600 hover:text-red-500 transition">
+        <span class="text-xl">❤️</span>
+        <span 
+          *ngIf="wishlistTotalItems() > 0" 
+          class="absolute top-0 right-0 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold transform translate-x-1 -translate-y-1"
+        >
+          {{ wishlistTotalItems() }}
+        </span>
+      </a>
+
       <!-- 購物車按鈕 (帶有數量標籤) -->
       <a routerLink="/cart" class="relative p-2 text-gray-600 hover:text-blue-600 transition">
         <span class="text-xl">🛒</span>

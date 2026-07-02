@@ -11,6 +11,7 @@ import { OrderSuccessComponent } from './components/order-success/order-success.
 import { OrdersComponent } from './components/orders/orders.component';
 import { OrderDetailComponent } from './components/order-detail/order-detail.component';
 import { ProfileComponent } from './components/profile/profile.component';
+import { WishlistComponent } from './components/wishlist/wishlist.component';
 
 
 
@@ -31,6 +32,7 @@ export const routes: Routes = [
     { path: 'orders', component: OrdersComponent, canActivate: [authGuard] },
     { path: 'order/:snowflakeId', component: OrderDetailComponent, canActivate: [authGuard] },
     { path: 'profile', component: ProfileComponent, canActivate: [authGuard] },
+    { path: 'wishlist', component: WishlistComponent, canActivate: [authGuard] },
     { 
       path: 'coupons', 
       loadComponent: () => import('./components/coupons/coupons.component').then(m => m.CouponsComponent),

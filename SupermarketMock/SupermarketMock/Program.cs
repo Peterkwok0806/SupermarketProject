@@ -112,6 +112,7 @@ builder.Services.AddScoped<IAdminService, AdminService>();
 builder.Services.AddScoped<IReviewService, ReviewService>();
 builder.Services.AddScoped<ICouponService, CouponService>();
 builder.Services.AddScoped<IAiChatService, AiChatService>();
+builder.Services.AddScoped<IWishlistService, WishlistService>();
 
 // FluentValidation：掃描組件並自動註冊所有 AbstractValidator<T> 為 IValidator<T>
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();

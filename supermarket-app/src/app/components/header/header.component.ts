@@ -4,7 +4,8 @@ import { CommonModule} from '@angular/common';
 import { CartService } from '../../services/cart.service';
 import { AuthService } from '../../services/auth.service';
 import { ProductService} from '../../services/product.service';
-import { SearchService } from '../../services/search.service'
+import { SearchService } from '../../services/search.service';
+import { WishlistService } from '../../services/wishlist.service';
 import { Subject} from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap, tap } from 'rxjs/operators';
 import { FormsModule } from '@angular/forms';
@@ -23,6 +24,7 @@ export class HeaderComponent {
   private productService = inject(ProductService);
   private router = inject(Router);
   public searchService = inject(SearchService);
+  private wishlistService = inject(WishlistService);
 
   // Signals
   isDropdownOpen = signal<boolean>(false);
@@ -30,6 +32,7 @@ export class HeaderComponent {
   searchTerm = signal<string>('');
 
   totalItems = this.cartService.totalItems;
+  wishlistTotalItems = this.wishlistService.totalItems;
   currentUser = this.authService.currentUser;
   isLoggedIn = this.authService.isLoggedIn;
   isAdmin = computed(() => this.currentUser()?.role === 'Admin');

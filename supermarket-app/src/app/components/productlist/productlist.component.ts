@@ -3,6 +3,7 @@ import { ProductCategory } from '../../models/product';
 import { ProductService } from '../../services/product.service';
 import { SearchService } from '../../services/search.service';
 import { CartService } from '../../services/cart.service';
+import { WishlistService } from '../../services/wishlist.service';
 import { NotificationService } from '../../services/notification.service';
 import { LoggerService } from '../../services/logger.service';
 import { CommonModule } from '@angular/common';
@@ -26,6 +27,7 @@ export class ProductlistComponent implements OnInit{
 
   private productService = inject(ProductService);
   private cartService = inject(CartService);
+  private wishlistService = inject(WishlistService);
   private searchService = inject(SearchService);
   private notificationService = inject(NotificationService )
   private route = inject(ActivatedRoute);
@@ -120,6 +122,18 @@ export class ProductlistComponent implements OnInit{
 }
   
 
+
+  isInWishlist(productId: number): boolean {
+    return this.wishlistService.isInWishlist(productId);
+  }
+
+  async toggleWishlist(productId: number) {
+    try {
+      await this.wishlistService.toggleWishlist(productId);
+    } catch (error) {
+      this.logger.error('切換願望清單失敗', error);
+    }
+  }
 
   async addToCart(prodcutid: number, quantity: number ) {
     try {

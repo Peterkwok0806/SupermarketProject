@@ -38,6 +38,8 @@ namespace SupermarketMock
         public DbSet<CouponProduct> CouponProducts => Set<CouponProduct>();
         public DbSet<CouponCategory> CouponCategories => Set<CouponCategory>();
 
+        public DbSet<WishlistItem> WishlistItems => Set<WishlistItem>();
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             // === 解決 Decimal Precision Warning ===
@@ -336,6 +338,31 @@ namespace SupermarketMock
                 .WithMany()
                 .HasForeignKey(cc => cc.CategoryId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            // ==================== WishlistItem 設定 ====================
+            modelBuilder.Entity<WishlistItem>()
+                .HasKey(w => w.Id);
+
+            // 唯一索引：同一使用者不能重複收藏同一商品
+            modelBuilder.Entity<WishlistItem>()
+                .HasIndex(w => new { w.UserId, w.ProductId })
+                .IsUnique();
+
+            modelBuilder.Entity<WishlistItem>()
+                .HasOne(w => w.User)
+                .WithMany()
+                .HasForeignKey(w => w.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<WishlistItem>()
+                .HasOne(w => w.Product)
+                .WithMany()
+                .HasForeignKey(w => w.ProductId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<WishlistItem>()
+                .HasIndex(w => w.CreatedAt)
+                .HasDatabaseName("IX_WishlistItems_CreatedAt");
 
 
             modelBuilder.Entity<User>().HasData(
