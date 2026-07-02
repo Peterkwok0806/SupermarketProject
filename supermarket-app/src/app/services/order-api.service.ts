@@ -26,9 +26,12 @@ export class OrderApiService {
     return this.http.get<any>(`${this.apiUrl}/${ordersnowflakeId}`);
   }
 
-  /** 取得我的所有訂單 */
-  getMyOrders(): Observable<any[]> {
-    return this.http.get<any[]>(this.apiUrl);
+  /** 取得我的訂單（分頁） */
+  getMyOrders(page: number = 1, pageSize: number = 10): Observable<ApiResultPagination<OrderEntity>> {
+    const params = new HttpParams()
+      .set('page', page.toString())
+      .set('pageSize', pageSize.toString());
+    return this.http.get<ApiResultPagination<OrderEntity>>(this.apiUrl, { params });
   }
 
   searchOrders(req?: searchOrderRequest, page: number = 1, pageSize: number = 10): Observable<ApiResultPagination<OrderEntity>> {

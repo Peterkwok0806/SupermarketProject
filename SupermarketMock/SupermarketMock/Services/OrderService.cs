@@ -337,17 +337,45 @@ namespace SupermarketMock.Services
 
         }
 
-        public async Task<List<OrderDto>> GetOrdersByUserIdAsync(int userId)
+        public async Task<PagedResultDto<OrderDto>> GetOrdersByUserIdAsync(int userId, int page = 1, int pageSize = 10)
         {
-            var orders = await _context.Orders
+            page = page < 1 ? 1 : page;
+            pageSize = Math.Clamp(pageSize, 1, 100); // 限制最大 100 筆，防止 OOM
+
+            var query = _context.Orders
+                .AsNoTracking() // 唯讀查詢，停用變更追蹤提升效能
                 .Include(o => o.Coupon)
                 .Include(o => o.OrderItems)
                 .ThenInclude(oi => oi.Product)
-                .Where(o => o.UserId == userId)
+                .Where(o => o.UserId == userId);
+
+            var totalCount = await query.CountAsync();
+
+            // 效能優化：若無訂單直接回傳空列表，跳過 Skip/Take
+            if (totalCount == 0)
+            {
+                return new PagedResultDto<OrderDto>
+                {
+                    Items = Enumerable.Empty<OrderDto>(),
+                    TotalCount = 0,
+                    PageNumber = page,
+                    PageSize = pageSize
+                };
+            }
+
+            var orders = await query
                 .OrderByDescending(o => o.CreatedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync();
 
-            return orders.Select(MapToOrderDto).ToList();
+            return new PagedResultDto<OrderDto>
+            {
+                Items = orders.Select(MapToOrderDto).ToList(),
+                TotalCount = totalCount,
+                PageNumber = page,
+                PageSize = pageSize
+            };
         }
 
         public async Task<ApiResult> UpdateOrderStatusAsync(string orderSnowflakeId, OrderStatus newStatus)

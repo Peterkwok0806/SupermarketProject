@@ -57,4 +57,31 @@
   @if (orders.length === 0) {
     <p class="text-center text-gray-500 py-20">目前沒有訂單紀錄</p>
   }
+
+  <!-- 分頁控制 -->
+  @if (hasPages) {
+    <div class="flex items-center justify-between mt-6 px-2">
+      <p class="text-sm text-gray-500">
+        共 {{ totalCount }} 筆訂單，第 {{ currentPage }} / {{ totalPages }} 頁
+      </p>
+      <div class="flex items-center gap-2">
+        <button 
+          (click)="onPageChange(currentPage - 1)" 
+          [disabled]="currentPage <= 1"
+          class="px-4 py-2 text-sm font-medium rounded-lg border transition-colors
+                 disabled:opacity-50 disabled:cursor-not-allowed
+                 border-gray-300 text-gray-700 hover:bg-gray-50 disabled:hover:bg-white">
+          ← 上一頁
+        </button>
+        <button 
+          (click)="onPageChange(currentPage + 1)" 
+          [disabled]="currentPage >= totalPages"
+          class="px-4 py-2 text-sm font-medium rounded-lg border transition-colors
+                 disabled:opacity-50 disabled:cursor-not-allowed
+                 border-gray-300 text-gray-700 hover:bg-gray-50 disabled:hover:bg-white">
+          下一頁 →
+        </button>
+      </div>
+    </div>
+  }
 </div>

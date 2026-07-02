@@ -1,10 +1,11 @@
-import { Injectable, inject, signal } from '@angular/core';
-import { OrderApiService } from './order-api.service';
-import { OrderRequest, OrderEntity } from '../models/order';
-import { lastValueFrom } from 'rxjs';
-import { CartService } from './cart.service';
-import { Router } from '@angular/router';
-import { CouponApiService } from './coupon-api.service';
+ import { Injectable, inject, signal } from '@angular/core';
+ import { OrderApiService } from './order-api.service';
+ import { OrderRequest, OrderEntity } from '../models/order';
+ import { lastValueFrom } from 'rxjs';
+ import { CartService } from './cart.service';
+ import { Router } from '@angular/router';
+ import { CouponApiService } from './coupon-api.service';
+ import { ApiResultPagination } from '../models/api-result';
 
 @Injectable({
   providedIn: 'root'
@@ -16,10 +17,16 @@ export class OrderService {
   private cartService = inject(CartService);
   private couponApi = inject(CouponApiService);
 
- isSubmitting = signal<Boolean>(false);
+ isSubmitting = signal<boolean>(false);
  currentOrder = signal<OrderEntity | null>(null);
  isProcessing = signal<boolean>(false);
  orders = signal<OrderEntity[]>([]);
+
+ // 分頁狀態
+ currentPage = signal<number>(1);
+ pageSize = signal<number>(10);
+ totalCount = signal<number>(0);
+ totalPages = signal<number>(0);
 
   async SubmitOrder(data: OrderRequest, couponCode?: string) {
     this.isSubmitting.set(true);
@@ -56,14 +63,20 @@ export class OrderService {
     }
   }
 
-  async loadOrders(){
+  async loadOrders(page: number = 1){
     try{
-      const response = await lastValueFrom(this.orderApi.getMyOrders());
-      this.orders.set(response);
+      const response = await lastValueFrom(this.orderApi.getMyOrders(page, this.pageSize()));
+      this.orders.set(response.items ?? []);
+      this.totalCount.set(response.totalCount);
+      this.totalPages.set(response.totalPages);
+      this.currentPage.set(response.pageNumber);
     }catch(error){
        console.error('獲取訂單失敗', error);
     }
+  }
 
+  async loadPage(page: number) {
+    await this.loadOrders(page);
   }
 
   constructor() { }

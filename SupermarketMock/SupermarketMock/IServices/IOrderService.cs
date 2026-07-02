@@ -7,7 +7,7 @@ namespace SupermarketMock.Services
     {
         Task<OrderResult> CreateOrderAsync(int userId, CreateOrderDto dto);
         Task<OrderDto?> GetOrderByIdAsync(string orderSnowflakeId, int userId);
-        Task<List<OrderDto>> GetOrdersByUserIdAsync(int userId);
+        Task<PagedResultDto<OrderDto>> GetOrdersByUserIdAsync(int userId, int page = 1, int pageSize = 10);
         Task<ApiResultPagination<OrderDto>> SearchOrderAsync(string? snowflakeId, string? userName, string? startDate, string? endDate, int pageNumber, int pageSize);
         Task<ApiResult> UpdateOrderStatusAsync(string orderSnowflakeId, OrderStatus newStatus);
     }

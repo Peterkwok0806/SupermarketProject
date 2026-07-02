@@ -27,6 +27,16 @@ get orders() {
     return this.orderService.orders();
   }
 
+get currentPage() { return this.orderService.currentPage(); }
+get totalPages() { return this.orderService.totalPages(); }
+get totalCount() { return this.orderService.totalCount(); }
+get hasPages() { return this.totalPages > 1; }
+
+onPageChange(page: number) {
+    if (page < 1 || page > this.totalPages) return;
+    this.orderService.loadPage(page);
+  }
+
   getStatusClass(status: OrderStatus | string): string {
     // Normalize: backend may send string ("Pending") or number (0)
     const s = typeof status === 'string' ? status : OrderStatus[status];

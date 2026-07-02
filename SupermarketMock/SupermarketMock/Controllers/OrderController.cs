@@ -39,11 +39,11 @@ namespace SupermarketMock.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetMyOrders()
+        public async Task<IActionResult> GetMyOrders([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
             int userId = GetCurrentUserId();
-            var orders = await _orderService.GetOrdersByUserIdAsync(userId);
-            return Ok(orders);
+            var result = await _orderService.GetOrdersByUserIdAsync(userId, page, pageSize);
+            return Ok(result);
         }
 
         [HttpGet("search")]
