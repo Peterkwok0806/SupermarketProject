@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using SupermarketMock.DTOs;
 using SupermarketMock.Models;
 using SupermarketMock.Services;
+using FluentValidation;
 
 namespace SupermarketMock.Controllers
 {
@@ -12,12 +13,12 @@ namespace SupermarketMock.Controllers
     public class ProductController : ControllerBase
     {
         private readonly IProductService _productService;
+        private readonly IValidator<CreateProductDto> _createProductValidator;
 
-
-        public ProductController(IProductService productService)
+        public ProductController(IProductService productService, IValidator<CreateProductDto> createProductValidator)
         {
             _productService = productService;
-
+            _createProductValidator = createProductValidator;
         }
 
         [HttpGet]
@@ -70,8 +71,17 @@ namespace SupermarketMock.Controllers
         [HttpPost]
         public async Task<ActionResult<ApiResult>> CreateProduct([FromForm] CreateProductDto dto)
         {
-            var result = await _productService.CreateProductAsync(dto);
+            var validationResult = await _createProductValidator.ValidateAsync(dto);
+            if (!validationResult.IsValid)
+            {
+                return BadRequest(new ApiResult
+                {
+                    Success = false,
+                    Message = string.Join("；", validationResult.Errors.Select(e => e.ErrorMessage))
+                });
+            }
 
+            var result = await _productService.CreateProductAsync(dto);
             return result.Success ? Ok(result) : BadRequest(result);
         }
 
@@ -79,8 +89,17 @@ namespace SupermarketMock.Controllers
         [HttpPut("{productId}")]
         public async Task<ActionResult<ApiResult>> UpdateProduct([FromRoute] int productId, [FromForm] CreateProductDto dto)
         {
-            var result = await _productService.UpdateProductAsync(productId, dto);
+            var validationResult = await _createProductValidator.ValidateAsync(dto);
+            if (!validationResult.IsValid)
+            {
+                return BadRequest(new ApiResult
+                {
+                    Success = false,
+                    Message = string.Join("；", validationResult.Errors.Select(e => e.ErrorMessage))
+                });
+            }
 
+            var result = await _productService.UpdateProductAsync(productId, dto);
             return result.Success ? Ok(result) : BadRequest(result);
         }
 

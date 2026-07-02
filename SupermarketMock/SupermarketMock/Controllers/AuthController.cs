@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.RateLimiting;
 using SupermarketMock.DTOs;
 using SupermarketMock.Services;
 using System.Security.Claims;
+using FluentValidation;
 
 namespace SupermarketMock.Controllers
 {
@@ -13,10 +14,23 @@ namespace SupermarketMock.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
+        private readonly IValidator<LoginDto> _loginValidator;
+        private readonly IValidator<UserRegisterDto> _registerValidator;
+        private readonly IValidator<ChangePasswordDto> _changePasswordValidator;
+        private readonly IValidator<VerifyCodeDto> _verifyCodeValidator;
 
-        public AuthController(IAuthService authService)
+        public AuthController(
+            IAuthService authService,
+            IValidator<LoginDto> loginValidator,
+            IValidator<UserRegisterDto> registerValidator,
+            IValidator<ChangePasswordDto> changePasswordValidator,
+            IValidator<VerifyCodeDto> verifyCodeValidator)
         {
             _authService = authService;
+            _loginValidator = loginValidator;
+            _registerValidator = registerValidator;
+            _changePasswordValidator = changePasswordValidator;
+            _verifyCodeValidator = verifyCodeValidator;
         }
 
         private int GetCurrentUserId()
@@ -29,27 +43,29 @@ namespace SupermarketMock.Controllers
         [EnableRateLimiting("auth")]
         public async Task<IActionResult> Register([FromBody] UserRegisterDto dto)
         {
+            var validationResult = await _registerValidator.ValidateAsync(dto);
+            if (!validationResult.IsValid)
+                return BadRequest(new { message = string.Join("；", validationResult.Errors.Select(e => e.ErrorMessage)) });
+
             var result = await _authService.RegisterAsync(dto);
 
             if (!result.success)
-            {
                 return BadRequest(new { message = result.message });
-            }
 
             return Ok(result);
-
         }
 
         [HttpPost("verify")]
         public async Task<IActionResult> VerifyAndRegister([FromBody] VerifyCodeDto dto)
         {
+            var validationResult = await _verifyCodeValidator.ValidateAsync(dto);
+            if (!validationResult.IsValid)
+                return BadRequest(new { message = string.Join("；", validationResult.Errors.Select(e => e.ErrorMessage)) });
 
             var result = await _authService.VerifyAndRegisterAsync(dto);
 
             if (!result.success)
-            {
                 return BadRequest(new { message = result.message });
-            }
 
             return Ok(result);
         }
@@ -59,6 +75,10 @@ namespace SupermarketMock.Controllers
         [EnableRateLimiting("auth")]
         public async Task<IActionResult> LoginAsync([FromBody] LoginDto dto)
         {
+            var validationResult = await _loginValidator.ValidateAsync(dto);
+            if (!validationResult.IsValid)
+                return BadRequest(new { message = string.Join("；", validationResult.Errors.Select(e => e.ErrorMessage)) });
+
             try
             {
                 var result = await _authService.LoginAsync(dto);
@@ -146,6 +166,10 @@ namespace SupermarketMock.Controllers
         [HttpPut("change-password")]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto dto)
         {
+            var validationResult = await _changePasswordValidator.ValidateAsync(dto);
+            if (!validationResult.IsValid)
+                return BadRequest(new { message = string.Join("；", validationResult.Errors.Select(e => e.ErrorMessage)) });
+
             int userId = GetCurrentUserId();
             var result = await _authService.ChangePasswordAsync(userId, dto);
             return result.success ? Ok(result) : BadRequest(result);

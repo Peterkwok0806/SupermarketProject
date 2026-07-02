@@ -5,6 +5,7 @@ using SupermarketMock.Services;
 using System.Security.Claims;
 using SupermarketMock.DTOs;
 using SupermarketMock.Models;
+using FluentValidation;
 
 namespace SupermarketMock.Controllers
 {
@@ -14,16 +15,29 @@ namespace SupermarketMock.Controllers
     public class OrderController : ControllerBase
     {
         private readonly IOrderService _orderService;
+        private readonly IValidator<CreateOrderDto> _createOrderValidator;
 
-        public OrderController(IOrderService orderService)
+        public OrderController(IOrderService orderService, IValidator<CreateOrderDto> createOrderValidator)
         {
             _orderService = orderService;
+            _createOrderValidator = createOrderValidator;
         }
         private int GetCurrentUserId() => int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
 
         [HttpPost]
         public async Task<IActionResult> CreateOrder([FromBody] CreateOrderDto dto)
         {
+            // 手動呼叫 FluentValidation 驗證
+            var validationResult = await _createOrderValidator.ValidateAsync(dto);
+            if (!validationResult.IsValid)
+            {
+                return BadRequest(new ApiResult
+                {
+                    Success = false,
+                    Message = string.Join("；", validationResult.Errors.Select(e => e.ErrorMessage))
+                });
+            }
+
             int userId = GetCurrentUserId();
             var result = await _orderService.CreateOrderAsync(userId, dto);
 
