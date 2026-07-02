@@ -23,6 +23,7 @@ import { OrderstatusNamePipe } from '../../../pipes/orderstatus-name.pipe';
 import { BackendImagePipe } from '../../../pipes/backend-image.pipe';
 import { DashboardApiService } from '../../../services/dashboard-api.service';
 import { ProductService } from '../../../services/product.service';
+import { LoggerService } from '../../../services/logger.service';
 
 // 註冊 Chart.js 所需組件（ng2-charts 需要）
 Chart.register(
@@ -50,6 +51,7 @@ export class AdminDashboardComponent implements OnInit {
   private dashboardApi = inject(DashboardApiService);
   private productService = inject(ProductService);
   private destroyRef = inject(DestroyRef);
+  private logger = inject(LoggerService);
 
   isLoading = signal(true);
   error = signal<string | null>(null);
@@ -246,7 +248,7 @@ export class AdminDashboardComponent implements OnInit {
           this.isLoading.set(false);
         },
         error: (err) => {
-          console.error('Failed to load dashboard data:', err);
+          this.logger.error('Failed to load dashboard data:', err);
           this.error.set('Failed to load dashboard data');
           this.isLoading.set(false);
           // 低庫存敗部復活：主要 stats 可能成功但 forkJoin 會一起視為失敗
@@ -255,7 +257,7 @@ export class AdminDashboardComponent implements OnInit {
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe({
               next: (alert) => this.lowStockAlert.set(alert),
-              error: (e) => console.error('Low stock alert fallback also failed:', e)
+              error: (e) => this.logger.error('Low stock alert fallback also failed:', e)
             });
         }
       });
@@ -274,7 +276,7 @@ export class AdminDashboardComponent implements OnInit {
           this.isTopSellingLoading.set(false);
         },
         error: (err) => {
-          console.error('Failed to load top selling products:', err);
+          this.logger.error('Failed to load top selling products:', err);
           this.isTopSellingLoading.set(false);
         }
       });
@@ -295,7 +297,7 @@ export class AdminDashboardComponent implements OnInit {
         this.isTrendLoading.set(false);
       },
       error: (err) => {
-        console.error('Failed to load sales trend:', err);
+        this.logger.error('Failed to load sales trend:', err);
         this.trendError.set('Failed to load sales trend');
         this.isTrendLoading.set(false);
       }

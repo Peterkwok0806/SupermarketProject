@@ -6,6 +6,7 @@ import { Product} from '../../../models/product';
 import { lastValueFrom } from 'rxjs';
 import { firstValueFrom } from 'rxjs';
 import { NotificationService } from '../../../services/notification.service';
+import { LoggerService } from '../../../services/logger.service';
 
 @Component({
   selector: 'app-product-modal',
@@ -16,6 +17,7 @@ import { NotificationService } from '../../../services/notification.service';
 export class ProductModalComponent {
   private productService = inject(ProductService);
   private notification = inject(NotificationService);
+  private logger = inject(LoggerService);
 
   product:Product |null = null;
 
@@ -72,7 +74,7 @@ export class ProductModalComponent {
           }; 
         }
     }catch(err){
-      console.error('載入商品詳情失敗', err);
+      this.logger.error('載入商品詳情失敗', err);
     }finally{
       this.isLoading = false;
     }
@@ -98,13 +100,10 @@ export class ProductModalComponent {
 
     try{
     if (this.isEditMode && this.product) {
-      const response = await firstValueFrom(this.productService.updateProduct(this.product.id,formData))
-      console.log(response);
+      await firstValueFrom(this.productService.updateProduct(this.product.id, formData));
       this.notification.success('商品更新成功');
-     } 
-    else {
-      const response = await firstValueFrom (this.productService.createProduct(formData))
-      console.log(response);
+    } else {
+      await firstValueFrom(this.productService.createProduct(formData));
       this.notification.success('新增商品成功');
     }
     this.saved.emit();

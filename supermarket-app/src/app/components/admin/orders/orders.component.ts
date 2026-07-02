@@ -10,6 +10,7 @@ import { map,firstValueFrom} from 'rxjs';
 import {searchOrderRequest} from '../../../models/order';
 import { StatusupdateModalComponent } from '../statusupdate-modal/statusupdate-modal.component'
 import { NotificationService } from '../../../services/notification.service';
+import { LoggerService } from '../../../services/logger.service';
 import { lastValueFrom } from 'rxjs';
 
 
@@ -25,6 +26,7 @@ export class AdminOrdersComponent {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private notificationService = inject(NotificationService);
+  private logger = inject(LoggerService);
 
   editingOrder: any | null = null;
   isModalLoading: boolean = false;
@@ -140,12 +142,11 @@ export class AdminOrdersComponent {
     const orderId = this.editingOrder.snowflakeId;
     try{
       const respones = await lastValueFrom(this.orderApi.updateStatus(orderId,newStatus));
-      console.log(respones)
       if(respones.success){
         this.editingOrder = null;
         this.OrderResource.reload();}
     }catch(err:any){
-      console.error(err)
+      this.logger.error('更新訂單狀態失敗', err);
     }finally{
       this.isModalLoading = false;
     }

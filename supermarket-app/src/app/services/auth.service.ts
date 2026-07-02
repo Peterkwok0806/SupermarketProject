@@ -3,6 +3,7 @@ import { lastValueFrom, Observable, BehaviorSubject, filter, take, switchMap, ta
 import { RegisterRequest, AuthResponse, LoginRequest, updateProfileRequest, User } from '../models/auth';
 import { AuthApiService } from './auth-api.service';
 import { Router, ActivatedRoute } from '@angular/router';
+import { LoggerService } from './logger.service';
 
 
 @Injectable({
@@ -13,6 +14,7 @@ export class AuthService {
   private authApi = inject(AuthApiService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private logger = inject(LoggerService);
 
   // 狀態管理
   currentUser = signal<User | null>(null);
@@ -58,7 +60,7 @@ export class AuthService {
           return this.retryRequest(originalReq, newToken, next);
         }),
         catchError((refreshError)=>{
-          console.error('Refresh Token 失效，強制登出');
+          this.logger.error('Refresh Token 失效，強制登出');
           this.refreshTokenSubject.next(null);
           // 注意：不在這裡 clearLocalData / logout，
           // 統一在最外層的 logout() 中處理，避免清兩次
@@ -122,7 +124,7 @@ export class AuthService {
           this.isRefreshing = false;
         },
         error: (err) => {
-          console.error('背景刷新失敗', err);
+          this.logger.error('背景刷新失敗', err);
           // 只釋放鎖，不要在這裡清資料 / 跳轉
           this.isRefreshing = false;
         }
@@ -143,7 +145,7 @@ export class AuthService {
       throw new Error(response.message || '註冊失敗');
       }
     }catch (error: any) {
-    console.error('Registration API error', error);
+    this.logger.error('Registration API error', error);
     throw new Error(error.error?.message || error.message || '網路連線異常');
     }finally{
       this.isLoading.set(false);
@@ -174,7 +176,7 @@ export class AuthService {
         this.currentUser.set(user);
         this.isLoggedIn.set(true);
       } catch (e) {
-        console.error("解析存儲的使用者資料失敗", e);
+        this.logger.error("解析存儲的使用者資料失敗", e);
         this.logout(); // 如果解析失敗，清空資料以防萬一
       }
     } else {
@@ -202,7 +204,7 @@ export class AuthService {
 
       }return false;
     }catch (error: any){
-      console.error('Login error', error);
+      this.logger.error('Login error', error);
       throw new Error(error.error?.message || '登入失敗');
     }finally{
       this.isLoading.set(false);
@@ -219,7 +221,7 @@ export class AuthService {
         this.isLoggedIn.set(true);
       }
     }catch (error: any){
-      console.error('updateProfile error', error);
+      this.logger.error('updateProfile error', error);
       throw new Error(error.error?.message || '更新個人資料失敗');
     }
   }
@@ -228,7 +230,7 @@ export class AuthService {
     try{
       await lastValueFrom( this.authApi.changePassword(data));
     }catch (error: any){
-      console.error('changePassword error', error);
+      this.logger.error('changePassword error', error);
       throw new Error(error.error?.message || '修改密碼失敗');
     }
   }
@@ -242,7 +244,7 @@ export class AuthService {
     try {
       await lastValueFrom(this.authApi.logout());
     } catch (error) {
-      console.error('後端 Cookie 清除失敗，但仍將強制清理前端狀態', error);
+      this.logger.error('後端 Cookie 清除失敗，但仍將強制清理前端狀態', error);
     } finally {
       // 💡 不管後端成功與否，前端都必須確實執行清除與跳轉
       this.clearLocalData();

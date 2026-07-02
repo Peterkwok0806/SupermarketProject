@@ -4,6 +4,7 @@ import { ProductService } from '../../services/product.service';
 import { SearchService } from '../../services/search.service';
 import { CartService } from '../../services/cart.service';
 import { NotificationService } from '../../services/notification.service';
+import { LoggerService } from '../../services/logger.service';
 import { CommonModule } from '@angular/common';
 import { lastValueFrom } from 'rxjs';
 import { RouterLink, ActivatedRoute, Router} from '@angular/router'; 
@@ -29,6 +30,7 @@ export class ProductlistComponent implements OnInit{
   private notificationService = inject(NotificationService )
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private logger = inject(LoggerService);
   backendUrl = environment.apiUrl;
 
   categories: ProductCategory[] = [];
@@ -94,7 +96,7 @@ export class ProductlistComponent implements OnInit{
     try{
       this.categories = await lastValueFrom(this.productService.getCategories());
     }catch (err){
-      console.error('載入分類失敗', err);
+      // 載入分類失敗（已通過 LoggerService 記錄）
     }
   }
 
@@ -126,7 +128,7 @@ export class ProductlistComponent implements OnInit{
       this.notificationService.success(`已成功加入購物車!`);
       
     } catch (error) {
-      console.error(error);
+      this.logger.error('加入購物車失敗', error);
       this.notificationService.error('加入購物車失敗，請稍後再試');
     }
   }

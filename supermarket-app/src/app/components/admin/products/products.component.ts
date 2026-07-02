@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ProductService } from '../../../services/product.service';
 import { NotificationService } from '../../../services/notification.service';
+import { LoggerService } from '../../../services/logger.service';
 import { ProductModalComponent } from '../product-modal/product-modal.component';
 import { BackendImagePipe } from '../../../pipes/backend-image.pipe';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -21,6 +22,7 @@ export type ProductSortBy = '' | 'name_asc' | 'name_desc' | 'price_asc' | 'price
 export class AdminProductsComponent {
   private productService = inject(ProductService);
   private notificationService = inject(NotificationService);
+  private logger = inject(LoggerService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
 
@@ -147,7 +149,7 @@ export class AdminProductsComponent {
       },
       error: (err) => {
         this.togglingId = null;
-        console.error('切換上下架失敗', err);
+        this.logger.error('切換上下架失敗', err);
         this.notificationService.error('切換上下架失敗：' + (err?.error?.message || err?.message || '未知錯誤'));
       }
     });

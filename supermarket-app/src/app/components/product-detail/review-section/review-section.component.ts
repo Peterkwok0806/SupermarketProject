@@ -4,6 +4,7 @@ import { RouterLink } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { ReviewApiService } from '../../../services/review-api.service';
 import { AuthService } from '../../../services/auth.service';
+import { LoggerService } from '../../../services/logger.service';
 import { Review, ReviewStats, CanReviewResult } from '../../../models/review';
 import { ReviewFormModalComponent } from '../review-form-modal/review-form-modal.component';
 
@@ -18,6 +19,7 @@ export class ReviewSectionComponent implements OnInit {
 
   private reviewApi = inject(ReviewApiService);
   private authService = inject(AuthService);
+  private logger = inject(LoggerService);
 
   stats: ReviewStats | null = null;
   reviews: Review[] = [];
@@ -97,7 +99,7 @@ export class ReviewSectionComponent implements OnInit {
           this.stats = res.item;
         }
       },
-      error: (err) => console.error('Failed to load review stats', err)
+      error: (err) => this.logger.error('Failed to load review stats', err)
     });
   }
 
@@ -122,7 +124,7 @@ export class ReviewSectionComponent implements OnInit {
         this.isLoading = false;
       },
       error: (err) => {
-        console.error('Failed to load reviews', err);
+        this.logger.error('Failed to load reviews', err);
         this.isLoadingReviews = false;
         this.isLoading = false;
       }

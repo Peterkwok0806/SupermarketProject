@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { AdminApiService } from '../../../services/admin-api.service';
 import { NotificationService } from '../../../services/notification.service';
+import { LoggerService } from '../../../services/logger.service';
 import { AdminUser } from '../../../models/admin-user';
 
 @Component({
@@ -15,6 +16,7 @@ import { AdminUser } from '../../../models/admin-user';
 export class AdminUsersComponent implements OnInit {
   private adminApi = inject(AdminApiService);
   private notificationService = inject(NotificationService);
+  private logger = inject(LoggerService);
 
   users = signal<AdminUser[]>([]);
   isLoading = signal(true);
@@ -48,7 +50,7 @@ export class AdminUsersComponent implements OnInit {
         this.isLoading.set(false);
       },
       error: (err) => {
-        console.error('Failed to load users:', err);
+        this.logger.error('Failed to load users:', err);
         this.error.set('Failed to load users');
         this.isLoading.set(false);
       }
@@ -122,7 +124,7 @@ export class AdminUsersComponent implements OnInit {
           }
         },
         error: (err) => {
-          console.error('Failed to update status:', err);
+          this.logger.error('Failed to update status:', err);
           this.notificationService.error('更新狀態失敗');
         }
       });
@@ -137,7 +139,7 @@ export class AdminUsersComponent implements OnInit {
           }
         },
         error: (err) => {
-          console.error('Failed to update role:', err);
+          this.logger.error('Failed to update role:', err);
           this.notificationService.error('更新角色失敗');
         }
       });

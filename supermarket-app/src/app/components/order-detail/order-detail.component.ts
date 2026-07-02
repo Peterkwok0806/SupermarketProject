@@ -7,6 +7,7 @@ import { lastValueFrom } from 'rxjs';
 import { OrderstatusNamePipe } from '../../pipes/orderstatus-name.pipe';
 import { OrderStatus } from '../../models/order';
 import { BackendImagePipe } from '../../pipes/backend-image.pipe';
+import { LoggerService } from '../../services/logger.service';
 
 @Component({
   selector: 'app-order-detail',
@@ -17,6 +18,7 @@ import { BackendImagePipe } from '../../pipes/backend-image.pipe';
 export class OrderDetailComponent implements OnInit{
 private route = inject(ActivatedRoute);
 private orderServices = inject(OrderService);
+private logger = inject(LoggerService);
 
 order =this.orderServices.currentOrder;
 isLoading = true;
@@ -34,7 +36,7 @@ async loadOrder(snowflakeId: string| null) {
     try{
     await this.orderServices.loadOrderDetail(snowflakeId);
     }catch(err){
-      console.error(err);
+      this.logger.error('載入訂單失敗', err);
     }finally{
        this.isLoading = false;
     }

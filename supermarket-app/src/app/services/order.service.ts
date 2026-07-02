@@ -6,6 +6,7 @@
  import { Router } from '@angular/router';
  import { CouponApiService } from './coupon-api.service';
  import { ApiResultPagination } from '../models/api-result';
+ import { LoggerService } from './logger.service';
 
 @Injectable({
   providedIn: 'root'
@@ -16,6 +17,7 @@ export class OrderService {
   private router = inject(Router);
   private cartService = inject(CartService);
   private couponApi = inject(CouponApiService);
+  private logger = inject(LoggerService);
 
  isSubmitting = signal<boolean>(false);
  currentOrder = signal<OrderEntity | null>(null);
@@ -44,7 +46,7 @@ export class OrderService {
         });
       }
     } catch (error: any) {
-      console.error(error);
+      this.logger.error('建立訂單失敗', error);
     } finally {
       this.isSubmitting.set(false);
     }
@@ -56,7 +58,7 @@ export class OrderService {
       const response = await lastValueFrom(this.orderApi.getOrderById(orderSnowflakeId));
       this.currentOrder.set(response);
     }catch(error){
-      console.error('邏輯層：獲取訂單詳細失敗', error);
+      this.logger.error('邏輯層：獲取訂單詳細失敗', error);
       this.currentOrder.set(null);
     }finally{
         this.isProcessing.set(false);
@@ -71,7 +73,7 @@ export class OrderService {
       this.totalPages.set(response.totalPages);
       this.currentPage.set(response.pageNumber);
     }catch(error){
-       console.error('獲取訂單失敗', error);
+       this.logger.error('獲取訂單失敗', error);
     }
   }
 

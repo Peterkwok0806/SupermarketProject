@@ -7,6 +7,7 @@ import { Router } from '@angular/router';
 import { BackendImagePipe } from '../../pipes/backend-image.pipe';
 import { CouponApiService } from '../../services/coupon-api.service';
 import { NotificationService } from '../../services/notification.service';
+import { LoggerService } from '../../services/logger.service';
 import { CouponValidationResultDto } from '../../models/coupon';
 
 @Component({
@@ -21,6 +22,7 @@ export class CheckoutComponent implements OnInit {
   private router = inject(Router);
   private couponApi = inject(CouponApiService);
   private notificationService = inject(NotificationService);
+  private logger = inject(LoggerService);
 
   cart = this.cartService.cart;
   totalPrice = this.cartService.totalPrice;
@@ -95,7 +97,7 @@ export class CheckoutComponent implements OnInit {
       error: (err) => {
         this.couponValidating = false;
         this.couponError = 'Failed to validate coupon. Please try again.';
-        console.error('Coupon validation error:', err);
+        this.logger.error('Coupon validation error:', err);
       }
     });
   }
@@ -123,7 +125,7 @@ export class CheckoutComponent implements OnInit {
       const couponCode = this.appliedCoupon?.code || undefined;
       await this.orderService.SubmitOrder(this.orderData, couponCode);
     } catch (err) {
-      console.error(err);
+      this.logger.error('提交訂單失敗', err);
     }
   }
 }

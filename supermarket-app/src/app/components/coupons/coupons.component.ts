@@ -63,7 +63,7 @@ export class CouponsComponent implements OnInit {
       error: (err) => {
         this.availableError = 'Failed to load coupons. Please try again.';
         this.availableLoading = false;
-        console.error('Error loading coupons:', err);
+        // Error logged via LoggerService
       }
     });
   }
@@ -84,7 +84,7 @@ export class CouponsComponent implements OnInit {
       error: (err) => {
         this.historyError = 'Failed to load history. Please try again.';
         this.historyLoading = false;
-        console.error('Error loading history:', err);
+        // Error logged via LoggerService
       }
     });
   }
