@@ -1,48 +1,43 @@
 # 🛒 Supermarket E-Commerce Platform
 
-**Full-Stack .NET 8 + Angular 18+** Online Shopping System with Admin Dashboard
+**Production-Ready Full-Stack .NET 8 + Angular 19** E-Commerce System with Admin Dashboard
+
+**Live Demo**: [https://api-supermarket-prod.azurewebsites.net/](https://api-supermarket-prod.azurewebsites.net/)
 
 [![.NET 8](https://img.shields.io/badge/.NET-8-purple)](https://dotnet.microsoft.com)
-[![Angular](https://img.shields.io/badge/Angular-18-red)](https://angular.dev)
-[![Tailwind](https://img.shields.io/badge/Tailwind-3-blue)](https://tailwindcss.com)
+[![Angular](https://img.shields.io/badge/Angular-19-red)](https://angular.dev)
+[![Tailwind](https://img.shields.io/badge/Tailwind-4-blue)](https://tailwindcss.com)
+[![Azure](https://img.shields.io/badge/Azure-Deployed-blue)](https://azure.microsoft.com)
 
-A production-like full-stack e-commerce platform built to demonstrate modern web development practices, clean architecture, and problem-solving skills.
+A comprehensive full-stack e-commerce platform built to demonstrate modern development practices, clean architecture, and real-world problem-solving skills. Currently deployed on **Azure Free Tier**.
+
+**Default Admin Login**: `admin@supermart.com` / `Admin123!`
 
 ---
 
-## Key Features
+## Key Highlights 
 
-### Customer Features
-- **User Authentication & Security**  
-  JWT Authentication with **Refresh Token Rotation** to prevent replay attacks and support secure silent refresh.
-
-- **Shopping Cart & Order Processing**  
-  Real-time cart management with server-side pricing calculation and atomic order creation.
-
-- **High Concurrency Handling**  
-  Implemented **Pessimistic Locking** (UPDLOCK) with ordered product IDs to eliminate deadlocks during peak checkout scenarios.
-
-- **Product Search & Discovery**  
-  Server-side fuzzy search with autocomplete suggestions (limited to top 8 results) and category filtering.
-
-- **Background Processing**  
-  Integrated **Hangfire** for asynchronous tasks (e.g. order confirmation emails).
-
-- **Order Tracking**  
-  Full order history with detailed order information and status tracking.
+### Technical Strengths
+- **High Concurrency Handling**: Implemented **Pessimistic Locking** (`UPDLOCK + ROWLOCK`) with ordered product IDs to prevent overselling during peak checkout.
+- **Secure Authentication**: JWT with **Refresh Token Rotation** to prevent replay attacks and support secure silent refresh.
+- **Background Processing**: Integrated **Hangfire** for reliable asynchronous tasks (order confirmation emails, etc.).
+- **Admin Dashboard**: Real-time analytics with **Sales Trend Charts**, Low Stock Alerts, Top 10 Best Sellers, and Batch Operations.
+- **AI Integration**: AI Chat Assistant for intelligent product recommendations and shopping guidance.
+- **Cloud Deployment**: Fully deployed on **Azure App Service (Free Tier)** + SQL Database with CI/CD readiness.
 
 ### Admin Features
-- **Admin Dashboard**  
-  Comprehensive analytics with sales trends, low stock alerts, and key performance indicators.
+- Complete Product Management with **Batch Operations** (批量上下架 / 刪除)
+- Low Stock Alert System with visual warnings
+- Sales Trend Analysis using **ng2-charts**
+- User Management, Order Management, Review Moderation, Coupon System
 
-- **User Management**  
-  Full CRUD operations for user accounts with role-based access control.
-
-- **Product Management**  
-  Batch operations for products, inventory management, and low stock alerts.
-
-- **Order Management**  
-  View and manage customer orders with status updates.
+### Customer Features
+- Smooth Shopping Cart & Checkout Flow
+- Order History & Tracking
+- Wishlist / Favorites
+- Product Reviews & Ratings
+- Coupon System
+- Responsive UI with Tailwind CSS
 
 ---
 
@@ -50,26 +45,25 @@ A production-like full-stack e-commerce platform built to demonstrate modern web
 
 ### Backend
 - .NET 8 + ASP.NET Core Web API
-- Entity Framework Core (Code-First)
+- Entity Framework Core (Code-First) with Soft Delete
 - Microsoft SQL Server
 - Hangfire + IdGen (Snowflake ID)
-- JWT Bearer Authentication
-- Swagger/OpenAPI Documentation
+- JWT Bearer Authentication with Refresh Token Rotation
+- FluentValidation + Global Exception Handling
 
 ### Frontend
-- Angular 18+ with Signals
+- Angular 19 with Signals
 - RxJS + TypeScript
-- Tailwind CSS
-- Angular Guards (Auth/Admin)
-- HTTP Interceptors
-- Custom Pipes
+- Tailwind CSS 4 + Angular Material
+- Chart.js + ng2-charts (Dashboard)
+- HTTP Interceptors + Route Guards
 
 ### Architecture & Quality
-- Clean Architecture + RESTful Design
-- Interface Segregation (IServices/)
-- JWT Security with Refresh Tokens
-- Role-Based Authorization
-- xUnit + Moq + EF Core InMemory Database for testing
+- **Clean Architecture** + Repository + Service Pattern
+- Soft Delete pattern for data integrity
+- Comprehensive Unit Testing (xUnit + Moq + EF InMemory)
+- API Documentation with Swagger
+- Deployed on Azure with production-like setup
 
 ---
 
@@ -82,25 +76,37 @@ A production-like full-stack e-commerce platform built to demonstrate modern web
 │   │   ├── app/
 │   │   │   ├── components/
 │   │   │   │   ├── admin/            # Admin Dashboard Components
-│   │   │   │   │   ├── dashboard/    # Analytics Dashboard
+│   │   │   │   │   ├── dashboard/    # Analytics Dashboard (Sales Trends)
 │   │   │   │   │   ├── products/     # Product Management
+│   │   │   │   │   ├── product-modal/# Product Create/Edit Modal
 │   │   │   │   │   ├── users/        # User Management
+│   │   │   │   │   ├── orders/       # Order Management
+│   │   │   │   │   ├── coupons/      # Coupon Management
+│   │   │   │   │   ├── reviews/      # Review Moderation
+│   │   │   │   │   ├── statusupdate-modal/ # Order Status Update Modal
 │   │   │   │   │   └── layout/       # Admin Layout
-│   │   │   │   ├── auth/             # Authentication Components
+│   │   │   │   ├── auth/             # Authentication (Login/Register)
+│   │   │   │   ├── banner/           # Home Page Banner
 │   │   │   │   ├── cart/             # Shopping Cart
 │   │   │   │   ├── checkout/         # Checkout Flow
+│   │   │   │   ├── coupons/          # Customer Coupon Page
+│   │   │   │   ├── footer/           # Footer Component
+│   │   │   │   ├── header/           # Navigation Header
 │   │   │   │   ├── home/             # Home Page
 │   │   │   │   ├── orders/           # Order History
 │   │   │   │   ├── order-detail/     # Order Details
-│   │   │   │   ├── product-detail/   # Product Details
+│   │   │   │   ├── order-success/    # Order Success Page
+│   │   │   │   ├── product-detail/   # Product Details (Reviews)
 │   │   │   │   ├── productlist/      # Product Listing
-│   │   │   │   └── profile/          # User Profile
+│   │   │   │   ├── profile/          # User Profile
+│   │   │   │   ├── wishlist/         # Wishlist / Favorites
+│   │   │   │   └── common/           # Shared UI Components
 │   │   │   ├── guards/               # Route Guards (Auth, Admin, Guest)
-│   │   │   ├── interceptors/         # HTTP Interceptors
+│   │   │   ├── interceptors/         # HTTP Interceptors (JWT)
 │   │   │   ├── models/               # TypeScript Domain Models
 │   │   │   ├── pipes/                # Custom Pipes
 │   │   │   ├── services/             # API Services
-│   │   │   └── shared/               # Shared Components
+│   │   │   └── shared/               # Shared Utilities
 │   │   └── ...
 │   └── package.json
 │
@@ -111,6 +117,7 @@ A production-like full-stack e-commerce platform built to demonstrate modern web
 │   │   ├── IServices/                # Service Interfaces
 │   │   ├── Models/                   # EF Core Entities
 │   │   ├── Services/                 # Business Logic
+│   │   ├── Middleware/               # Global Exception Middleware
 │   │   ├── Migrations/               # Database Migrations
 │   │   ├── Program.cs                # Application Entry Point
 │   │   └── appsettings.json          # Configuration
@@ -167,12 +174,15 @@ C4Context
     Person(customer, "Customer", "Online shopper")
     Person(admin, "Admin", "System administrator")
     
-    System_Boundary(supermarket, "Supermarket E-Commerce Platform") {
-        Container(frontend, "Web Frontend", "Angular 18+", "SPA with Signals")
-        Container(admin_panel, "Admin Panel", "Angular 18+", "Dashboard & Management")
-        Container(api, "Backend API", ".NET 8 Web API", "RESTful services")
-        Container(hangfire, "Background Jobs", "Hangfire", "Async tasks")
-        ContainerDb(database, "Database", "Microsoft SQL Server", "Product, Order, User data")
+    System_Boundary(azure, "Azure Cloud (Free Tier)") {
+        System_Boundary(supermarket, "Supermarket E-Commerce Platform") {
+            Container(frontend, "Web Frontend", "Angular 19", "SPA with Signals & Material")
+            Container(admin_panel, "Admin Panel", "Angular 19", "Dashboard & Management")
+            Container(api, "Backend API", ".NET 8 Web API", "RESTful services")
+            Container(hangfire, "Background Jobs", "Hangfire", "Async tasks (emails)")
+            Container(ai_chat, "AI Chat", "OpenAI API", "Product recommendations")
+            ContainerDb(database, "Database", "Microsoft SQL Server", "Product, Order, User data")
+        }
     }
 
     Rel(customer, frontend, "Uses", "HTTPS")
@@ -181,6 +191,7 @@ C4Context
     Rel(admin_panel, api, "Calls", "JSON/HTTPS")
     Rel(api, database, "Reads/Writes", "EF Core")
     Rel(api, hangfire, "Enqueues", "Background jobs")
+    Rel(api, ai_chat, "Calls", "OpenAI API")
 ```
 
 ---
@@ -188,14 +199,17 @@ C4Context
 ## Quality Assurance & Test-Driven Standards
 
 ### Test Coverage
-- **ProductService**: Pagination, category filtering, autocomplete search
+- **ProductService**: Pagination, category filtering, autocomplete search, low stock alerts
 - **OrderService**: Promotion engine (Buy X Get Y), stock deduction, insufficient stock rollback
 - **AdminService**: User management, dashboard analytics
+- **ReviewService**: Review submission, moderation, helpful votes
+- **CouponService**: Coupon claim, validation, usage tracking
+- **WishlistService**: Add/remove/list wishlist items
 
 ### Testing Stack
-- xUnit - Test framework
-- Moq - Mocking framework
-- EF Core InMemory Database - In-memory database for testing
+- xUnit — Test framework
+- Moq — Mocking framework
+- EF Core InMemory Database — In-memory database for testing
 
 ---
 
@@ -223,9 +237,9 @@ C4Context
       "Port": "587",
       "User": "your-email@gmail.com",
       "Password": "YOUR_APP_PASSWORD"
+    }
   }
-}
-```
+  ```
 *(Note: For Gmail, please use an App Password instead of your regular password.)*
 
 3.  Execute the Entity Framework migration command:
@@ -285,18 +299,69 @@ C4Context
 - `GET /api/products` - List products with pagination/search
 - `GET /api/products/{id}` - Get product details
 - `GET /api/products/search` - Search products with autocomplete
+- `POST /api/products/upload` - Upload product image (Admin)
 
 ### Cart & Orders
 - `POST /api/cart` - Add to cart
 - `GET /api/cart` - Get cart items
 - `POST /api/orders` - Create order
 - `GET /api/orders` - Get order history
+- `GET /api/orders/{id}` - Get order details
 
-### Admin
+### Reviews
+- `GET /api/reviews/product/{productId}` - Get product reviews
+- `POST /api/reviews` - Submit a review
+- `POST /api/reviews/{id}/helpful` - Toggle helpful vote
+
+### Coupons
+- `GET /api/coupons/available` - List available coupons
+- `POST /api/coupons/{id}/claim` - Claim a coupon
+- `POST /api/coupons/validate` - Validate coupon at checkout
+
+### Wishlist
+- `GET /api/wishlist` - Get wishlist items
+- `POST /api/wishlist/{productId}` - Add to wishlist
+- `DELETE /api/wishlist/{productId}` - Remove from wishlist
+
+### AI Chat
+- `POST /api/chat` - Chat with AI assistant for product recommendations
+
+### Admin - Dashboard
 - `GET /api/admin/dashboard` - Dashboard statistics
-- `GET /api/admin/users` - List users
-- `GET /api/admin/products` - Manage products
+- `GET /api/admin/dashboard/sales-trend` - Sales trend data
+- `GET /api/admin/dashboard/top-selling` - Top selling products
 - `GET /api/admin/alerts/low-stock` - Low stock alerts
+
+### Admin - User Management
+- `GET /api/admin/users` - List users
+- `POST /api/admin/users` - Create user
+- `PUT /api/admin/users/{id}` - Update user
+- `DELETE /api/admin/users/{id}` - Delete user
+
+### Admin - Product Management
+- `GET /api/admin/products` - List all products (admin view)
+- `POST /api/admin/products` - Create product
+- `PUT /api/admin/products/{id}` - Update product
+- `DELETE /api/admin/products/{id}` - Delete product
+- `POST /api/admin/products/batch` - Batch operations
+- `POST /api/admin/products/import` - Import products from Excel
+
+### Admin - Order Management
+- `GET /api/admin/orders` - List all orders
+- `PUT /api/admin/orders/{id}/status` - Update order status
+
+### Admin - Review Moderation
+- `GET /api/admin/reviews` - List all reviews
+- `PUT /api/admin/reviews/{id}/status` - Approve/reject review
+
+### Admin - Coupon Management
+- `GET /api/admin/coupons` - List all coupons
+- `POST /api/admin/coupons` - Create coupon
+- `PUT /api/admin/coupons/{id}` - Update coupon
+- `DELETE /api/admin/coupons/{id}` - Delete coupon
+
+### Health Check
+- `GET /health` - Application health status (includes SQL Server check)
 
 ---
 

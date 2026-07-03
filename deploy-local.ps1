@@ -82,15 +82,47 @@ if (Test-Path $bannerSrc) {
 Write-Host "  SPA files copied (images/products/ intentionally skipped)." -ForegroundColor Green
 
 # ============================================================
-# Step 3: Publish .NET project
+# Step 3: Publish .NET project + Generate EF migration script
 # ============================================================
-Write-Host "[3/4] Publishing .NET project ($Configuration)..." -ForegroundColor Yellow
+Write-Host "[3/4] Publishing .NET project + Generating EF migration script ($Configuration)..." -ForegroundColor Yellow
 $csprojPath = Join-Path $root "SupermarketMock\SupermarketMock\SupermarketMock.csproj"
 
 if (Test-Path $publishDir) {
     Remove-Item $publishDir -Recurse -Force
 }
 
+# --- Ensure dotnet-ef global tool is installed ---
+Write-Host "  Checking dotnet-ef tool..." -ForegroundColor Gray
+$efInstalled = dotnet tool list -g 2>$null | Select-String "dotnet-ef"
+if (-not $efInstalled) {
+    Write-Host "  dotnet-ef not found. Installing..." -ForegroundColor Yellow
+    & dotnet tool install --global dotnet-ef
+    if ($LASTEXITCODE -ne 0) { throw "Failed to install dotnet-ef" }
+}
+
+# Resolve the full path to dotnet-ef.exe to avoid PATH refresh issues
+# in the current PowerShell session after a fresh install.
+$dotnetEfPath = Join-Path $env:USERPROFILE ".dotnet\tools\dotnet-ef.exe"
+if (-not (Test-Path $dotnetEfPath)) {
+    # Fallback: rely on dotnet resolving the tool from its known paths
+    $dotnetEfArgs = @("ef", "migrations", "script", "--idempotent",
+                       "-o", "$publishDir\migrate.sql",
+                       "--project", $csprojPath,
+                       "--startup-project", $csprojPath)
+    & dotnet @dotnetEfArgs
+} else {
+    & $dotnetEfPath migrations script --idempotent `
+        -o "$publishDir\migrate.sql" `
+        --project $csprojPath `
+        --startup-project $csprojPath
+}
+if ($LASTEXITCODE -ne 0) { throw "EF Core migrations script failed" }
+
+$migrateSqlPath = Join-Path $publishDir "migrate.sql"
+if (-not (Test-Path $migrateSqlPath)) { throw "migrate.sql was not generated" }
+Write-Host "  migrate.sql generated: $migrateSqlPath" -ForegroundColor Gray
+
+# --- Publish .NET project ---
 & dotnet publish $csprojPath -c $Configuration -o $publishDir
 if ($LASTEXITCODE -ne 0) { throw "dotnet publish failed" }
 Write-Host "  Publish complete: $publishDir" -ForegroundColor Green
