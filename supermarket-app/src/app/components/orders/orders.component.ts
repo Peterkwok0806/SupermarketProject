@@ -7,20 +7,24 @@ import { RouterModule } from '@angular/router';
 import { OrderService } from '../../services/order.service';
 import { OrderstatusNamePipe } from '../../pipes/orderstatus-name.pipe';
 import { OrderStatus } from '../../models/order';
+import { SkeletonComponent } from '../../shared/skeleton/skeleton.component';
 
 @Component({
   selector: 'app-orders',
-  imports: [CommonModule, OrderstatusNamePipe,MatTableModule, MatButtonModule, MatIconModule ,RouterModule],
+  imports: [CommonModule, OrderstatusNamePipe, MatTableModule, MatButtonModule, MatIconModule, RouterModule, SkeletonComponent],
   templateUrl: './orders.component.html',
   styleUrl: './orders.component.css'
 })
 export class OrdersComponent implements OnInit {
 protected orderService = inject(OrderService);
+isLoading = true;
 
 displayedColumns: string[] = ['id', 'date', 'status', 'totalAmount', 'action'];
 
-ngOnInit() {
-    this.orderService.loadOrders();
+async ngOnInit(): Promise<void> {
+    this.isLoading = true;
+    await this.orderService.loadOrders();
+    this.isLoading = false;
   }
 
 get orders() {

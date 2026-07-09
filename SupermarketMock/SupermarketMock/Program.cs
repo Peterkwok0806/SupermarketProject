@@ -15,6 +15,8 @@ using Microsoft.AspNetCore.RateLimiting;
 using OfficeOpenXml;
 using Microsoft.OpenApi.Models;
 using FluentValidation;
+using Microsoft.SemanticKernel;
+using OpenAI;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -100,6 +102,53 @@ builder.Services.AddHangfireServer();
 builder.Services.AddMemoryCache();
 
 
+// ===== Semantic Kernel 註冊（官方 DI 模式） =====
+// AI Service 會自動成為 Singleton，Kernel 為 Transient，避免 Captive Dependency
+var aiSettings = builder.Configuration.GetSection("AzureOpenAI");
+var modelId = aiSettings["ModelId"] ?? "gpt-4o-mini";
+var endpoint = aiSettings["Endpoint"];
+var apiKey = aiSettings["ApiKey"];
+var deploymentName = aiSettings["DeploymentName"];
+
+// 檢查 ApiKey 是否為 placeholder（包含雙底線或以 YOUR_ 開頭）
+static bool IsPlaceholder(string? value) =>
+    string.IsNullOrWhiteSpace(value) ||
+    value.Contains("__") ||
+    value.StartsWith("YOUR_", StringComparison.OrdinalIgnoreCase);
+
+var kernelBuilder = builder.Services.AddKernel();
+
+if (!string.IsNullOrWhiteSpace(deploymentName) && !string.IsNullOrWhiteSpace(endpoint))
+{
+    // Azure OpenAI 模式
+    if (IsPlaceholder(apiKey))
+        throw new InvalidOperationException(
+            "AzureOpenAI:ApiKey 未設定或仍為 placeholder，請透過環境變數 AzureOpenAI__ApiKey 設定有效的 API Key。");
+    kernelBuilder.AddAzureOpenAIChatCompletion(deploymentName, endpoint, apiKey!);
+}
+else if (endpoint?.Contains("localhost") == true || endpoint?.Contains("127.0.0.1") == true)
+{
+    // Ollama 本地模式 — 建立自訂 OpenAIClient 指向 Ollama endpoint
+    var ollamaOptions = new OpenAIClientOptions
+    {
+        Endpoint = new Uri(endpoint)
+    };
+    var credential = new System.ClientModel.ApiKeyCredential(apiKey ?? "ollama");
+    var openAIClient = new OpenAIClient(credential, ollamaOptions);
+    kernelBuilder.AddOpenAIChatCompletion(modelId, openAIClient: openAIClient);
+}
+else if (!string.IsNullOrWhiteSpace(endpoint) && !IsPlaceholder(apiKey))
+{
+    // OpenAI / OpenRouter 直連模式
+    kernelBuilder.AddOpenAIChatCompletion(modelId, apiKey!, endpoint);
+}
+else
+{
+    throw new InvalidOperationException(
+        $"AI 設定不完整：Endpoint='{endpoint ?? "(空)"}', ApiKey 是否有效={!IsPlaceholder(apiKey)}。" +
+        "請檢查 appsettings.json 中的 AzureOpenAI 區段，或透過環境變數 AzureOpenAI__ApiKey 提供有效的 API Key。");
+}
+
 //Services註冊
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -111,6 +160,7 @@ builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<IAdminService, AdminService>();
 builder.Services.AddScoped<IReviewService, ReviewService>();
 builder.Services.AddScoped<ICouponService, CouponService>();
+builder.Services.AddScoped<IChatHistoryService, ChatHistoryService>();
 builder.Services.AddScoped<IAiChatService, AiChatService>();
 builder.Services.AddScoped<IWishlistService, WishlistService>();
 

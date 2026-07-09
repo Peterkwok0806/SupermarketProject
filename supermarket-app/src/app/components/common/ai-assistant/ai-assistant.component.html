@@ -26,52 +26,106 @@
         <span class="text-lg">🤖</span>
         <span class="font-semibold text-sm">AI 智慧客服</span>
       </div>
-      <button
-        (click)="toggleChat()"
-        class="w-7 h-7 flex items-center justify-center rounded-full
-               hover:bg-white/20 transition-colors cursor-pointer text-sm">
-        ✕
-      </button>
+      <div class="flex items-center gap-1">
+        <button
+          (click)="startNewChat()"
+          title="開始新對話"
+          class="w-7 h-7 flex items-center justify-center rounded-full
+                 hover:bg-white/20 transition-colors cursor-pointer text-sm">
+          ➕
+        </button>
+        <button
+          (click)="toggleSessionsView()"
+          title="對話記錄"
+          class="w-7 h-7 flex items-center justify-center rounded-full
+                 hover:bg-white/20 transition-colors cursor-pointer text-sm">
+          📋
+        </button>
+        <button
+          (click)="toggleChat()"
+          class="w-7 h-7 flex items-center justify-center rounded-full
+                 hover:bg-white/20 transition-colors cursor-pointer text-sm">
+          ✕
+        </button>
+      </div>
     </div>
 
-    <!-- 對話紀錄滾動區 -->
-    <div class="flex-1 overflow-y-auto px-4 py-3 space-y-3 bg-gray-50">
-      @for (msg of messages(); track $index) {
-        @if (msg.sender === 'user') {
-          <!-- 使用者氣泡：靠右 -->
-          <div class="flex justify-end">
-            <div class="max-w-[80%] px-4 py-2 rounded-2xl rounded-br-md
-                        bg-violet-500 text-white text-sm leading-relaxed
-                        whitespace-pre-wrap break-words">
-              {{ msg.text }}
-            </div>
+    @if (view() === 'sessions') {
+      <!-- Sessions 列表視圖 -->
+      <div class="flex-1 overflow-y-auto px-4 py-3 space-y-2 bg-gray-50">
+        @if (sessions().length === 0) {
+          <div class="text-center text-gray-500 text-sm py-8">
+            <p class="text-2xl mb-2">📝</p>
+            <p>尚無對話記錄</p>
+            <p class="text-xs text-gray-400 mt-1">開始新對話以建立記錄</p>
           </div>
         } @else {
-          <!-- AI 氣泡：靠左 -->
+          @for (session of sessions(); track session.sessionId) {
+            <div
+              (click)="openSession(session.sessionId)"
+              class="p-3 bg-white rounded-lg border border-gray-200 hover:border-violet-300
+                     hover:shadow-sm transition-all duration-150 cursor-pointer">
+              <div class="flex items-center justify-between">
+                <span class="text-xs text-gray-400">
+                  {{ session.messageCount }} 則訊息
+                </span>
+                <button
+                  (click)="deleteSession(session.sessionId, $event)"
+                  class="w-5 h-5 flex items-center justify-center rounded-full
+                         hover:bg-red-100 text-gray-400 hover:text-red-500 transition-colors cursor-pointer text-xs">
+                  ✕
+                </button>
+              </div>
+              @if (session.lastMessagePreview) {
+                <p class="text-sm text-gray-700 mt-1 truncate">{{ session.lastMessagePreview }}</p>
+              }
+              <p class="text-xs text-gray-400 mt-1">
+                {{ session.lastActivityAt | date:'MM/dd HH:mm' }}
+              </p>
+            </div>
+          }
+        }
+      </div>
+    } @else {
+      <!-- 對話紀錄滾動區 -->
+      <div class="flex-1 overflow-y-auto px-4 py-3 space-y-3 bg-gray-50">
+        @for (msg of messages(); track $index) {
+          @if (msg.sender === 'user') {
+            <!-- 使用者氣泡：靠右 -->
+            <div class="flex justify-end">
+              <div class="max-w-[80%] px-4 py-2 rounded-2xl rounded-br-md
+                          bg-violet-500 text-white text-sm leading-relaxed
+                          whitespace-pre-wrap break-words">
+                {{ msg.text }}
+              </div>
+            </div>
+          } @else {
+            <!-- AI 氣泡：靠左 -->
+            <div class="flex justify-start">
+              <div class="max-w-[80%] px-4 py-2 rounded-2xl rounded-bl-md
+                          bg-white text-gray-800 text-sm leading-relaxed
+                          border border-gray-100 shadow-sm
+                          whitespace-pre-wrap break-words">
+                {{ msg.text }}
+              </div>
+            </div>
+          }
+        }
+
+        <!-- Loading 指示器 -->
+        @if (isLoading()) {
           <div class="flex justify-start">
-            <div class="max-w-[80%] px-4 py-2 rounded-2xl rounded-bl-md
-                        bg-white text-gray-800 text-sm leading-relaxed
-                        border border-gray-100 shadow-sm
-                        whitespace-pre-wrap break-words">
-              {{ msg.text }}
+            <div class="px-4 py-2 rounded-2xl rounded-bl-md bg-white border border-gray-100 shadow-sm">
+              <div class="flex items-center gap-1">
+                <span class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0ms"></span>
+                <span class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 150ms"></span>
+                <span class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 300ms"></span>
+              </div>
             </div>
           </div>
         }
-      }
-
-      <!-- Loading 指示器 -->
-      @if (isLoading()) {
-        <div class="flex justify-start">
-          <div class="px-4 py-2 rounded-2xl rounded-bl-md bg-white border border-gray-100 shadow-sm">
-            <div class="flex items-center gap-1">
-              <span class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0ms"></span>
-              <span class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 150ms"></span>
-              <span class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 300ms"></span>
-            </div>
-          </div>
-        </div>
-      }
-    </div>
+      </div>
+    }
 
     <!-- 底部輸入欄 -->
     <div class="border-t border-gray-200 px-3 py-3 bg-white">

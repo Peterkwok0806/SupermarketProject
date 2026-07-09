@@ -1,87 +1,96 @@
 <div class="max-w-7xl mx-auto px-6 py-10">
   <h1 class="text-4xl font-bold mb-8 text-gray-900">My Orders</h1>
 
-  <!-- 1. 強制表格背景為白色，並移除可能干擾的背景 -->
-  <mat-table [dataSource]="orders" class="mat-elevation-z2 rounded-2xl overflow-hidden !bg-white">
-
-    <!-- Order ID -->
-    <ng-container matColumnDef="id">
-      <!-- 2. 使用 !bg-purple-700 和 !text-white 強制覆蓋標頭 -->
-      <mat-header-cell *matHeaderCellDef class="!bg-purple-700 !text-white font-semibold"> Order ID </mat-header-cell>
-      <mat-cell *matCellDef="let order" class="!text-gray-700">#{{ order.snowflakeId }}</mat-cell>
-    </ng-container>
-
-    <!-- Date -->
-    <ng-container matColumnDef="date">
-      <mat-header-cell *matHeaderCellDef class="!bg-purple-700 !text-white font-semibold"> Date </mat-header-cell>
-      <mat-cell *matCellDef="let order" class="!text-gray-700">{{ order.createdAt | date:'yyyy-MM-dd HH:mm' }}</mat-cell>
-    </ng-container>
-
-    <!-- Status -->
-    <ng-container matColumnDef="status">
-      <mat-header-cell *matHeaderCellDef class="!bg-purple-700 !text-white font-semibold"> Status </mat-header-cell>
-      <mat-cell *matCellDef="let order">
-        <span [class]="getStatusClass(order.status)" class="px-4 py-1 rounded-full text-sm font-medium">
-          {{ order.status | orderstatusName }}
-        </span>
-      </mat-cell>
-    </ng-container>
-
-    <!-- Total Price -->
-    <ng-container matColumnDef="totalAmount">
-      <mat-header-cell *matHeaderCellDef class="!bg-purple-700 !text-white font-semibold"> Total </mat-header-cell>
-      <!-- 3. 確保金額文字顏色為深灰色（避免變黑看不見） -->
-      <mat-cell *matCellDef="let order" class="font-semibold !text-gray-900">
-        {{ order.totalAmount | currency:'HKD':'symbol-narrow' }}
-      </mat-cell>
-    </ng-container>
-
-    <!-- Action -->
-    <ng-container matColumnDef="action">
-      <mat-header-cell *matHeaderCellDef class="!bg-purple-700 !text-white font-semibold"> Action </mat-header-cell>
-      <mat-cell *matCellDef="let order">
-        <!-- 移除 color="primary"，改用 Tailwind 強制設定藍底白字與正方形 -->
-        <button mat-raised-button 
-                [routerLink]="['/order', order.snowflakeId]"
-                class="!bg-blue-600 !text-white !rounded-none font-medium px-4 py-2 transition-colors hover:!bg-blue-700">
-          Detail
-        </button>
-      </mat-cell>
-    </ng-container>
-
-    <!-- 4. 標頭列與資料列同樣加上 ! 確保背景不衝突 -->
-    <mat-header-row *matHeaderRowDef="displayedColumns" class="!bg-purple-700 !text-white"></mat-header-row>
-    <mat-row *matRowDef="let row; columns: displayedColumns;" class="!bg-white hover:!bg-gray-50"></mat-row>
-  </mat-table>
-
-  @if (orders.length === 0) {
-    <p class="text-center text-gray-500 py-20">目前沒有訂單紀錄</p>
-  }
-
-  <!-- 分頁控制 -->
-  @if (hasPages) {
-    <div class="flex items-center justify-between mt-6 px-2">
-      <p class="text-sm text-gray-500">
-        共 {{ totalCount }} 筆訂單，第 {{ currentPage }} / {{ totalPages }} 頁
-      </p>
-      <div class="flex items-center gap-2">
-        <button 
-          (click)="onPageChange(currentPage - 1)" 
-          [disabled]="currentPage <= 1"
-          class="px-4 py-2 text-sm font-medium rounded-lg border transition-colors
-                 disabled:opacity-50 disabled:cursor-not-allowed
-                 border-gray-300 text-gray-700 hover:bg-gray-50 disabled:hover:bg-white">
-          ← 上一頁
-        </button>
-        <button 
-          (click)="onPageChange(currentPage + 1)" 
-          [disabled]="currentPage >= totalPages"
-          class="px-4 py-2 text-sm font-medium rounded-lg border transition-colors
-                 disabled:opacity-50 disabled:cursor-not-allowed
-                 border-gray-300 text-gray-700 hover:bg-gray-50 disabled:hover:bg-white">
-          下一頁 →
-        </button>
-      </div>
+  @if (isLoading) {
+    <!-- Loading State (Skeleton Rows) -->
+    <div class="space-y-3">
+      @for (item of [0,1,2,3,4]; track item) {
+        <app-skeleton variant="row"></app-skeleton>
+      }
     </div>
+  } @else {
+    <!-- 1. 強制表格背景為白色，並移除可能干擾的背景 -->
+    <mat-table [dataSource]="orders" class="mat-elevation-z2 rounded-2xl overflow-hidden !bg-white">
+
+      <!-- Order ID -->
+      <ng-container matColumnDef="id">
+        <!-- 2. 使用 !bg-purple-700 和 !text-white 強制覆蓋標頭 -->
+        <mat-header-cell *matHeaderCellDef class="!bg-purple-700 !text-white font-semibold"> Order ID </mat-header-cell>
+        <mat-cell *matCellDef="let order" class="!text-gray-700">#{{ order.snowflakeId }}</mat-cell>
+      </ng-container>
+
+      <!-- Date -->
+      <ng-container matColumnDef="date">
+        <mat-header-cell *matHeaderCellDef class="!bg-purple-700 !text-white font-semibold"> Date </mat-header-cell>
+        <mat-cell *matCellDef="let order" class="!text-gray-700">{{ order.createdAt | date:'yyyy-MM-dd HH:mm' }}</mat-cell>
+      </ng-container>
+
+      <!-- Status -->
+      <ng-container matColumnDef="status">
+        <mat-header-cell *matHeaderCellDef class="!bg-purple-700 !text-white font-semibold"> Status </mat-header-cell>
+        <mat-cell *matCellDef="let order">
+          <span [class]="getStatusClass(order.status)" class="px-4 py-1 rounded-full text-sm font-medium">
+            {{ order.status | orderstatusName }}
+          </span>
+        </mat-cell>
+      </ng-container>
+
+      <!-- Total Price -->
+      <ng-container matColumnDef="totalAmount">
+        <mat-header-cell *matHeaderCellDef class="!bg-purple-700 !text-white font-semibold"> Total </mat-header-cell>
+        <!-- 3. 確保金額文字顏色為深灰色（避免變黑看不見） -->
+        <mat-cell *matCellDef="let order" class="font-semibold !text-gray-900">
+          {{ order.totalAmount | currency:'HKD':'symbol-narrow' }}
+        </mat-cell>
+      </ng-container>
+
+      <!-- Action -->
+      <ng-container matColumnDef="action">
+        <mat-header-cell *matHeaderCellDef class="!bg-purple-700 !text-white font-semibold"> Action </mat-header-cell>
+        <mat-cell *matCellDef="let order">
+          <!-- 移除 color="primary"，改用 Tailwind 強制設定藍底白字與正方形 -->
+          <button mat-raised-button 
+                  [routerLink]="['/order', order.snowflakeId]"
+                  class="!bg-blue-600 !text-white !rounded-none font-medium px-4 py-2 transition-colors hover:!bg-blue-700">
+            Detail
+          </button>
+        </mat-cell>
+      </ng-container>
+
+      <!-- 4. 標頭列與資料列同樣加上 ! 確保背景不衝突 -->
+      <mat-header-row *matHeaderRowDef="displayedColumns" class="!bg-purple-700 !text-white"></mat-header-row>
+      <mat-row *matRowDef="let row; columns: displayedColumns;" class="!bg-white hover:!bg-gray-50"></mat-row>
+    </mat-table>
+
+    @if (orders.length === 0) {
+      <p class="text-center text-gray-500 py-20">目前沒有訂單紀錄</p>
+    }
+
+    <!-- 分頁控制 -->
+    @if (hasPages) {
+      <div class="flex items-center justify-between mt-6 px-2">
+        <p class="text-sm text-gray-500">
+          共 {{ totalCount }} 筆訂單，第 {{ currentPage }} / {{ totalPages }} 頁
+        </p>
+        <div class="flex items-center gap-2">
+          <button 
+            (click)="onPageChange(currentPage - 1)" 
+            [disabled]="currentPage <= 1"
+            class="px-4 py-2 text-sm font-medium rounded-lg border transition-colors
+                   disabled:opacity-50 disabled:cursor-not-allowed
+                   border-gray-300 text-gray-700 hover:bg-gray-50 disabled:hover:bg-white">
+            ← 上一頁
+          </button>
+          <button 
+            (click)="onPageChange(currentPage + 1)" 
+            [disabled]="currentPage >= totalPages"
+            class="px-4 py-2 text-sm font-medium rounded-lg border transition-colors
+                   disabled:opacity-50 disabled:cursor-not-allowed
+                   border-gray-300 text-gray-700 hover:bg-gray-50 disabled:hover:bg-white">
+            下一頁 →
+          </button>
+        </div>
+      </div>
+    }
   }
 </div>

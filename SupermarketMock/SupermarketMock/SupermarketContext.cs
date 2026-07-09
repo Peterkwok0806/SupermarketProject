@@ -40,6 +40,9 @@ namespace SupermarketMock
 
         public DbSet<WishlistItem> WishlistItems => Set<WishlistItem>();
 
+        public DbSet<ChatSession> ChatSessions => Set<ChatSession>();
+        public DbSet<ChatMessage> ChatMessages => Set<ChatMessage>();
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             // === 解決 Decimal Precision Warning ===
@@ -363,6 +366,47 @@ namespace SupermarketMock
             modelBuilder.Entity<WishlistItem>()
                 .HasIndex(w => w.CreatedAt)
                 .HasDatabaseName("IX_WishlistItems_CreatedAt");
+
+            // ==================== ChatSession & ChatMessage 設定 ====================
+            // ChatSession: SessionId 是主鍵
+            modelBuilder.Entity<ChatSession>()
+                .HasKey(s => s.SessionId);
+
+            // 為登入使用者建立索引，加速查詢與清理
+            modelBuilder.Entity<ChatSession>()
+                .HasIndex(s => s.UserId)
+                .HasDatabaseName("IX_ChatSessions_UserId");
+
+            // ChatSession 軟刪除索引
+            modelBuilder.Entity<ChatSession>()
+                .HasIndex(s => new { s.IsDeleted, s.LastActivityAt })
+                .HasDatabaseName("IX_ChatSessions_IsDeleted_LastActivityAt");
+
+            // ChatSession 與 User 的多對一關聯（可選：匿名 Session 沒有 User）
+            modelBuilder.Entity<ChatSession>()
+                .HasOne(s => s.User)
+                .WithMany()
+                .HasForeignKey(s => s.UserId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            // ChatMessage: SessionId + CreatedAt 建立索引加速查詢
+            modelBuilder.Entity<ChatMessage>()
+                .HasKey(m => m.Id);
+
+            modelBuilder.Entity<ChatMessage>()
+                .HasIndex(m => m.SessionId)
+                .HasDatabaseName("IX_ChatMessages_SessionId");
+
+            modelBuilder.Entity<ChatMessage>()
+                .HasIndex(m => new { m.SessionId, m.CreatedAt })
+                .HasDatabaseName("IX_ChatMessages_SessionId_CreatedAt");
+
+            // ChatMessage 與 ChatSession 的多對一關聯
+            modelBuilder.Entity<ChatMessage>()
+                .HasOne(m => m.Session)
+                .WithMany(s => s.Messages)
+                .HasForeignKey(m => m.SessionId)
+                .OnDelete(DeleteBehavior.Cascade);
 
 
             modelBuilder.Entity<User>().HasData(

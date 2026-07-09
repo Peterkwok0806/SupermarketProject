@@ -9,5 +9,10 @@ namespace SupermarketMock.DTOs
         /// 使用者輸入的文字訊息
         /// </summary>
         public string Message { get; set; } = string.Empty;
+
+        /// <summary>
+        /// 對話 Session ID（null 表示新對話）
+        /// </summary>
+        public string? SessionId { get; set; }
     }
 }

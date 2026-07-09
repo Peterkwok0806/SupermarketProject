@@ -61,9 +61,9 @@
 - [ ] `LoginComponent` - 改為 lazy loading
 
 ### 2. Skeleton Loading Components
-- [ ] 建立 `SkeletonComponent`
-- [ ] 應用於 ProductListComponent
-- [ ] 應用於 OrdersComponent
+- [x] 建立 `SkeletonComponent`
+- [x] 應用於 ProductListComponent
+- [x] 應用於 OrdersComponent
 
 ---
 

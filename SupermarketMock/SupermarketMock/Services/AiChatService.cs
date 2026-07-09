@@ -1,9 +1,11 @@
 using System.ComponentModel;
 using System.Text;
+using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
+using SupermarketMock.IServices;
 
 namespace SupermarketMock.Services
 {
@@ -15,78 +17,42 @@ namespace SupermarketMock.Services
     {
         private readonly Kernel _kernel;
         private readonly SupermarketContext _context;
+        private readonly IChatHistoryService _chatHistoryService;
         private readonly ILogger<AiChatService> _logger;
 
         /// <summary>
         /// System Prompt：定義 AI 客服的角色與行為邊界，並告知可使用的工具
         /// </summary>
         private const string SystemPrompt = @"
-你是一位專業且友善的超市線上客服助手。你的職責如下：
-1. 回答顧客關於商品（品名、價格、庫存、成分、保存期限、促銷活動等）的問題。
-2. 提供商品推薦、比價、替代品建議。
-3. 說明結帳流程、配送方式、退換貨政策。
-4. 對一般聊天保持親切有禮，但始終將話題導回超市購物體驗。
+你是一位專業且親切的【本實體超市門市】線上客服助手。
 
-【重要】當顧客詢問商品相關問題時，請先使用 SearchProductsAsync 工具查詢即時商品資料，再根據查詢結果回答。
-不要憑空猜測商品資訊，務必以工具查詢到的資料為準。
+【鐵律 1：不要詢問顧客城市或地址】
+顧客目前已經在我們超市的官方線上商城/App 中與你對話。你不需要、也絕對禁止詢問顧客所在的城市、地址或地區！
 
-回答原則：
-- 使用繁體中文回答。
-- 保持簡潔、精準，避免過度冗長。
-- 如果查詢結果中找不到相關商品，請誠實告知並建議顧客聯繫門市確認。
-- 絕不編造不存在的商品或價格。";
+【鐵律 2：嚴禁憑空猜測與使用外部常識】
+當顧客問你『這裡有沒有賣某商品』或『推薦買什麼』時，你腦海中的外部知識全部都是不可靠的。你必須立刻、馬上呼叫 SearchProductsAsync 工具查詢我們這家超市的即時資料庫！
 
+【鐵律 3：如果工具查不到】
+如果使用工具查詢後，發現我們超市真的沒賣該商品，請誠實、客氣地回答：『不好意思，我們這間門市目前沒有販售這款商品喔！』。絕不允許去問顧客住在外面哪裡。";
+
+        /// <summary>
+        /// 建構函式：透過 DI 接收 Kernel（由 SK 官方 AddKernel() 自動管理生命週期）
+        /// 並複製一份 Kernel 實例，將自己註冊為 Plugin，避免 Captive Dependency 問題。
+        /// </summary>
         public AiChatService(
-            IConfiguration configuration,
+            Kernel kernel, // 👈 由 DI 注入（Transient，每次請求新建）
             SupermarketContext context,
+            IChatHistoryService chatHistoryService,
             ILogger<AiChatService> logger)
         {
             _context = context;
+            _chatHistoryService = chatHistoryService;
             _logger = logger;
 
-            // -------------------------------------------------------
-            // 從 appsettings.json 讀取 AI 設定
-            // 支援 OpenAI 直連 與 Azure OpenAI 兩種模式
-            // -------------------------------------------------------
-            var aiSettings = configuration.GetSection("AzureOpenAI");
-            var serviceId = aiSettings["ServiceId"] ?? "chat";
-            var modelId = aiSettings["ModelId"] ?? "gpt-4o-mini";
-            var endpoint = aiSettings["Endpoint"];
-            var apiKey = aiSettings["ApiKey"];
-            var deploymentName = aiSettings["DeploymentName"];
-
-            // -------------------------------------------------------
-            // 使用 Kernel.CreateBuilder() 初始化 Semantic Kernel
-            // -------------------------------------------------------
-            var builder = Kernel.CreateBuilder();
-
-            if (!string.IsNullOrWhiteSpace(deploymentName) && !string.IsNullOrWhiteSpace(endpoint))
-            {
-                // Azure OpenAI 模式（推薦用於正式環境）
-                builder.AddAzureOpenAIChatCompletion(
-                    deploymentName: deploymentName,
-                    endpoint: endpoint,
-                    apiKey: apiKey ?? string.Empty,
-                    serviceId: serviceId);
-            }
-#pragma warning disable SKEXP0010 // AddOpenAIChatCompletion(Uri) 為實驗性 API，對接自訂 endpoint 必須使用
-            else if (!string.IsNullOrWhiteSpace(endpoint) && !string.IsNullOrWhiteSpace(apiKey))
-            {
-                // OpenAI 直連模式（開發 / 測試用）— 對接 dbai.click 等 OpenAI 相容中轉站
-                builder.AddOpenAIChatCompletion(
-                    modelId: modelId,
-                    apiKey: apiKey,
-                    endpoint: new Uri(endpoint),
-                    serviceId: serviceId);
-            }
-            else
-            {
-                _logger.LogWarning(
-                    "AI 設定未完整配置，AiChatService 將無法正常運作。" +
-                    "請在 appsettings.json 的 AzureOpenAI 區段設定 Endpoint、ApiKey 與 DeploymentName。");
-            }
-
-            _kernel = builder.Build();
+            // 關鍵：複製 Kernel 並將自己註冊為 Plugin
+            // 這樣可以確保工具調用時，用的是當前 HTTP 請求的資料庫實例，絕不衝突
+            _kernel = kernel.Clone();
+            _kernel.Plugins.AddFromObject(this, pluginName: "SupermarketTools");
         }
 
         /// <summary>
@@ -94,9 +60,9 @@ namespace SupermarketMock.Services
         /// AI 會自動判斷使用者意圖並決定是否呼叫此工具
         /// </summary>
         [KernelFunction]
-        [Description("根據關鍵字模糊搜尋超市商品與分類，回傳商品名稱、價格、庫存、分類、品牌等資訊。適用於顧客詢問商品相關問題時使用。")]
+        [Description("【必用工具】只要顧客提到任何商品名稱、或者想要你推薦商品、問有沒有賣時，必須立刻執行此工具查詢超市資料庫。")]
         public async Task<string> SearchProductsAsync(
-            [Description("搜尋關鍵字，可輸入商品名稱、描述、品牌或分類名稱")] string query)
+            [Description("搜尋關鍵字，例如：可樂、飲料、泡麵")] string query)
         {
             if (string.IsNullOrWhiteSpace(query))
             {
@@ -172,11 +138,7 @@ namespace SupermarketMock.Services
             {
                 var chatService = _kernel.GetRequiredService<IChatCompletionService>();
 
-                // ✨ 執行期動態加入自己作為 Plugin（避免建構期 DI 參數未就緒的問題）
-                if (!_kernel.Plugins.Any(p => p.Name == nameof(AiChatService)))
-                {
-                    _kernel.Plugins.AddFromObject(this, nameof(AiChatService));
-                }
+                // ✨ Kernel.Plugins 已由建構函式註冊，此處無需重複處理
 
                 var chatHistory = new ChatHistory(SystemPrompt);
                 chatHistory.AddUserMessage(userMessage);
@@ -201,6 +163,76 @@ namespace SupermarketMock.Services
             {
                 _logger.LogError(ex, "AI 客服服務呼叫失敗");
                 return "抱歉，系統發生錯誤，請稍後再試。若問題持續發生，請聯繫客服人員。";
+            }
+        }
+
+        /// <inheritdoc/>
+        public async Task<AiChatResponseDto> GetProductOrChatResponseWithHistoryAsync(string userMessage, string? sessionId, int? userId)
+        {
+            if (string.IsNullOrWhiteSpace(userMessage))
+            {
+                return new AiChatResponseDto
+                {
+                    SessionId = sessionId ?? string.Empty,
+                    Response = "請輸入您的問題，我很樂意為您服務！"
+                };
+            }
+
+            try
+            {
+                // 1. 取得或建立 Session
+                var sessionResult = await _chatHistoryService.GetOrCreateSessionAsync(sessionId, userId);
+
+                // 2. 將 SK ChatHistory JSON 反序列化
+                var chatHistory = JsonSerializer.Deserialize<ChatHistory>(sessionResult.ChatHistoryJson)
+                    ?? new ChatHistory(SystemPrompt);
+
+                // 3. 如果是新 Session，加入 System Prompt
+                if (sessionResult.IsNewSession && chatHistory.Count == 0)
+                {
+                    chatHistory = new ChatHistory(SystemPrompt);
+                }
+
+                // 4. 加入使用者訊息
+                chatHistory.AddUserMessage(userMessage);
+
+                // 5. 取得 ChatCompletion 服務
+                var chatService = _kernel.GetRequiredService<IChatCompletionService>();
+
+                // 6. 執行 SK 生成回覆
+                var executionSettings = new OpenAIPromptExecutionSettings
+                {
+                    Temperature = 0.7,
+                    MaxTokens = 1024,
+                    TopP = 0.9,
+                    FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
+                };
+
+                var response = await chatService.GetChatMessageContentAsync(
+                    chatHistory,
+                    executionSettings,
+                    _kernel);
+
+                var responseContent = response?.Content ?? "抱歉，我暫時無法回覆您的問題，請稍後再試。";
+
+                // 7. 儲存使用者訊息與 AI 回覆到資料庫
+                await _chatHistoryService.AddMessageAsync(sessionResult.SessionId, "User", userMessage);
+                await _chatHistoryService.AddMessageAsync(sessionResult.SessionId, "Assistant", responseContent);
+
+                return new AiChatResponseDto
+                {
+                    SessionId = sessionResult.SessionId,
+                    Response = responseContent
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "AI 客服服務呼叫失敗 (SessionId: {SessionId})", sessionId);
+                return new AiChatResponseDto
+                {
+                    SessionId = sessionId ?? string.Empty,
+                    Response = "抱歉，系統發生錯誤，請稍後再試。若問題持續發生，請聯繫客服人員。"
+                };
             }
         }
     }

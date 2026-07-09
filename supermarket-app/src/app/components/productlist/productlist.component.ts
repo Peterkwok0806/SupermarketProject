@@ -13,13 +13,14 @@ import { switchMap, map } from 'rxjs';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { environment } from '../../../environments/environment';
 import { BackendImagePipe } from '../../pipes/backend-image.pipe';
+import { SkeletonComponent } from '../../shared/skeleton/skeleton.component';
 
 
 
 
 @Component({
   selector: 'app-productlist',
-  imports: [CommonModule, RouterLink,BackendImagePipe],
+  imports: [CommonModule, RouterLink, BackendImagePipe, SkeletonComponent],
   templateUrl: './productlist.component.html',
   styleUrl: './productlist.component.css'
 })
